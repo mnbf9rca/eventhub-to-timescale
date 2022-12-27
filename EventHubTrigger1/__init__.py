@@ -42,14 +42,19 @@ class PayloadType(Enum):
     """Enum for the types of payload that can be sent to TimescaleDB"""
 
     NUMBER: str = "number"
-    STROING: str = "string"
+    STRING: str = "string"
     BOOLEAN: str = "boolean"
     LATLONG: str = "latlong"
 
 
 class TimescaleRecord:
     def __init__(
-        self, timestamp: str, subject: str, payload: any, payload_type: PayloadType, unique_id: str = None
+        self,
+        timestamp: str,
+        subject: str,
+        payload: any,
+        payload_type: PayloadType,
+        unique_id: str = None,
     ):
         """Creates a record in the format expected by the TimescaleDB publisher
         Args:
@@ -64,24 +69,40 @@ class TimescaleRecord:
         self.payload_type = self._validate_payload_type(payload_type)
         self.unique_id = unique_id
 
+    def __dict__(self):
+        return {
+            "timestamp": self.timestamp,
+            "subject": self.subject,
+            "payload": self.payload,
+            "payload_type": self.payload_type.value,
+            "unique_id": self.unique_id,
+        }
+
     def __str__(self):
-        return (
-            f"{{'timestamp': {self.timestamp},"
-            + f"'subject': {self.subject},"
-            + f"'payload': {self.payload},"
-            + f"'payload_type': {self.payload_type},"
-            + f"'unique_id': {self.unique_id}}}"
-        )
+        return json.dumps(self.__dict__())
+
+    def __repr__(self):
+        return self.__str__()
+    
+    def toString(self):
+        return self.__str__()
+    
+    def repr(self):
+        return self.__repr__()
 
     def _validate_payload_type(self, payload: PayloadType) -> PayloadType:
-        if payload not in PayloadType._value2member_map_:
-            raise ValueError(f"Invalid payload type: {self.payload_type}")
+        if payload not in PayloadType:
+            raise ValueError(f"Invalid payload type: {payload}")
         else:
             return payload
 
 
 def create_atomic_record(
-    source_timestamp: str, subject: str, payload: any, payload_type: PayloadType, unique_id: str = None
+    source_timestamp: str,
+    subject: str,
+    payload: any,
+    payload_type: PayloadType,
+    unique_id: str = None,
 ) -> TimescaleRecord:
     """Creates a record in the format expected by the TimescaleDB publisher
     Args:
@@ -93,7 +114,10 @@ def create_atomic_record(
         dict: record in the format expected by TimescaleDB
     """
     # TODO create a class for this return type
-    return TimescaleRecord(source_timestamp, subject, payload, payload_type, unique_id)
+    tsr = TimescaleRecord(
+        source_timestamp, subject, payload, payload_type, unique_id
+    )
+    return tsr
 
 
 def homie_to_timescale(
@@ -113,11 +137,11 @@ def homie_to_timescale(
     unique_id = f"{event.enqueued_time.isoformat()}-{event.sequence_number}"
     # convert the message to a json object
     return create_atomic_record(
-        messagebody["timestamp"],
-        publisher,
-        messagebody["payload"],
-        PayloadType.STRING if lastpart in ["state", "mode"] else PayloadType.NUMBER,
-        unique_id
+        source_timestamp=messagebody["timestamp"],
+        subject=publisher,
+        payload=messagebody["payload"],
+        payload_type=PayloadType.STRING if lastpart == "measure-temperature" else PayloadType.STRING,
+        unique_id=unique_id,
     )
 
 
