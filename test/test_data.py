@@ -35,11 +35,7 @@ def create_event_hub_event(event_properties: dict) -> EventHubEvent:
     partition_key = event_properties.get("partition_key")
     sequence_number = event_properties.get("sequence_number")
     offset = event_properties.get("offset")
-    iothub_metadata = (
-        event_properties["iothub_metadata"]
-        if "system_properties" in event_properties
-        else None
-    )
+    iothub_metadata = event_properties.get("iothub_metadata")
 
     return EventHubEvent(
         body=body,
