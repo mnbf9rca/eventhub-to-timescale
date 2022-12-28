@@ -3,7 +3,7 @@ from typing import Any, List
 
 from azure.functions import EventHubEvent
 
-from . import create_record_recursive
+from .timeseries import create_record_recursive
 
 
 def glow_to_timescale(
@@ -11,17 +11,14 @@ def glow_to_timescale(
     messagebody: dict,
     topic: str,
     _publisher: str,
-    ignore_keys: List[str] = [
-        "units",
-        "mpan",
-        "mprn",
-        "supplier",
-        "dayweekmonthvolunits",
-        "cumulativevolunits",
-    ],
 ) -> List[dict[str, Any]]:
     """
     Convert a message from the Glow MQTT broker to a list of records for TimescaleDB
+    @param event: the eventhub event
+    @param messagebody: the message body
+    @param topic: the topic
+    @param publisher: the publisher
+    @return: a list of timescale records
     """
     # examine the topic. We're only interested in topics where the last part is in events_of_interest
     events_of_interest = ["electricitymeter", "gasmeter"]
@@ -36,7 +33,14 @@ def glow_to_timescale(
     # for these messages, we need to construct an array of records, one for each value
     records = []
     # ignore text fields which we dont care about:
-
+    ignore_keys = [
+        "units",
+        "mpan",
+        "mprn",
+        "supplier",
+        "dayweekmonthvolunits",
+        "cumulativevolunits",
+    ]
     records = create_record_recursive(
         message_payload[measurement_subject]["energy"]["import"],
         records,
