@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "eventhub-to-timescale"
+version = "0.1.0"
+description = ""
+authors = ["rob al <mnbf9rca@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "eventhub_to_timescale"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+azure-functions-durable = "^1.2.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest-black = "^0.3.12"
+flake8 = "^6.0.0"
+pre-commit = "^2.21.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
