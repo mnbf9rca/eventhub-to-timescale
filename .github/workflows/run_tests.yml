@@ -31,7 +31,7 @@ jobs:
         run: |
           pytest --cov-report xml:${{ github.workspace }}/coverage.xml --cov-report term 
       - name: Get Coverage
-        if: github.event == "pull_request"
+        if: github.event_name == "pull_request"
         uses: orgoro/coverage@v3
         with:
             coverageFile: ${{ github.workspace }}/coverage.xml
