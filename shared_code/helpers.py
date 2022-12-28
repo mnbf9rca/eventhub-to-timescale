@@ -15,19 +15,3 @@ def is_topic_of_interest(topic: str, events_of_interest: List[str]):
         return None
 
 
-def recursive_json_parser(data) -> dict:
-    """
-    recursively parse JSON object
-    @param data: a string representing the JSON object
-    @return: the parsed JSON object
-    """
-
-    if isinstance(data, str):
-        try:
-            data = json.loads(data)
-        except json.JSONDecodeError:
-            pass
-    elif isinstance(data, dict):
-        for key, value in data.items():
-            data[key] = recursive_json_parser(value)
-    return data
