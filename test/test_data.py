@@ -3,10 +3,31 @@ from azure.functions import EventHubEvent
 import datetime
 
 
+def recursive_json_parser(data) -> dict:
+    """
+    recursively parse JSON object
+    @param data: a string representing the JSON object
+    @return: the parsed JSON object
+    """
+   
+    if isinstance(data, str):
+        try:
+            data = json.loads(data)
+        except json.JSONDecodeError:
+            pass
+    elif isinstance(data, dict):
+        for key, value in data.items():
+            data[key] = recursive_json_parser(value)
+    return data
+
 def load_test_data():
+    """
+    Load test data from a JSON file
+    @return: a dictionary of test data
+    """
     with open("./test/test_data.json", "r") as f:
         test_data = json.load(f)
-    return test_data
+    return recursive_json_parser(test_data)
 
 
 def create_event_hub_event(event_properties: dict) -> EventHubEvent:

@@ -12,8 +12,8 @@
   "homie_mode": {
     "type": "EventHubEvent",
     "properties": {
-      "body": "'[{\"timestamp\": 1672074313.6086972, \"measurement_subject\": \"homie\", \"measurement_of\": \"mode\", \"measurement_value\": \"Home\", \"measurement_data_type\": \"string\", \"correlation_id\": \"2022-12-26T17:05:14.808000-1827\"}]'",
-      "enqueued_time": "2022-12-26T17:05:14.803Z",
+      "body": "{\"topic\": \"homie/hubitat/hub/mode\", \"payload\": \"Home\", \"qos\": 0, \"retain\": 1, \"timestamp\": 1672074313.6086972}",
+      "enqueued_time": "2022-12-26T17:05:14.808Z",
       "offset": 393296,
       "sequence_number": 1827
     },
@@ -53,10 +53,11 @@
     "type": "EventHubEvent",
     "properties": {
       "body": "{\"topic\": \"glow/BCDDC2C4ABD0/SENSOR/gasmeter\", \"payload\": \"{\\\"gasmeter\\\":{\\\"timestamp\\\":\\\"2022-12-26T14:02:13Z\\\",\\\"energy\\\":{\\\"import\\\":{\\\"cumulative\\\":15074.519,\\\"day\\\":43.129,\\\"week\\\":43.129,\\\"month\\\":3062.649,\\\"units\\\":\\\"kWh\\\",\\\"cumulativevol\\\":1357.208,\\\"cumulativevolunits\\\":\\\"m3\\\",\\\"dayvol\\\":43.129,\\\"weekvol\\\":43.129,\\\"monthvol\\\":3062.649,\\\"dayweekmonthvolunits\\\":\\\"kWh\\\",\\\"mprn\\\":\\\"3057817410\\\",\\\"supplier\\\":\\\"---\\\",\\\"price\\\":{\\\"unitrate\\\":0.11090,\\\"standingcharge\\\":0.32030}}}}}\", \"qos\": 0, \"retain\": 0, \"timestamp\": 1672067005.852361}",
-      "enqueued_time": "2022-12-26T15:03:21.821Z",
+      "enqueued_time": "2022-12-26T15:03:26.822Z",
       "offset": 307400,
       "sequence_number": 1438
-    }
+    },
+    "expected": "[{\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_cumulative\", \"measurement_value\": 15074.519, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_day\", \"measurement_value\": 43.129, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_week\", \"measurement_value\": 43.129, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_month\", \"measurement_value\": 3062.649, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_cumulativevol\", \"measurement_value\": 1357.208, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_dayvol\", \"measurement_value\": 43.129, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_weekvol\", \"measurement_value\": 43.129, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_monthvol\", \"measurement_value\": 3062.649, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_unitrate\", \"measurement_value\": 0.1109, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_standingcharge\", \"measurement_value\": 0.3203, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}]"
   }
 
 }
