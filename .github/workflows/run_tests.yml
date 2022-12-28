@@ -31,9 +31,3 @@ jobs:
         run: |
           pytest --cov-report xml:coverage.xml --cov-report term 
 
-      - name: Generate Report
-        run: |
-          pip install coverage
-          coverage run -m unittest
-      - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v2
