@@ -14,8 +14,7 @@ from shared_code import (
     emon_to_timescale,
     is_topic_of_interest,
     glow_to_timescale,
-    homie_to_timescale
-    
+    homie_to_timescale,
 )  # noqa E402
 
 # import test data
@@ -30,7 +29,7 @@ def extract_topic(messagebody: dict) -> tuple[str, str]:
     return topic, publisher
 
 
-def call_emon_to_timescale(test_data_item: dict[str, Any]) -> List[dict[str, Any]]:
+def call_converter(test_data_item: dict[str, Any]) -> List[dict[str, Any]]:
     test_event = create_event_hub_event(test_data_item["properties"])
     messagebody = test_data_item["properties"]["body"]
     # o_messagebody: dict = json.loads(messagebody)
@@ -96,18 +95,19 @@ class Test_Homie:
         expected_value = test_data["homie_mode"]["expected"]
         for actual, expected in zip(actual_value, expected_value):
             TestCase().assertDictEqual(actual, expected)
-    
+
     def test_homie_to_timescale_with_ignored_json_for_heartbeat(self):
         actual_value = call_homie_to_timescale(test_data["homie_heartbeat"])
         expected_value = test_data["homie_heartbeat"]["expected"]
         assert expected_value is None
-        assert actual_value is None        
+        assert actual_value is None
 
     def test_homie_to_timescale_with_valid_json_for_measure_temperature(self):
         actual_value = call_homie_to_timescale(test_data["homie_measure_temperature"])
         expected_value = test_data["homie_measure_temperature"]["expected"]
         for actual, expected in zip(actual_value, expected_value):
             TestCase().assertDictEqual(actual, expected)
+
 
 class Test_Helpers:
     class TestIsTopicOfInterest:
@@ -159,9 +159,6 @@ class Test_Helpers:
         def test_recursive_json_parser_with_nested_array_and_object_and_string(self):
             actual_value = recursive_json_parser('{"a": [{"b": 1}, {"c": 2}, "d"]}')
             assert actual_value == {"a": [{"b": 1}, {"c": 2}, "d"]}
-
-
-
 
 
 if __name__ == "__main__":

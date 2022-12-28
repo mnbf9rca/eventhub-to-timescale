@@ -1,4 +1,8 @@
-def is_topic_of_interest(topic: str, events_of_interest: list[str]):
+import json
+from typing import List
+
+
+def is_topic_of_interest(topic: str, events_of_interest: List[str]):
     """Check if the topic is of interest by examining the last part of the topic
     @param topic: the topic
     @param events_of_interest: the list of events of interest
@@ -17,7 +21,7 @@ def recursive_json_parser(data) -> dict:
     @param data: a string representing the JSON object
     @return: the parsed JSON object
     """
-   
+
     if isinstance(data, str):
         try:
             data = json.loads(data)
