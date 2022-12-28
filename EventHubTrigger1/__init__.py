@@ -33,8 +33,8 @@ def parse_message(event: func.EventHubEvent):
 
     if payload is not None:
         logging.info(f"Payload: {payload}")
-        return payload  # [item.toString() for item in payload]
-        # TODO: send the payload to another eventhub called timescale
+        return_payload: List[str] = [json.dumps(p) for p in payload]
+        return return_payload
     else:
         # logging.error("Payload is None")
         pass
