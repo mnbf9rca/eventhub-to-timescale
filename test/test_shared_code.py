@@ -29,7 +29,7 @@ def extract_topic(messagebody: dict) -> tuple[str, str]:
     return topic, publisher
 
 
-def call_converter(test_data_item: dict[str, Any]) -> List[dict[str, Any]]:
+def call_emon_to_timescale(test_data_item: dict[str, Any]) -> List[dict[str, Any]]:
     test_event = create_event_hub_event(test_data_item["properties"])
     messagebody = test_data_item["properties"]["body"]
     # o_messagebody: dict = json.loads(messagebody)
