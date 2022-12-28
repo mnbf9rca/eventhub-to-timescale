@@ -41,11 +41,7 @@ def parse_message(event: func.EventHubEvent):
 
     if payload is not None:
         logging.info(f"Payload: {payload}")
-        return_payload = [json.dumps(p) for p in payload]
-        return return_payload
-    else:
-        # logging.error("Payload is None")
-        pass
+        return [json.dumps(p) for p in payload]
 
 
 def extract_topic(messagebody: dict) -> tuple[str, str]:

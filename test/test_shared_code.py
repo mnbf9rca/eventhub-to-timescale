@@ -46,8 +46,7 @@ def call_emon_to_timescale(test_data_item: dict[str, Any]) -> List[dict[str, Any
     messagebody = test_data_item["properties"]["body"]
     o_messagebody: dict = json.loads(messagebody)
     topic, publisher = extract_topic(o_messagebody)
-    return_value = emon_to_timescale(test_event, o_messagebody, topic, publisher)
-    return return_value
+    return emon_to_timescale(test_event, o_messagebody, topic, publisher)
 
 
 def extract_topic(messagebody: dict) -> tuple[str, str]:

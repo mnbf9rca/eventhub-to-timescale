@@ -23,15 +23,8 @@ def create_event_hub_event(event_properties: dict) -> EventHubEvent:
     }
     """
 
-    body = (
-        event_properties["body"]
-        if "body" in event_properties
-        else None)
-    trigger_metadata = (
-        event_properties["trigger_metadata"]
-        if "trigger_metadata" in event_properties
-        else None
-    )
+    body = event_properties.get("body")
+    trigger_metadata = event_properties.get("trigger_metadata")
     if "enqueued_time" in event_properties:
         # Convert the enqueued time to a datetime object
         enqueued_time = datetime.datetime.strptime(
@@ -39,27 +32,16 @@ def create_event_hub_event(event_properties: dict) -> EventHubEvent:
           "%Y-%m-%dT%H:%M:%S.%fZ")
     else:
         enqueued_time = datetime.datetime.now()
-    partition_key = (
-        event_properties["partition_key"]
-        if "partition_key" in event_properties
-        else None
-    )
-    sequence_number = (
-        event_properties["sequence_number"]
-        if "sequence_number" in event_properties
-        else None
-    )
-    offset = (
-        event_properties["offset"]
-        if "offset" in event_properties
-        else None)
+    partition_key = event_properties.get("partition_key")
+    sequence_number = event_properties.get("sequence_number")
+    offset = event_properties.get("offset")
     iothub_metadata = (
         event_properties["iothub_metadata"]
         if "system_properties" in event_properties
         else None
     )
 
-    event = EventHubEvent(
+    return EventHubEvent(
         body=body,
         trigger_metadata=trigger_metadata,
         enqueued_time=enqueued_time,
@@ -68,4 +50,3 @@ def create_event_hub_event(event_properties: dict) -> EventHubEvent:
         offset=offset,
         iothub_metadata=iothub_metadata,
     )
-    return event
