@@ -28,8 +28,7 @@ def create_atomic_record(
     Returns:
         dict: record in the format expected by TimescaleDB
     """
-    # TODO create a class for this return type
-    tsr = {
+    return {
         "timestamp": source_timestamp,
         "measurement_subject": measurement_subject,
         "measurement_of": measurement_of,
@@ -37,7 +36,6 @@ def create_atomic_record(
         "measurement_data_type": measurement_data_type.value,
         "correlation_id": correlation_id,
     }
-    return tsr
 
 
 def create_record_recursive(
@@ -92,9 +90,7 @@ def create_record_recursive(
 def get_record_type(payload):
     if isinstance(payload, str):
         return PayloadType.STRING
-    elif isinstance(payload, int):
-        return PayloadType.NUMBER
-    elif isinstance(payload, float):
+    elif isinstance(payload, (int, float)):
         return PayloadType.NUMBER
     elif isinstance(payload, bool):
         return PayloadType.BOOLEAN
