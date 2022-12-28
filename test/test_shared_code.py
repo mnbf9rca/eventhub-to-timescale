@@ -10,12 +10,12 @@ from test_data import create_event_hub_event, load_test_data, recursive_json_par
 # add the shared_code directory to the path
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
-from shared_code import (
+from shared_code import ( # noqa E402
     emon_to_timescale,
     is_topic_of_interest,
     glow_to_timescale,
     homie_to_timescale,
-)  # noqa E402
+)  
 
 # import test data
 
@@ -41,17 +41,15 @@ class TestEmonToTimescale:
     def test_with_ignored_key(self):
         actual_value = call_emon_to_timescale(test_data["homie_heartbeat"])
         expected_value = test_data["homie_heartbeat"]["expected"]
-        if expected_value is None:
-            assert actual_value is None
-        else:
-            assert actual_value == expected_value["value"]
+        assert expected_value is None
+        assert actual_value is None
 
     def test_with_emonTx4_key(self):
         test_object: dict = test_data["emontx4_json"]
         actual_value = call_emon_to_timescale(test_object)
         expected_value = test_object["expected"]
-        assert expected_value is None
-        assert actual_value is None
+        for actual, expected in zip(actual_value, expected_value):
+            TestCase().assertDictEqual(actual, expected)
 
 
 def call_glow_to_timescale(test_data_item: dict[str, Any]) -> List[dict[str, Any]]:
