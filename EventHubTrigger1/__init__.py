@@ -1,12 +1,12 @@
 import json
 import logging
 from enum import Enum
-from typing import MutableSequence
+from typing import Any, List
 
 import azure.functions as func
 
 
-def main(events: MutableSequence[func.EventHubEvent]):
+def main(events: List[func.EventHubEvent]):
     for event in events:
         parse_message(event)
 
@@ -19,7 +19,7 @@ def parse_message(event: func.EventHubEvent):
     except Exception as e:
         logging.error(f"Error parsing message: {e}")
         return
-    payload = None
+    payload: List[dict[str, Any]] = None
 
     if publisher == "glow":
         payload = glow_to_timescale(event, o_messagebody, topic, publisher)
@@ -33,6 +33,7 @@ def parse_message(event: func.EventHubEvent):
 
     if payload is not None:
         logging.info(f"Payload: {payload}")
+        return payload  # [item.toString() for item in payload]
         # TODO: send the payload to another eventhub called timescale
     else:
         # logging.error("Payload is None")
@@ -48,91 +49,38 @@ class PayloadType(Enum):
     LATLONG: str = "latlong"
 
 
-class TimescaleRecord:
-    def __init__(
-        self,
-        timestamp: str,
-        measurement_subject: str,
-        measurement_of: str,
-        measurement_value: any,
-        measurement_data_type: PayloadType,
-        unique_id: str = None,
-    ):
-        """Creates a record in the format expected by the TimescaleDB publisher
-        Args:
-            timestamp (str): timestamp in ISO format
-            subject (str): subject of the record
-            payload (any): payload of the record
-            payload_type (PayloadType): type of the payload
-        """
-        self.timestamp = timestamp
-        self.measurement_subject = measurement_subject
-        self.measurement_of = measurement_of
-        self.measurement_value = measurement_value
-        self.measurement_data_type = self._validate_payload_type(measurement_data_type)
-        self.unique_id = unique_id
-
-    def __dict__(self):
-        return {
-            "timestamp": self.timestamp,
-            "measurement_subject": self.measurement_subject,
-            "measurement_of": self.measurement_of,
-            "measurement_value": self.measurement_value,
-            "measurement_data_type": self.measurement_data_type.value,
-            "unique_id": self.unique_id,
-        }
-
-    def __str__(self):
-        return json.dumps(self.__dict__())
-
-    def __repr__(self):
-        return self.__str__()
-
-    def toString(self):
-        return self.__str__()
-
-    def repr(self):
-        return self.__repr__()
-
-    def _validate_payload_type(self, payload: PayloadType) -> PayloadType:
-        if payload not in PayloadType:
-            raise ValueError(f"Invalid payload type: {payload}")
-        else:
-            return payload
-
-
 def create_atomic_record(
     source_timestamp: str,
     measurement_subject: str,
     measurement_of: str,
-    measurement_value: any,
+    measurement_value: Any,
     measurement_data_type: PayloadType,
     unique_id: str = None,
-) -> TimescaleRecord:
+) -> dict[str, Any]:
     """Creates a record in the format expected by the TimescaleDB publisher
     Args:
         timestamp (str): timestamp in ISO format
         subject (str): subject of the record
-        payload (any): payload of the record
+        payload (Any): payload of the record
         payload_type (PayloadType): type of the payload
     Returns:
         dict: record in the format expected by TimescaleDB
     """
     # TODO create a class for this return type
-    tsr = TimescaleRecord(
-        timestamp=source_timestamp,
-        measurement_subject=measurement_subject,
-        measurement_of=measurement_of,
-        measurement_value=measurement_value,
-        measurement_data_type=measurement_data_type,
-        unique_id=unique_id,
-    )
+    tsr = {
+        "timestamp": source_timestamp,
+        "measurement_subject": measurement_subject,
+        "measurement_of": measurement_of,
+        "measurement_value": measurement_value,
+        "measurement_data_type": measurement_data_type.value,
+        "unique_id": unique_id,
+    }
     return tsr
 
 
 def homie_to_timescale(
     event: func.EventHubEvent, messagebody: dict, topic: str, publisher: str
-) -> TimescaleRecord:
+) -> List[dict[str, Any]]:
     # examine the topic. We're only interested in topics where the last part is one we're interested in
     events_of_interest = [
         "measure-temperature",
@@ -152,7 +100,9 @@ def homie_to_timescale(
             measurement_subject=publisher,
             measurement_of=lastpart,
             measurement_value=messagebody["payload"],
-            measurement_data_type=PayloadType.STRING if lastpart in ["state", "mode"] else PayloadType.NUMBER,
+            measurement_data_type=PayloadType.STRING
+            if lastpart in ["state", "mode"]
+            else PayloadType.NUMBER,
             unique_id=unique_id,
         )
     ]
@@ -160,13 +110,13 @@ def homie_to_timescale(
 
 def create_record_recursive(
     payload: dict,
-    records: MutableSequence[TimescaleRecord],
+    records: List[dict[str, Any]],
     timestamp: str,
     unique_id: str,
     measurement_subject: str,
     ignore_keys: list = None,
     measurement_of_prefix: str = None,
-):
+) -> List[dict[str, Any]]:
     """recursively creates records in the format expected by the TimescaleDB publisher
     Args:
         payload (dict): payload of the record to be parsed
@@ -222,7 +172,7 @@ def get_record_type(payload):
 
 def glow_to_timescale(
     event: func.EventHubEvent, messagebody: dict, topic: str, publisher: str
-) -> TimescaleRecord:
+) -> List[dict[str, Any]]:
     # examine the topic. We're only interested in topics where the last part is in events_of_interest
     events_of_interest = ["electricitymeter", "gasmeter"]
     measurement_subject = topic.split("/")[-1]
@@ -294,11 +244,13 @@ def emon_to_timescale(
     return records
 
     # convert the message to a json object
-   #  o_messagebody = json.loads(messagebody)
-    # get the payload
-    # payload = o_messagebody["payload"]
-    # get the timestamp
-    # timestamp = o_messagebody["timestamp"]
+
+
+#  o_messagebody = json.loads(messagebody)
+# get the payload
+# payload = o_messagebody["payload"]
+# get the timestamp
+# timestamp = o_messagebody["timestamp"]
 
 
 def extract_topic(messagebody):
