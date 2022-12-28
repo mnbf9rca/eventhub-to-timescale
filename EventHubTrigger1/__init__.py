@@ -7,8 +7,12 @@ import azure.functions as func
 
 
 def main(events: List[func.EventHubEvent]):
+    return_value = []
     for event in events:
-        parse_message(event)
+        result = parse_message(event)
+        if result is not None:
+            return_value.append(result)
+    return return_value
 
 
 def parse_message(event: func.EventHubEvent):
@@ -33,7 +37,7 @@ def parse_message(event: func.EventHubEvent):
 
     if payload is not None:
         logging.info(f"Payload: {payload}")
-        return_payload: List[str] = [json.dumps(p) for p in payload]
+        return_payload = [json.dumps(p) for p in payload]
         return return_payload
     else:
         # logging.error("Payload is None")
@@ -55,7 +59,7 @@ def create_atomic_record(
     measurement_of: str,
     measurement_value: Any,
     measurement_data_type: PayloadType,
-    unique_id: str = None,
+    correlation_id: str = None,
 ) -> dict[str, Any]:
     """Creates a record in the format expected by the TimescaleDB publisher
     Args:
@@ -73,7 +77,7 @@ def create_atomic_record(
         "measurement_of": measurement_of,
         "measurement_value": measurement_value,
         "measurement_data_type": measurement_data_type.value,
-        "unique_id": unique_id,
+        "correlation_id": correlation_id,
     }
     return tsr
 
@@ -92,7 +96,7 @@ def homie_to_timescale(
     lastpart = topic.split("/")[-1]
     if lastpart not in events_of_interest:
         return
-    unique_id = f"{event.enqueued_time.isoformat()}-{event.sequence_number}"
+    correlation_id = f"{event.enqueued_time.isoformat()}-{event.sequence_number}"
     # convert the message to a json object
     return [
         create_atomic_record(
@@ -103,7 +107,7 @@ def homie_to_timescale(
             measurement_data_type=PayloadType.STRING
             if lastpart in ["state", "mode"]
             else PayloadType.NUMBER,
-            unique_id=unique_id,
+            correlation_id=correlation_id,
         )
     ]
 
@@ -112,7 +116,7 @@ def create_record_recursive(
     payload: dict,
     records: List[dict[str, Any]],
     timestamp: str,
-    unique_id: str,
+    correlation_id: str,
     measurement_subject: str,
     ignore_keys: list = None,
     measurement_of_prefix: str = None,
@@ -122,7 +126,7 @@ def create_record_recursive(
         payload (dict): payload of the record to be parsed
         records (Array[TimescaleRecord]): list of records to be returned
         timestamp (str): timestamp in ISO format
-        unique_id (str): unique id for the record
+        correlation_id (str): unique id for the record
         measurement_subject (str): subject of the record
         ignore_keys (list): list of keys to ignore (also will not be recursed)
         measurement_of_prefix (str): prefix to add to the measurement_of field
@@ -136,7 +140,7 @@ def create_record_recursive(
                     payload[key],
                     records,
                     timestamp,
-                    unique_id,
+                    correlation_id,
                     measurement_subject,
                     ignore_keys,
                     measurement_of_prefix,
@@ -151,7 +155,7 @@ def create_record_recursive(
                         else f"{measurement_of_prefix}_{key}",
                         measurement_value=payload[key],
                         measurement_data_type=get_record_type(payload[key]),
-                        unique_id=unique_id,
+                        correlation_id=correlation_id,
                     )
                 )
     return records
@@ -182,7 +186,7 @@ def glow_to_timescale(
     # convert the message to a json object
     message_payload = json.loads(messagebody["payload"])
     timestamp = message_payload[measurement_subject]["timestamp"]
-    unique_id = f"{event.enqueued_time.isoformat()}-{event.sequence_number}"
+    correlation_id = f"{event.enqueued_time.isoformat()}-{event.sequence_number}"
     # for these messages, we need to construct an array of records, one for each value
     records = []
     # ignore text fields which we dont care about:
@@ -199,7 +203,7 @@ def glow_to_timescale(
         message_payload[measurement_subject]["energy"]["import"],
         records,
         timestamp,
-        unique_id,
+        correlation_id,
         measurement_subject,
         ignore_keys=ignore_keys,
         measurement_of_prefix="import",
@@ -210,7 +214,7 @@ def glow_to_timescale(
             message_payload[measurement_subject]["power"],
             records,
             timestamp,
-            unique_id,
+            correlation_id,
             measurement_subject,
             ignore_keys=ignore_keys,
             measurement_of_prefix="power",
@@ -230,27 +234,18 @@ def emon_to_timescale(
     # this timestemap is wrong - need to use the one in the messsage_payload
     timestamp = messagebody["timestamp"]
     message_payload = json.loads(messagebody["payload"])
-    unique_id = f"{event.enqueued_time.isoformat()}-{event.sequence_number}"
+    correlation_id = f"{event.enqueued_time.isoformat()}-{event.sequence_number}"
     # for these messages, we need to construct an array of records, one for each value
     records = []
     records = create_record_recursive(
         message_payload,
         records,
         timestamp,
-        unique_id,
+        correlation_id,
         measurement_subject,
     )
 
     return records
-
-    # convert the message to a json object
-
-
-#  o_messagebody = json.loads(messagebody)
-# get the payload
-# payload = o_messagebody["payload"]
-# get the timestamp
-# timestamp = o_messagebody["timestamp"]
 
 
 def extract_topic(messagebody):
