@@ -36,6 +36,7 @@ def parse_message(event: func.EventHubEvent):
         payload = emon_to_timescale(event, o_messagebody, topic, publisher)
     else:
         logging.error(f"Unknown publisher: {publisher}")
+        ValueError(f"Unknown publisher: {publisher}")
         return
 
     if payload is not None:
