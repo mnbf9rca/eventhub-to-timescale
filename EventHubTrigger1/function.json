@@ -6,9 +6,16 @@
       "name": "events",
       "direction": "in",
       "eventHubName": "underne",
-      "connection": "cynexia_eventhubreader_EVENTHUB",
+      "connection": "underne_eventhubreader_EVENTHUB",
       "cardinality": "many",
       "consumerGroup": "$Default"
-    }
+    },
+    {
+      "type": "eventHub",
+      "name": "$return",
+      "eventHubName": "timescale",
+      "connection": "timescale_eventhubwriter_EVENTHUB",
+      "direction": "out"
+  }
   ]
 }
