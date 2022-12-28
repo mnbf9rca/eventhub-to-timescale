@@ -4,6 +4,7 @@ from typing import Any, List
 from azure.functions import EventHubEvent
 
 from .timeseries import create_record_recursive
+from .helpers import is_topic_of_interest
 
 
 def emon_to_timescale(
@@ -18,8 +19,8 @@ def emon_to_timescale(
     """
     # examine the topic. We're only interested in topics where the last part is in events_of_interest
     events_of_interest = ["emonTx4"]
-    measurement_subject = topic.split("/")[-1]
-    if measurement_subject not in events_of_interest:
+    measurement_subject = is_topic_of_interest(topic, events_of_interest)
+    if measurement_subject is None:
         return
     # this timestemap is wrong - need to use the one in the messsage_payload
     timestamp = messagebody["timestamp"]

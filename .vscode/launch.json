@@ -2,6 +2,22 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "debug test shared code",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/test/test_shared_code.py",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
       "name": "Attach to Python Functions",
       "type": "python",
       "request": "attach",
