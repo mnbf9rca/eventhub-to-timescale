@@ -20,6 +20,7 @@ jsonpickle = "^3.0.1"
 pytest-cov = "^4.0.0"
 coverage = "^7.0.1"
 
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
