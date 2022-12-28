@@ -29,10 +29,10 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest
         run: |
-          pytest --cov-report xml:${{ github.workspace }}/coverage.xml --cov-report term 
+          pytest --cov-report xml:coverage.xml --cov-report term 
       - name: Get Coverage
         if: github.event_name == 'pull_request'
         uses: orgoro/coverage@v3
         with:
-            coverageFile: ${{ github.workspace }}/coverage.xml
+            coverageFile: coverage.xml
             token: ${{ secrets.GITHUB_TOKEN }}
