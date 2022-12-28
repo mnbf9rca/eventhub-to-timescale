@@ -1,9 +1,13 @@
 import json
 import logging
-from enum import Enum
 from typing import Any, List
 
 import azure.functions as func
+
+from shared_code import (PayloadType, 
+create_atomic_record,
+                         create_record_recursive,
+                         glow_to_timescale)
 
 
 def main(events: List[func.EventHubEvent]):
@@ -44,44 +48,6 @@ def parse_message(event: func.EventHubEvent):
         pass
 
 
-class PayloadType(Enum):
-    """Enum for the types of payload that can be sent to TimescaleDB"""
-
-    NUMBER: str = "number"
-    STRING: str = "string"
-    BOOLEAN: str = "boolean"
-    LATLONG: str = "latlong"
-
-
-def create_atomic_record(
-    source_timestamp: str,
-    measurement_subject: str,
-    measurement_of: str,
-    measurement_value: Any,
-    measurement_data_type: PayloadType,
-    correlation_id: str = None,
-) -> dict[str, Any]:
-    """Creates a record in the format expected by the TimescaleDB publisher
-    Args:
-        timestamp (str): timestamp in ISO format
-        subject (str): subject of the record
-        payload (Any): payload of the record
-        payload_type (PayloadType): type of the payload
-    Returns:
-        dict: record in the format expected by TimescaleDB
-    """
-    # TODO create a class for this return type
-    tsr = {
-        "timestamp": source_timestamp,
-        "measurement_subject": measurement_subject,
-        "measurement_of": measurement_of,
-        "measurement_value": measurement_value,
-        "measurement_data_type": measurement_data_type.value,
-        "correlation_id": correlation_id,
-    }
-    return tsr
-
-
 def homie_to_timescale(
     event: func.EventHubEvent, messagebody: dict, topic: str, publisher: str
 ) -> List[dict[str, Any]]:
@@ -112,115 +78,6 @@ def homie_to_timescale(
     ]
 
 
-def create_record_recursive(
-    payload: dict,
-    records: List[dict[str, Any]],
-    timestamp: str,
-    correlation_id: str,
-    measurement_subject: str,
-    ignore_keys: list = None,
-    measurement_of_prefix: str = None,
-) -> List[dict[str, Any]]:
-    """recursively creates records in the format expected by the TimescaleDB publisher
-    Args:
-        payload (dict): payload of the record to be parsed
-        records (Array[TimescaleRecord]): list of records to be returned
-        timestamp (str): timestamp in ISO format
-        correlation_id (str): unique id for the record
-        measurement_subject (str): subject of the record
-        ignore_keys (list): list of keys to ignore (also will not be recursed)
-        measurement_of_prefix (str): prefix to add to the measurement_of field
-    Returns:
-        dict: record in the format expected by TimescaleDB
-    """
-    for key in payload:
-        if ignore_keys is None or key not in ignore_keys:
-            if isinstance(payload[key], dict):
-                create_record_recursive(
-                    payload[key],
-                    records,
-                    timestamp,
-                    correlation_id,
-                    measurement_subject,
-                    ignore_keys,
-                    measurement_of_prefix,
-                )
-            else:
-                records.append(
-                    create_atomic_record(
-                        source_timestamp=timestamp,
-                        measurement_subject=measurement_subject,
-                        measurement_of=key
-                        if measurement_of_prefix is None
-                        else f"{measurement_of_prefix}_{key}",
-                        measurement_value=payload[key],
-                        measurement_data_type=get_record_type(payload[key]),
-                        correlation_id=correlation_id,
-                    )
-                )
-    return records
-
-
-def get_record_type(payload):
-    if isinstance(payload, str):
-        return PayloadType.STRING
-    elif isinstance(payload, int):
-        return PayloadType.NUMBER
-    elif isinstance(payload, float):
-        return PayloadType.NUMBER
-    elif isinstance(payload, bool):
-        return PayloadType.BOOLEAN
-    else:
-        return None
-
-
-def glow_to_timescale(
-    event: func.EventHubEvent, messagebody: dict, topic: str, publisher: str
-) -> List[dict[str, Any]]:
-    # examine the topic. We're only interested in topics where the last part is in events_of_interest
-    events_of_interest = ["electricitymeter", "gasmeter"]
-    measurement_subject = topic.split("/")[-1]
-    if measurement_subject not in events_of_interest:
-        return
-
-    # convert the message to a json object
-    message_payload = json.loads(messagebody["payload"])
-    timestamp = message_payload[measurement_subject]["timestamp"]
-    correlation_id = f"{event.enqueued_time.isoformat()}-{event.sequence_number}"
-    # for these messages, we need to construct an array of records, one for each value
-    records = []
-    # ignore text fields which we dont care about:
-    ignore_keys = [
-        "units",
-        "mpan",
-        "mprn",
-        "supplier",
-        "dayweekmonthvolunits",
-        "cumulativevolunits",
-    ]
-
-    records = create_record_recursive(
-        message_payload[measurement_subject]["energy"]["import"],
-        records,
-        timestamp,
-        correlation_id,
-        measurement_subject,
-        ignore_keys=ignore_keys,
-        measurement_of_prefix="import",
-    )
-
-    if measurement_subject == "electricitymeter":
-        records = create_record_recursive(
-            message_payload[measurement_subject]["power"],
-            records,
-            timestamp,
-            correlation_id,
-            measurement_subject,
-            ignore_keys=ignore_keys,
-            measurement_of_prefix="power",
-        )
-
-    return records
 
 
 def emon_to_timescale(
