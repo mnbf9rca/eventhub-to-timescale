@@ -21,7 +21,7 @@ name: Deploy Python project to Azure Function App
 on:
   push:
     branches:
-    - ["main"]
+    - "main"
 
 env:
   AZURE_FUNCTIONAPP_NAME: 'dataToTimescale'   # set this to your function app name on Azure
