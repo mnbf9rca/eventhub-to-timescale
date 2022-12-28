@@ -1,0 +1,9 @@
+repos:
+  - repo: https://github.com/python-poetry/poetry
+    rev: '1.3.1'  # add version here
+    hooks:
+      - id: poetry-check
+      - id: poetry-lock
+      - id: poetry-export
+        args: ["-f", "requirements.txt", "--output", "requirements.txt", "--without-hashes"]
+  

@@ -8,7 +8,7 @@
       "eventHubName": "underne",
       "connection": "underne_eventhubreader_EVENTHUB",
       "cardinality": "many",
-      "consumerGroup": "$Default"
+      "consumerGroup": "%consumergroup%"
     },
     {
       "type": "eventHub",

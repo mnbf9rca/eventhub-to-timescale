@@ -1,0 +1,63 @@
+{
+  "homie_heartbeat": {
+    "type": "EventHubEvent",
+    "properties": {
+      "body": "{\"topic\": \"homie/hubitat/$implementation/heartbeat\", \"payload\": \"1747,none\", \"qos\": 0, \"retain\": 1, \"timestamp\": 1672062294.7248352}",
+      "enqueued_time": "2022-08-02T19:58:14.000Z",
+      "offset": 0,
+      "sequence_number": 0
+    },
+    "expected": null
+  },
+  "homie_mode": {
+    "type": "EventHubEvent",
+    "properties": {
+      "body": "{\"topic\": \"homie/hubitat/hub/mode\", \"payload\": \"Home\", \"qos\": 0, \"retain\": 1, \"timestamp\": 1672074313.6086972}",
+      "enqueued_time": "2022-12-26T17:05:14.808Z",
+      "offset": 393296,
+      "sequence_number": 1827
+    },
+    "expected": "[{\"timestamp\": 1672074313.6086972, \"measurement_subject\": \"homie\", \"measurement_of\": \"mode\", \"measurement_value\": \"Home\", \"measurement_data_type\": \"string\", \"correlation_id\": \"2022-12-26T17:05:14.808000-1827\"}]"
+  },
+  "homie_measure_temperature": {
+    "type": "EventHubEvent",
+    "properties": {
+      "body": "{\"topic\": \"homie/hubitat/--thermostat-hallway/measure-temperature\", \"payload\": \"20.4\", \"qos\": 0, \"retain\": 0, \"timestamp\": 1672067120.9944441}",
+      "enqueued_time":"2022-12-26T15:05:21.934Z",
+      "offset": 313232,
+      "sequence_number": 1461
+    },
+    "expected": "[{\"timestamp\": 1672067120.9944441, \"measurement_subject\": \"homie\", \"measurement_of\": \"measure-temperature\", \"measurement_value\": \"20.4\", \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:05:21.934000-1461\"}]"
+  },
+  "emontx4_json": {
+    "type": "EventHubEvent",
+    "properties": {
+      "body": "{\"topic\": \"emon/emonTx4\", \"payload\": \"{\\\"MSG\\\": 9735, \\\"Vrms\\\": 227.28, \\\"P1\\\": 757, \\\"P2\\\": 1, \\\"P3\\\": 1, \\\"P4\\\": 0, \\\"P5\\\": 0, \\\"P6\\\": 0, \\\"E1\\\": 176111, \\\"E2\\\": 95, \\\"E3\\\": 83, \\\"E4\\\": 31, \\\"E5\\\": 13, \\\"E6\\\": 41, \\\"pulse\\\": 0, \\\"missed\\\": 0, \\\"missedprc\\\": 0.0, \\\"time\\\": 1672191627.3893485}\", \"qos\": 0, \"retain\": 0, \"timestamp\": 1672191627.9168546}",
+      "enqueued_time": "2022-12-28T01:40:37.807Z",
+      "offset": 4306951432,
+      "sequence_number": 204698
+    },
+    "expected": "[{\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"MSG\", \"measurement_value\": 9735, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"Vrms\", \"measurement_value\": 227.28, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"P1\", \"measurement_value\": 757, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"P2\", \"measurement_value\": 1, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"P3\", \"measurement_value\": 1, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"P4\", \"measurement_value\": 0, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"P5\", \"measurement_value\": 0, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"P6\", \"measurement_value\": 0, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"E1\", \"measurement_value\": 176111, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"E2\", \"measurement_value\": 95, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"E3\", \"measurement_value\": 83, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"E4\", \"measurement_value\": 31, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"E5\", \"measurement_value\": 13, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"E6\", \"measurement_value\": 41, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"pulse\", \"measurement_value\": 0, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"missed\", \"measurement_value\": 0, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"missedprc\", \"measurement_value\": 0.0, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}, {\"timestamp\": 1672191627.9168546, \"measurement_subject\": \"emonTx4\", \"measurement_of\": \"time\", \"measurement_value\": 1672191627.3893485, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-28T01:40:37.807000-204698\"}]"
+  },
+  "glow_electricitymeter": {
+    "type": "EventHubEvent",
+    "properties": {
+      "body": "{\"topic\": \"glow/BCDDC2C4ABD0/SENSOR/electricitymeter\", \"payload\": \"{\\\"electricitymeter\\\":{\\\"timestamp\\\":\\\"2022-12-26T14:02:28Z\\\",\\\"energy\\\":{\\\"export\\\":{\\\"cumulative\\\":0.000,\\\"units\\\":\\\"kWh\\\"},\\\"import\\\":{\\\"cumulative\\\":5071.527,\\\"day\\\":14.652,\\\"week\\\":14.652,\\\"month\\\":620.086,\\\"units\\\":\\\"kWh\\\",\\\"mpan\\\":\\\"1013000046890\\\",\\\"supplier\\\":\\\"SSE\\\",\\\"price\\\":{\\\"unitrate\\\":0.37880,\\\"standingcharge\\\":0.44580}}},\\\"power\\\":{\\\"value\\\":0.902,\\\"units\\\":\\\"kW\\\"}}}\", \"qos\": 0, \"retain\": 0, \"timestamp\": 1672067000.846879}",
+      "enqueued_time": "2022-12-26T15:03:21.821Z",
+      "offset": 306816,
+      "sequence_number": 1437
+    },
+    "expected": "[{\"timestamp\": \"2022-12-26T14:02:28Z\", \"measurement_subject\": \"electricitymeter\", \"measurement_of\": \"import_cumulative\", \"measurement_value\": 5071.527, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:21.821000-1437\"}, {\"timestamp\": \"2022-12-26T14:02:28Z\", \"measurement_subject\": \"electricitymeter\", \"measurement_of\": \"import_day\", \"measurement_value\": 14.652, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:21.821000-1437\"}, {\"timestamp\": \"2022-12-26T14:02:28Z\", \"measurement_subject\": \"electricitymeter\", \"measurement_of\": \"import_week\", \"measurement_value\": 14.652, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:21.821000-1437\"}, {\"timestamp\": \"2022-12-26T14:02:28Z\", \"measurement_subject\": \"electricitymeter\", \"measurement_of\": \"import_month\", \"measurement_value\": 620.086, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:21.821000-1437\"}, {\"timestamp\": \"2022-12-26T14:02:28Z\", \"measurement_subject\": \"electricitymeter\", \"measurement_of\": \"import_unitrate\", \"measurement_value\": 0.3788, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:21.821000-1437\"}, {\"timestamp\": \"2022-12-26T14:02:28Z\", \"measurement_subject\": \"electricitymeter\", \"measurement_of\": \"import_standingcharge\", \"measurement_value\": 0.4458, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:21.821000-1437\"}, {\"timestamp\": \"2022-12-26T14:02:28Z\", \"measurement_subject\": \"electricitymeter\", \"measurement_of\": \"power_value\", \"measurement_value\": 0.902, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:21.821000-1437\"}]"
+  },
+  "glow_gasmeter": {
+    "type": "EventHubEvent",
+    "properties": {
+      "body": "{\"topic\": \"glow/BCDDC2C4ABD0/SENSOR/gasmeter\", \"payload\": \"{\\\"gasmeter\\\":{\\\"timestamp\\\":\\\"2022-12-26T14:02:13Z\\\",\\\"energy\\\":{\\\"import\\\":{\\\"cumulative\\\":15074.519,\\\"day\\\":43.129,\\\"week\\\":43.129,\\\"month\\\":3062.649,\\\"units\\\":\\\"kWh\\\",\\\"cumulativevol\\\":1357.208,\\\"cumulativevolunits\\\":\\\"m3\\\",\\\"dayvol\\\":43.129,\\\"weekvol\\\":43.129,\\\"monthvol\\\":3062.649,\\\"dayweekmonthvolunits\\\":\\\"kWh\\\",\\\"mprn\\\":\\\"3057817410\\\",\\\"supplier\\\":\\\"---\\\",\\\"price\\\":{\\\"unitrate\\\":0.11090,\\\"standingcharge\\\":0.32030}}}}}\", \"qos\": 0, \"retain\": 0, \"timestamp\": 1672067005.852361}",
+      "enqueued_time": "2022-12-26T15:03:26.822Z",
+      "offset": 307400,
+      "sequence_number": 1438
+    },
+    "expected": "[{\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_cumulative\", \"measurement_value\": 15074.519, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_day\", \"measurement_value\": 43.129, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_week\", \"measurement_value\": 43.129, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_month\", \"measurement_value\": 3062.649, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_cumulativevol\", \"measurement_value\": 1357.208, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_dayvol\", \"measurement_value\": 43.129, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_weekvol\", \"measurement_value\": 43.129, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_monthvol\", \"measurement_value\": 3062.649, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_unitrate\", \"measurement_value\": 0.1109, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}, {\"timestamp\": \"2022-12-26T14:02:13Z\", \"measurement_subject\": \"gasmeter\", \"measurement_of\": \"import_standingcharge\", \"measurement_value\": 0.3203, \"measurement_data_type\": \"number\", \"correlation_id\": \"2022-12-26T15:03:26.822000-1438\"}]"
+  }
+
+}

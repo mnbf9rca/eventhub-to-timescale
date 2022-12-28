@@ -24,8 +24,8 @@ def homie_to_timescale(
         "mode",
         "thermostat-setpoint",
     ]
-    lastpart = topic.split("/")[-1]
-    if lastpart not in events_of_interest:
+    measurement_of = topic.split("/")[-1]
+    if measurement_of not in events_of_interest:
         return
     correlation_id = f"{event.enqueued_time.isoformat()}-{event.sequence_number}"
     # convert the message to a json object
@@ -33,10 +33,10 @@ def homie_to_timescale(
         create_atomic_record(
             source_timestamp=messagebody["timestamp"],
             measurement_subject=publisher,
-            measurement_of=lastpart,
+            measurement_of=measurement_of,
             measurement_value=messagebody["payload"],
             measurement_data_type=PayloadType.STRING
-            if lastpart in ["state", "mode"]
+            if measurement_of in ["state", "mode"]
             else PayloadType.NUMBER,
             correlation_id=correlation_id,
         )
