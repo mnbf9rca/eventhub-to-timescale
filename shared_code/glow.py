@@ -7,7 +7,6 @@ from .timeseries import create_record_recursive
 from .helpers import to_datetime
 
 
-
 def glow_to_timescale(
     event: EventHubEvent,
     messagebody: dict,

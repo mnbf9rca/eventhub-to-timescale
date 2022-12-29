@@ -1,9 +1,6 @@
-import json
 from typing import List
 from datetime import datetime
 from dateutil import parser
-import logging
-
 
 
 def is_topic_of_interest(topic: str, events_of_interest: List[str]):
@@ -36,7 +33,9 @@ def to_datetime(timestamp: str) -> str:
         # check that it's in the max and min range for a timestamp
         if timestamp_float > 253402300799 or timestamp_float < 0:
             raise ValueError("timestamp is not in a recognisable format: %s", timestamp)
-        return datetime.fromtimestamp(float(timestamp)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        return datetime.fromtimestamp(float(timestamp)).strftime(
+            "%Y-%m-%dT%H:%M:%S.%fZ"
+        )
     except ValueError:
         pass
     except Exception as e:

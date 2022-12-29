@@ -16,7 +16,7 @@ from shared_code import (  # noqa E402
     get_record_type,
     PayloadType,
     create_record_recursive,
-    to_datetime
+    to_datetime,
 )
 
 # import test data
@@ -213,15 +213,16 @@ class Test_Helpers:
                 "ignore_keys": None,
                 "measurement_of_prefix": None,
             }
-            expected_value = [{
-                "timestamp": test_data["timestamp"],
-                "measurement_subject": test_data["measurement_subject"],
-                "measurement_of": "a",
-                "measurement_value": 1,
-                "measurement_data_type": PayloadType.NUMBER.value,
-                "correlation_id": "123",
-            }]
-            # payload: dict, records: List[dict[str, Any]], timestamp: str, correlation_id: str, measurement_subject: str, ignore_keys: list = None, measurement_of_prefix: str = None
+            expected_value = [
+                {
+                    "timestamp": test_data["timestamp"],
+                    "measurement_subject": test_data["measurement_subject"],
+                    "measurement_of": "a",
+                    "measurement_value": 1,
+                    "measurement_data_type": PayloadType.NUMBER.value,
+                    "correlation_id": "123",
+                }
+            ]
             actual_value = create_record_recursive(
                 test_data["payload"],
                 records,
@@ -233,7 +234,7 @@ class Test_Helpers:
             )
             for actual, expected in zip(actual_value, expected_value):
                 TestCase().assertDictEqual(actual, expected)
-        
+
         def test_create_record_recursive_with_empty_payload(self):
             records = []
             test_data = {
@@ -267,23 +268,24 @@ class Test_Helpers:
                 "ignore_keys": None,
                 "measurement_of_prefix": None,
             }
-            expected_value = [{
-                "timestamp": test_data["timestamp"],
-                "measurement_subject": test_data["measurement_subject"],
-                "measurement_of": "a",
-                "measurement_value": 1,
-                "measurement_data_type": PayloadType.NUMBER.value,
-                "correlation_id": "123",
-            },
-            {
-                "timestamp": test_data["timestamp"],
-                "measurement_subject": test_data["measurement_subject"],
-                "measurement_of": "b",
-                "measurement_value": 2,
-                "measurement_data_type": PayloadType.NUMBER.value,
-                "correlation_id": "123",
-            }]
-            # payload: dict, records: List[dict[str, Any]], timestamp: str, correlation_id: str, measurement_subject: str, ignore_keys: list = None, measurement_of_prefix: str = None
+            expected_value = [
+                {
+                    "timestamp": test_data["timestamp"],
+                    "measurement_subject": test_data["measurement_subject"],
+                    "measurement_of": "a",
+                    "measurement_value": 1,
+                    "measurement_data_type": PayloadType.NUMBER.value,
+                    "correlation_id": "123",
+                },
+                {
+                    "timestamp": test_data["timestamp"],
+                    "measurement_subject": test_data["measurement_subject"],
+                    "measurement_of": "b",
+                    "measurement_value": 2,
+                    "measurement_data_type": PayloadType.NUMBER.value,
+                    "correlation_id": "123",
+                },
+            ]
             actual_value = create_record_recursive(
                 test_data["payload"],
                 records,
@@ -294,7 +296,7 @@ class Test_Helpers:
                 test_data["measurement_of_prefix"],
             )
             for actual, expected in zip(actual_value, expected_value):
-                TestCase().assertDictEqual(actual, expected)      
+                TestCase().assertDictEqual(actual, expected)
 
         def test_create_record_recursive_with_dict_of_payloads_ignoring_one(self):
             records = []
@@ -306,15 +308,16 @@ class Test_Helpers:
                 "ignore_keys": ["a"],
                 "measurement_of_prefix": None,
             }
-            expected_value = [{
-                "timestamp": test_data["timestamp"],
-                "measurement_subject": test_data["measurement_subject"],
-                "measurement_of": "b",
-                "measurement_value": 2,
-                "measurement_data_type": PayloadType.NUMBER.value,
-                "correlation_id": "123",
-            }]
-            # payload: dict, records: List[dict[str, Any]], timestamp: str, correlation_id: str, measurement_subject: str, ignore_keys: list = None, measurement_of_prefix: str = None
+            expected_value = [
+                {
+                    "timestamp": test_data["timestamp"],
+                    "measurement_subject": test_data["measurement_subject"],
+                    "measurement_of": "b",
+                    "measurement_value": 2,
+                    "measurement_data_type": PayloadType.NUMBER.value,
+                    "correlation_id": "123",
+                }
+            ]
             actual_value = create_record_recursive(
                 test_data["payload"],
                 records,
@@ -325,9 +328,11 @@ class Test_Helpers:
                 test_data["measurement_of_prefix"],
             )
             for actual, expected in zip(actual_value, expected_value):
-                TestCase().assertDictEqual(actual, expected)    
+                TestCase().assertDictEqual(actual, expected)
 
-        def test_create_record_recursive_with_dict_of_payloads_and_measurement_prefix(self):
+        def test_create_record_recursive_with_dict_of_payloads_and_measurement_prefix(
+            self,
+        ):
             records = []
             test_data = {
                 "payload": {"a": 1, "b": 2},
@@ -337,23 +342,24 @@ class Test_Helpers:
                 "ignore_keys": None,
                 "measurement_of_prefix": "prefix",
             }
-            expected_value = [{
-                "timestamp": test_data["timestamp"],
-                "measurement_subject": test_data["measurement_subject"],
-                "measurement_of": "prefix_a",
-                "measurement_value": 1,
-                "measurement_data_type": PayloadType.NUMBER.value,
-                "correlation_id": "123",
-            },
-            {
-                "timestamp": test_data["timestamp"],
-                "measurement_subject": test_data["measurement_subject"],
-                "measurement_of": "prefix_b",
-                "measurement_value": 2,
-                "measurement_data_type": PayloadType.NUMBER.value,
-                "correlation_id": "123",
-            }]
-            # payload: dict, records: List[dict[str, Any]], timestamp: str, correlation_id: str, measurement_subject: str, ignore_keys: list = None, measurement_of_prefix: str = None
+            expected_value = [
+                {
+                    "timestamp": test_data["timestamp"],
+                    "measurement_subject": test_data["measurement_subject"],
+                    "measurement_of": "prefix_a",
+                    "measurement_value": 1,
+                    "measurement_data_type": PayloadType.NUMBER.value,
+                    "correlation_id": "123",
+                },
+                {
+                    "timestamp": test_data["timestamp"],
+                    "measurement_subject": test_data["measurement_subject"],
+                    "measurement_of": "prefix_b",
+                    "measurement_value": 2,
+                    "measurement_data_type": PayloadType.NUMBER.value,
+                    "correlation_id": "123",
+                },
+            ]
             actual_value = create_record_recursive(
                 test_data["payload"],
                 records,
@@ -378,7 +384,7 @@ class Test_Helpers:
             expected_value = "2021-01-01T00:00:00.000000Z"
             actual_value = to_datetime(test_data)
             TestCase().assertEqual(actual_value, expected_value)
-        
+
         def test_to_datetime_with_string_with_ms_no_tz(self):
             test_data = "2021-01-01T00:00:00.123"
             expected_value = "2021-01-01T00:00:00.123000Z"
@@ -396,7 +402,7 @@ class Test_Helpers:
             expected_value = "2021-01-01T00:00:00.000000Z"
             actual_value = to_datetime(test_data)
             TestCase().assertEqual(actual_value, expected_value)
-        
+
         def test_to_datetime_with_timestamp_with_ms(self):
             test_data = 1609459200.123
             expected_value = "2021-01-01T00:00:00.123000Z"
@@ -430,7 +436,6 @@ class Test_Helpers:
             with pytest.raises(Exception):
                 to_datetime(test_data)
 
-                
 
 if __name__ == "__main__":
     pytest.main()
