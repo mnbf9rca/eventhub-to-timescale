@@ -90,13 +90,19 @@ def create_record_recursive(
 
 
 def get_record_type(payload):
+    """Gets the type of the payload and maps it to the PayloadType enum
+       This is important as we store different types of data in different columns
+         in the database
+    Args:
+        payload (Any): payload of the record to be parsed
+    Returns:
+        PayloadType: type of the payload
+    """
     if isinstance(payload, str):
         return PayloadType.STRING
-    elif isinstance(payload, int):
-        return PayloadType.NUMBER
-    elif isinstance(payload, float):
-        return PayloadType.NUMBER
-    elif isinstance(payload, bool):
+    elif type(payload) == type(True): # bool is a subclass of int so this must be checked first
         return PayloadType.BOOLEAN
+    elif isinstance(payload, (int, float)):
+        return PayloadType.NUMBER
     else:
-        return None
+        raise TypeError(f"Unknown type {type(payload)}")

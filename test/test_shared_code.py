@@ -14,6 +14,8 @@ from shared_code import (  # noqa E402
     is_topic_of_interest,
     glow_to_timescale,
     homie_to_timescale,
+    get_record_type,
+    PayloadType
 )
 
 # import test data
@@ -155,6 +157,42 @@ class Test_Helpers:
             actual_value = recursive_json_parser('{"a": [{"b": 1}, {"c": 2}, "d"]}')
             assert actual_value == {"a": [{"b": 1}, {"c": 2}, "d"]}
 
+    class Test_get_record_type:
+        def test_get_record_type_with_string(self):
+            actual_value = get_record_type("a string")
+            assert actual_value == PayloadType.STRING
+        
+        def test_get_record_type_with_int(self):
+            actual_value = get_record_type(1)
+            assert actual_value == PayloadType.NUMBER
+
+        def test_get_record_type_with_float(self):
+            actual_value = get_record_type(1.1)
+            assert actual_value == PayloadType.NUMBER
+
+        def test_get_record_type_with_none(self):
+            with pytest.raises(Exception):
+                get_record_type(None)
+
+        def test_get_record_type_with_empty_string(self):
+            actual_value = get_record_type("")
+            assert actual_value == PayloadType.STRING
+        
+        def test_get_record_type_with_boolean(self):
+            actual_value = get_record_type(True)
+            assert actual_value == PayloadType.BOOLEAN
+
+        def test_get_record_type_with_dict(self):
+            with pytest.raises(Exception):
+                get_record_type({"a": 1})
+
+        def test_get_record_type_with_list(self):
+            with pytest.raises(Exception):
+                get_record_type(["a", 1])
+
+        
+        
+        
 
 if __name__ == "__main__":
     pytest.main()
