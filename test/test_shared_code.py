@@ -409,6 +409,12 @@ class Test_Helpers:
             actual_value = to_datetime(test_data)
             TestCase().assertEqual(actual_value, expected_value)
 
+        def test_to_datetime_with_an_very_precise_timestamp(self):
+            test_data = 1609459200.123456789
+            expected_value = "2021-01-01T00:00:00.123457Z"
+            actual_value = to_datetime(test_data)
+            TestCase().assertEqual(actual_value, expected_value)
+
         def test_to_datetime_with_an_incompatible_string(self):
             test_data = "lemon"
             with pytest.raises(Exception):
