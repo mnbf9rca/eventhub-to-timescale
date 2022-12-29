@@ -16,6 +16,7 @@ from shared_code import (  # noqa E402
     get_record_type,
     PayloadType,
     create_record_recursive,
+    to_datetime
 )
 
 # import test data
@@ -364,6 +365,72 @@ class Test_Helpers:
             )
             for actual, expected in zip(actual_value, expected_value):
                 TestCase().assertDictEqual(actual, expected)
+
+    class Test_to_datetime:
+        def test_to_datetime_with_string_no_ms_no_tz(self):
+            test_data = "2021-01-01T00:00:00"
+            expected_value = "2021-01-01T00:00:00.000000Z"
+            actual_value = to_datetime(test_data)
+            TestCase().assertEqual(actual_value, expected_value)
+
+        def test_to_datetime_with_string_no_ms_with_tz(self):
+            test_data = "2021-01-01T00:00:00+00:00"
+            expected_value = "2021-01-01T00:00:00.000000Z"
+            actual_value = to_datetime(test_data)
+            TestCase().assertEqual(actual_value, expected_value)
+        
+        def test_to_datetime_with_string_with_ms_no_tz(self):
+            test_data = "2021-01-01T00:00:00.123"
+            expected_value = "2021-01-01T00:00:00.123000Z"
+            actual_value = to_datetime(test_data)
+            TestCase().assertEqual(actual_value, expected_value)
+
+        def test_to_datetime_with_string_with_ms_with_tz(self):
+            test_data = "2021-01-01T00:00:00.123+00:00"
+            expected_value = "2021-01-01T00:00:00.123000Z"
+            actual_value = to_datetime(test_data)
+            TestCase().assertEqual(actual_value, expected_value)
+
+        def test_to_datetime_with_timestamp_no_ms(self):
+            test_data = 1609459200
+            expected_value = "2021-01-01T00:00:00.000000Z"
+            actual_value = to_datetime(test_data)
+            TestCase().assertEqual(actual_value, expected_value)
+        
+        def test_to_datetime_with_timestamp_with_ms(self):
+            test_data = 1609459200.123
+            expected_value = "2021-01-01T00:00:00.123000Z"
+            actual_value = to_datetime(test_data)
+            TestCase().assertEqual(actual_value, expected_value)
+
+        def test_to_datetime_with_just_a_date(self):
+            test_data = "2021-01-01"
+            expected_value = "2021-01-01T00:00:00.000000Z"
+            actual_value = to_datetime(test_data)
+            TestCase().assertEqual(actual_value, expected_value)
+
+        def test_to_datetime_with_an_very_precise_timestamp(self):
+            test_data = 1609459200.123456789
+            expected_value = "2021-01-01T00:00:00.123457Z"
+            actual_value = to_datetime(test_data)
+            TestCase().assertEqual(actual_value, expected_value)
+
+        def test_to_datetime_with_an_incompatible_string(self):
+            test_data = "lemon"
+            with pytest.raises(Exception):
+                to_datetime(test_data)
+
+        def test_to_datetime_with_an_incompatible_dict(self):
+            test_data = {"a": 1}
+            with pytest.raises(Exception):
+                to_datetime(test_data)
+
+        def test_to_datetime_with_an_incompatible_int(self):
+            test_data = -1
+            with pytest.raises(Exception):
+                to_datetime(test_data)
+
+                
 
 if __name__ == "__main__":
     pytest.main()
