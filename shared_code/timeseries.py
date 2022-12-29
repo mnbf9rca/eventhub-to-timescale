@@ -60,7 +60,7 @@ def create_record_recursive(
         dict: record in the format expected by TimescaleDB
     """
     # if the payload is None or empty, return an empty list
-    if payload is None or len(payload) == 0:
+    if payload is None or not payload:
         return records
     for key in payload:
         if ignore_keys is None or key not in ignore_keys:
