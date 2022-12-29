@@ -28,8 +28,7 @@ def create_atomic_record(
     Returns:
         dict: record in the format expected by TimescaleDB
     """
-    # TODO create a class for this return type
-    tsr = {
+    return {
         "timestamp": source_timestamp,
         "measurement_subject": measurement_subject,
         "measurement_of": measurement_of,
@@ -37,12 +36,11 @@ def create_atomic_record(
         "measurement_data_type": measurement_data_type.value,
         "correlation_id": correlation_id,
     }
-    return tsr
 
 
 def create_record_recursive(
     payload: dict,
-    records: List[dict[str, Any]],
+    records: List,
     timestamp: str,
     correlation_id: str,
     measurement_subject: str,
@@ -61,6 +59,9 @@ def create_record_recursive(
     Returns:
         dict: record in the format expected by TimescaleDB
     """
+    # if the payload is None or empty, return an empty list
+    if payload is None or not payload:
+        return records
     for key in payload:
         if ignore_keys is None or key not in ignore_keys:
             if isinstance(payload[key], dict):
@@ -90,13 +91,19 @@ def create_record_recursive(
 
 
 def get_record_type(payload):
+    """Gets the type of the payload and maps it to the PayloadType enum
+       This is important as we store different types of data in different columns
+         in the database
+    Args:
+        payload (Any): payload of the record to be parsed
+    Returns:
+        PayloadType: type of the payload
+    """
     if isinstance(payload, str):
         return PayloadType.STRING
-    elif isinstance(payload, int):
-        return PayloadType.NUMBER
-    elif isinstance(payload, float):
-        return PayloadType.NUMBER
-    elif isinstance(payload, bool):
+    elif type(payload) == type(True): # bool is a subclass of int so this must be checked first
         return PayloadType.BOOLEAN
+    elif isinstance(payload, (int, float)):
+        return PayloadType.NUMBER
     else:
-        return None
+        raise TypeError(f"Unknown type {type(payload)}")
