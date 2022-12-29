@@ -4,7 +4,7 @@ from typing import Any, List
 from azure.functions import EventHubEvent
 
 from .timeseries import create_record_recursive
-from .helpers import is_topic_of_interest
+from .helpers import is_topic_of_interest, to_datetime
 
 
 def emon_to_timescale(
@@ -22,9 +22,9 @@ def emon_to_timescale(
     measurement_subject = is_topic_of_interest(topic, events_of_interest)
     if measurement_subject is None:
         return
-    # this timestemap is wrong - need to use the one in the messsage_payload
-    timestamp = messagebody["timestamp"]
     message_payload = json.loads(messagebody["payload"])
+    # the timestamp is in the message payload
+    timestamp = to_datetime(message_payload["time"])
     correlation_id = f"{event.enqueued_time.isoformat()}-{event.sequence_number}"
     # for these messages, we need to construct an array of records, one for each value
     records = []
