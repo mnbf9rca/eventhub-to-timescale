@@ -101,7 +101,10 @@ def get_record_type(payload):
     """
     if isinstance(payload, str):
         return PayloadType.STRING
-    elif type(payload) == type(True): # bool is a subclass of int so this must be checked first
+    elif type(payload) == type(True):  # noqa E721.
+        # bool is a subclass of int so this must be checked first.
+        # Also can't use isinstance as bool is a subclass of int
+        # so it can give false positives
         return PayloadType.BOOLEAN
     elif isinstance(payload, (int, float)):
         return PayloadType.NUMBER

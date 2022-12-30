@@ -1,11 +1,11 @@
 import json
 from typing import Any, List
+from datetime import datetime
 
 from azure.functions import EventHubEvent
 
 from .timeseries import create_record_recursive
-from .helpers import to_datetime
-
+from .helpers import to_datetime, create_correlation_id
 
 
 def glow_to_timescale(
@@ -31,7 +31,7 @@ def glow_to_timescale(
     # convert the message to a json object
     message_payload = json.loads(messagebody["payload"])
     timestamp = to_datetime(message_payload[measurement_subject]["timestamp"])
-    correlation_id = f"{event.enqueued_time.isoformat()}-{event.sequence_number}"
+    correlation_id = create_correlation_id(event)
     # for these messages, we need to construct an array of records, one for each value
     records = []
     # ignore text fields which we dont care about:
