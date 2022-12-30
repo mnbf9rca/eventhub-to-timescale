@@ -378,48 +378,56 @@ class Test_Helpers:
             expected_value = "2021-01-01T00:00:00.000000Z"
             actual_value = to_datetime(test_data)
             TestCase().assertEqual(actual_value, expected_value)
+            TestCase().assertIs(type(actual_value), str)
 
         def test_to_datetime_with_string_no_ms_with_tz(self):
             test_data = "2021-01-01T00:00:00+00:00"
             expected_value = "2021-01-01T00:00:00.000000Z"
             actual_value = to_datetime(test_data)
             TestCase().assertEqual(actual_value, expected_value)
+            TestCase().assertIs(type(actual_value), str)
 
         def test_to_datetime_with_string_with_ms_no_tz(self):
             test_data = "2021-01-01T00:00:00.123"
             expected_value = "2021-01-01T00:00:00.123000Z"
             actual_value = to_datetime(test_data)
             TestCase().assertEqual(actual_value, expected_value)
+            TestCase().assertIs(type(actual_value), str)
 
         def test_to_datetime_with_string_with_ms_with_tz(self):
             test_data = "2021-01-01T00:00:00.123+00:00"
             expected_value = "2021-01-01T00:00:00.123000Z"
             actual_value = to_datetime(test_data)
             TestCase().assertEqual(actual_value, expected_value)
+            TestCase().assertIs(type(actual_value), str)
 
         def test_to_datetime_with_timestamp_no_ms(self):
             test_data = 1609459200
             expected_value = "2021-01-01T00:00:00.000000Z"
             actual_value = to_datetime(test_data)
             TestCase().assertEqual(actual_value, expected_value)
+            TestCase().assertIs(type(actual_value), str)
 
         def test_to_datetime_with_timestamp_with_ms(self):
             test_data = 1609459200.123
             expected_value = "2021-01-01T00:00:00.123000Z"
             actual_value = to_datetime(test_data)
             TestCase().assertEqual(actual_value, expected_value)
+            TestCase().assertIs(type(actual_value), str)
 
         def test_to_datetime_with_just_a_date(self):
             test_data = "2021-01-01"
             expected_value = "2021-01-01T00:00:00.000000Z"
             actual_value = to_datetime(test_data)
             TestCase().assertEqual(actual_value, expected_value)
+            TestCase().assertIs(type(actual_value), str)
 
         def test_to_datetime_with_an_very_precise_timestamp(self):
             test_data = 1609459200.123456789
             expected_value = "2021-01-01T00:00:00.123457Z"
             actual_value = to_datetime(test_data)
             TestCase().assertEqual(actual_value, expected_value)
+            TestCase().assertIs(type(actual_value), str)
 
         def test_to_datetime_with_an_incompatible_string(self):
             test_data = "lemon"
@@ -435,6 +443,11 @@ class Test_Helpers:
             test_data = -1
             with pytest.raises(Exception):
                 to_datetime(test_data)
+
+        def test_to_datetime_check_type(self):
+            test_data = "2021-01-01T00:00:00"
+            actual_value = to_datetime(test_data)
+            TestCase().assertIs(type(actual_value), str)
 
 
 if __name__ == "__main__":
