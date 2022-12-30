@@ -5,7 +5,7 @@ from unittest import TestCase
 import pytest
 from get_test_data import create_event_hub_event, load_test_data
 from azure.functions import EventHubEvent
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 # add the shared_code directory to the path
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
