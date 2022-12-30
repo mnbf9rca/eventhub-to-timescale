@@ -52,7 +52,7 @@ def get_test_data(test_name: str):
 
 
 class Test_send_to_converter:
-    def test_parse_message_glow_electricitymeter(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
+    def test_send_to_converter_glow_electricitymeter(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
         caplog.set_level(logging.DEBUG)
         test_event, messagebody, topic, publisher = get_test_data("glow_electricitymeter")
         spy_glow_to_timescale, spy_homie_to_timescale, spy_emon_to_timescale = get_spies(mocker)
@@ -61,7 +61,7 @@ class Test_send_to_converter:
         assert spy_homie_to_timescale.call_count == 0
         assert spy_emon_to_timescale.call_count == 0
 
-    def test_parse_message_glow_gasmeter(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
+    def test_send_to_converter_glow_gasmeter(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
         caplog.set_level(logging.DEBUG)
         test_event, messagebody, topic, publisher = get_test_data("glow_gasmeter")
         spy_glow_to_timescale, spy_homie_to_timescale, spy_emon_to_timescale = get_spies(mocker)
@@ -71,7 +71,7 @@ class Test_send_to_converter:
         assert spy_emon_to_timescale.call_count == 0
 
 
-    def test_parse_message_homie_mode(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
+    def test_send_to_converter_homie_mode(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
         caplog.set_level(logging.DEBUG)
         test_event, messagebody, topic, publisher = get_test_data("homie_mode")
         spy_glow_to_timescale, spy_homie_to_timescale, spy_emon_to_timescale = get_spies(mocker)
@@ -80,7 +80,7 @@ class Test_send_to_converter:
         assert spy_homie_to_timescale.call_count == 1
         assert spy_emon_to_timescale.call_count == 0
 
-    def test_parse_message_homie_measure_temperature(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
+    def test_send_to_converter_homie_measure_temperature(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
         caplog.set_level(logging.DEBUG)
         test_event, messagebody, topic, publisher = get_test_data("homie_measure_temperature")
         spy_glow_to_timescale, spy_homie_to_timescale, spy_emon_to_timescale = get_spies(mocker)
@@ -89,7 +89,7 @@ class Test_send_to_converter:
         assert spy_homie_to_timescale.call_count == 1
         assert spy_emon_to_timescale.call_count == 0
 
-    def test_parse_message_emontx4_json(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
+    def test_send_to_converter_emontx4_json(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
         caplog.set_level(logging.DEBUG)
         test_event, messagebody, topic, publisher = get_test_data("emontx4_json")
         spy_glow_to_timescale, spy_homie_to_timescale, spy_emon_to_timescale = get_spies(mocker)
@@ -98,7 +98,7 @@ class Test_send_to_converter:
         assert spy_homie_to_timescale.call_count == 0
         assert spy_emon_to_timescale.call_count == 1
 
-    def test_parse_message_unknown_publisher(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
+    def test_send_to_converter_unknown_publisher(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
         caplog.set_level(logging.DEBUG)
         test_event, messagebody, topic, publisher = get_test_data("glow_electricitymeter")
         publisher = "abc"
@@ -110,28 +110,64 @@ class Test_send_to_converter:
         assert spy_emon_to_timescale.call_count == 0
         assert "Unknown publisher: abc" in caplog.text
 
+
 class Test_parse_message:
     def test_parse_message_calls_send_to_converter(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
         caplog.set_level(logging.DEBUG)
-        test_event, messagebody, topic, publisher = get_test_data("glow_electricitymeter")
-        mocked_spy_send_to_converter = mocker.patch("json_to_timeseries.send_to_converter",  autospec=True)
+        test_event, _, _, _ = get_test_data("glow_electricitymeter")
+        mocked_send_to_converter = mocker.patch("json_to_timeseries.send_to_converter",  autospec=True)
         return_value = [{"measurement": "test", "tags": {"tag1": "value1"}, "fields": {"field1": 1}}]
-        mocked_spy_send_to_converter.return_value = return_value
+        mocked_send_to_converter.return_value = return_value
         expected_value = [json.dumps(p) for p in return_value]
         actual_value = parse_message(test_event)
         assert actual_value == expected_value
-        assert mocked_spy_send_to_converter.call_count == 1
+        assert mocked_send_to_converter.call_count == 1
 
     def test_parse_message_calls_send_to_converter_which_returns_two_items(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
         caplog.set_level(logging.DEBUG)
-        test_event, messagebody, topic, publisher = get_test_data("glow_electricitymeter")
-        mocked_spy_send_to_converter = mocker.patch("json_to_timeseries.send_to_converter",  autospec=True)
+        test_event, _, _, _ = get_test_data("glow_electricitymeter")
+        mocked_send_to_converter = mocker.patch("json_to_timeseries.send_to_converter",  autospec=True)
         return_value = [{"measurement": "test", "tags": {"tag1": "value1"}, "fields": {"field1": 1}}, {"measurement": "test2", "tags": {"tag2": "value2"}, "fields": {"field2": 2}}]
-        mocked_spy_send_to_converter.return_value = return_value
+        mocked_send_to_converter.return_value = return_value
         expected_value = [json.dumps(p) for p in return_value]
         actual_value = parse_message(test_event)
         assert actual_value == expected_value
-        assert mocked_spy_send_to_converter.call_count == 1
+        assert mocked_send_to_converter.call_count == 1
+
+    def test_parse_message_calls_send_to_converter_which_returns_no_items(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
+        caplog.set_level(logging.DEBUG)
+        test_event, _, _, _ = get_test_data("glow_electricitymeter")
+        mocked_send_to_converter = mocker.patch("json_to_timeseries.send_to_converter",  autospec=True)
+        return_value = []
+        mocked_send_to_converter.return_value = return_value
+        expected_value = return_value  # should be []
+        actual_value = parse_message(test_event)
+        assert actual_value == expected_value
+        assert mocked_send_to_converter.call_count == 1
+
+    def test_parse_message_calls_send_to_converter_where_extract_topic_errors(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
+        caplog.set_level(logging.DEBUG)
+        test_event, _, _, _ = get_test_data("glow_electricitymeter")
+        mocked_send_to_converter = mocker.patch("json_to_timeseries.send_to_converter",  autospec=True)
+        mocked_send_to_converter.side_effect = []
+        mocked_extract_topic = mocker.patch("json_to_timeseries.extract_topic",  autospec=True)
+        exception_text = "test_raising_exception"
+        mocked_extract_topic.side_effect = Exception(exception_text)
+        with pytest.raises(Exception):
+            parse_message(test_event)
+        assert mocked_send_to_converter.call_count == 0
+        assert exception_text in caplog.text
+
+    def test_parse_message_where_send_to_converter_errors(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
+        caplog.set_level(logging.DEBUG)
+        test_event, _, _, _ = get_test_data("glow_electricitymeter")
+        mocked_send_to_converter = mocker.patch("json_to_timeseries.send_to_converter",  autospec=True)
+        exception_text = "test_raising_exception"
+        mocked_send_to_converter.side_effect = Exception(exception_text)
+        with pytest.raises(Exception):
+            parse_message(test_event)
+        assert mocked_send_to_converter.call_count == 1
+        assert exception_text in caplog.text       
 
 
 class Test_main:

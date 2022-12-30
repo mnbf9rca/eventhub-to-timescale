@@ -23,7 +23,7 @@ def parse_message(event: func.EventHubEvent):
         topic, publisher = extract_topic(o_messagebody)
     except Exception as e:
         logging.error(f"Error parsing message: {e}")
-        return
+        raise
 
     try:
         payload: List[dict[str, Any]] = send_to_converter(
@@ -31,11 +31,10 @@ def parse_message(event: func.EventHubEvent):
         )
     except Exception as e:
         logging.error(f"Error converting message: {e}")
-        return
+        raise
 
-    if payload is not None:
-        logging.info(f"Payload: {payload}")
-        return [json.dumps(p) for p in payload]
+    logging.info(f"Payload: {payload}")
+    return [json.dumps(p) for p in payload]
 
 
 def send_to_converter(
