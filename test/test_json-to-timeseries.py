@@ -1,6 +1,4 @@
-from typing import Any
 import pytest
-import mock
 import json
 # from unittest import mock
 import pytest_mock
@@ -12,15 +10,15 @@ import azure.functions as func
 
 
 from azure.functions import EventHubEvent
-from test_data import create_event_hub_event, load_test_data, recursive_json_parser
+from test_data import create_event_hub_event, load_test_data
 
 
 # add the shared_code directory to the path
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
-import json_to_timeseries
+import json_to_timeseries  # noqa: E402
 from shared_code import glow, homie, emon
-from json_to_timeseries import parse_message, send_to_converter, extract_topic as jts_extract_topic
+from json_to_timeseries import main, parse_message, send_to_converter, extract_topic as jts_extract_topic  # noqa: E402
 
 # import test data
 test_data = load_test_data()
@@ -46,7 +44,7 @@ def get_spies(mocker: pytest_mock.MockFixture):
     return spy_glow_to_timescale, spy_homie_to_timescale, spy_emon_to_timescale
 
 def get_test_data(test_name: str):
-    """Get the test data for a test
+    """Get the test data for a test specified by name
     @param test_name: the name of the test
     @return: the test data
     """
@@ -138,4 +136,60 @@ class Test_parse_message:
         actual_value = parse_message(test_event)
         assert actual_value == expected_value
         assert mocked_spy_send_to_converter.call_count == 1
-        
+
+
+class Test_main:
+    def test_main_calls_parse_message_with_five_records(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
+        caplog.set_level(logging.DEBUG)
+        test_events = ["homie_heartbeat", "homie_mode", "homie_measure_temperature", "emontx4_json", "glow_electricitymeter"]
+        test_event_array = [get_test_data(key)[0] for key in test_events]
+        mocked_parse_message = mocker.patch("json_to_timeseries.parse_message",  autospec=True)
+        return_value = ["test1", "test2", "test3", "test4", "test5"]
+        mocked_parse_message.side_effect = return_value
+        actual_value = main(test_event_array)
+        assert mocked_parse_message.call_count == 5
+        assert actual_value == return_value
+
+    def test_main_calls_parse_message_with_one_record(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
+        caplog.set_level(logging.DEBUG)
+        test_events = ["homie_heartbeat"]
+        test_event_array = [get_test_data(key)[0] for key in test_events]
+        mocked_parse_message = mocker.patch("json_to_timeseries.parse_message",  autospec=True)
+        return_value = ["test1"]
+        mocked_parse_message.side_effect = return_value
+        actual_value = main(test_event_array)
+        assert mocked_parse_message.call_count == 1
+        assert actual_value == return_value
+
+    def test_main_calls_parse_message_with_no_records(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
+        caplog.set_level(logging.DEBUG)
+        test_events = []
+        test_event_array = [get_test_data(key)[0] for key in test_events]
+        mocked_parse_message = mocker.patch("json_to_timeseries.parse_message",  autospec=True)
+        return_value = []
+        mocked_parse_message.side_effect = return_value
+        actual_value = main(test_event_array)
+        assert mocked_parse_message.call_count == 0
+        assert actual_value == return_value
+
+    def test_main_calls_parse_message_with_one_record_and_one_error(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
+        caplog.set_level(logging.DEBUG)
+        test_events = ["homie_heartbeat", "homie_mode"]
+        test_event_array = [get_test_data(key)[0] for key in test_events]
+        mocked_parse_message = mocker.patch("json_to_timeseries.parse_message",  autospec=True)
+        return_value = ["test1", None]
+        mocked_parse_message.side_effect = return_value
+        actual_value = main(test_event_array)
+        assert mocked_parse_message.call_count == 2
+        assert actual_value == [return_value[0]]
+
+    def test_main_calls_parse_message_with_two_errors(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
+        caplog.set_level(logging.DEBUG)
+        test_events = ["homie_heartbeat", "homie_mode"]
+        test_event_array = [get_test_data(key)[0] for key in test_events]
+        mocked_parse_message = mocker.patch("json_to_timeseries.parse_message",  autospec=True)
+        return_value = [None, None]
+        mocked_parse_message.side_effect = return_value
+        actual_value = main(test_event_array)
+        assert mocked_parse_message.call_count == 2
+        assert actual_value == []
