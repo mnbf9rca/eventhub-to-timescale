@@ -1,5 +1,6 @@
 from unittest import TestCase
 import pytest
+import pytest_mock
 import datetime
 import json
 from azure.functions import EventHubEvent
@@ -229,3 +230,38 @@ class Test_create_event_hub_event:
             json.loads(actual_value.get_body().decode("UTF-8")),
             json.loads(actual_value.get_body().decode("UTF-8")),
         )
+
+
+class Test_load_test_data:
+    def test_load_test_data_returns_dict(self, mocker: pytest_mock.MockerFixture):
+        test_data = {"a": 1, "b": 2}
+        mocked_open = mocker.mock_open(read_data=json.dumps(test_data))
+        builtin_open = "builtins.open"
+        mocker.patch(builtin_open, mocked_open)
+        actual_value = load_test_data()
+        assert isinstance(actual_value, dict)
+        TestCase().assertDictEqual(actual_value, test_data)
+
+    def test_load_test_data_throws_error_if_file_not_found(
+        self, mocker: pytest_mock.MockerFixture
+    ):
+        mocked_open = mocker.mock_open()
+        builtin_open = "builtins.open"
+        mocker.patch(builtin_open, mocked_open)
+        mocked_open.side_effect = FileNotFoundError
+        with pytest.raises(FileNotFoundError):
+            load_test_data()
+
+    def test_load_test_data_returns_dict_for_doubly_dumped_json(
+        self, mocker: pytest_mock.MockerFixture
+    ):
+        sub_test_data = {"d": 3, "e": 4}
+        test_data = {"a": 1, "b": 2, "c": json.dumps(sub_test_data)}
+
+        mocked_open = mocker.mock_open(read_data=json.dumps(test_data))
+        builtin_open = "builtins.open"
+        mocker.patch(builtin_open, mocked_open)
+        expected_value = {"a": 1, "b": 2, "c": {"d": 3, "e": 4}}
+        actual_value = load_test_data()
+        assert isinstance(actual_value, dict)
+        TestCase().assertDictEqual(actual_value, expected_value)
