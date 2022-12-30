@@ -6,10 +6,6 @@ import os
 import sys
 import logging
 
-import azure.functions as func
-
-
-from azure.functions import EventHubEvent
 from test_data import create_event_hub_event, load_test_data
 
 
@@ -17,20 +13,20 @@ from test_data import create_event_hub_event, load_test_data
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 import json_to_timeseries  # noqa: E402
-from shared_code import glow, homie, emon
-from json_to_timeseries import main, parse_message, send_to_converter, extract_topic as jts_extract_topic  # noqa: E402
+from json_to_timeseries import main, parse_message, send_to_converter, extract_topic  # noqa: E402
 
 # import test data
 test_data = load_test_data()
 
-def extract_topic(messagebody: dict) -> tuple[str, str]:
-    """Extract the topic and publisher from the message body
+def jts_test_extract_topic(messagebody: dict) -> tuple[str, str]:
+    """(in test_json_to_timeseries)
+    Extract the topic and publisher from the message body
     @param messagebody: the message body
     @return: the topic and publisher
     """
-    topic: str = messagebody["topic"]
+    topic: str = messagebody.get("topic")
     # the publisher is the first characters to the left of the first /
-    publisher = topic.split("/")[0]
+    publisher = topic.split("/")[0] if topic else None
     return topic, publisher
 
 def get_spies(mocker: pytest_mock.MockFixture):
@@ -51,7 +47,7 @@ def get_test_data(test_name: str):
     test_data_item = test_data[test_name]
     test_event = create_event_hub_event(test_data_item["properties"])
     messagebody = test_data_item["properties"]["body"]
-    topic, publisher = extract_topic(messagebody)
+    topic, publisher = jts_test_extract_topic(messagebody)
     return test_event, messagebody, topic, publisher
 
 
@@ -208,62 +204,69 @@ class Test_main:
 class Test_extract_topic:
     def test_extract_topic_with_value(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
-        message_body["topic"] = "homie/esp32-1/$homie"
-        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
-        assert actual_value_topic == message_body["topic"]
+        test_topic = "homie/esp32-1/$homie"
+        message_body["topic"] = test_topic
+        actual_value_topic, actual_value_publisher = extract_topic(message_body)
+        assert actual_value_topic == test_topic
         assert actual_value_publisher == "homie"
 
     def test_extract_topic_with_value_and_slash(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
-        message_body["topic"] = "homie/esp32-1/$homie/1"
-        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
-        assert actual_value_topic == message_body["topic"]
+        test_topic = "homie/esp32-1/$homie/1"
+        message_body["topic"] = test_topic
+        actual_value_topic, actual_value_publisher = extract_topic(message_body)
+        assert actual_value_topic == test_topic
         assert actual_value_publisher == "homie"
     
     def test_extract_topic_with_value_and_slash_and_slash(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
-        message_body["topic"] = "homie/esp32-1/$homie/1/2"
-        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
-        assert actual_value_topic == message_body["topic"]
+        test_topic = "homie/esp32-1/$homie/1/2"
+        message_body["topic"] = test_topic
+        actual_value_topic, actual_value_publisher = extract_topic(message_body)
+        assert actual_value_topic == test_topic
         assert actual_value_publisher == "homie"
 
     def test_extract_topic_with_value_and_single_slash(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
-        message_body["topic"] = "pub/string"
-        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
-        assert actual_value_topic == message_body["topic"]
+        test_topic = "pub/string"
+        message_body["topic"] = test_topic
+        actual_value_topic, actual_value_publisher = extract_topic(message_body)
+        assert actual_value_topic == test_topic
         assert actual_value_publisher == "pub"
 
     def test_extract_topic_with_value_and_no_slash(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
-        message_body["topic"] = "pub"
-        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
-        assert actual_value_topic == message_body["topic"]
+        test_topic = "pub"
+        message_body["topic"] = test_topic
+        actual_value_topic, actual_value_publisher = extract_topic(message_body)
+        assert actual_value_topic == test_topic
         assert actual_value_publisher == "pub"
 
     def test_extract_topic_with_value_and_double_slash(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
-        message_body["topic"] = "pub//string"
-        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
-        assert actual_value_topic == message_body["topic"]
+        test_topic = "pub//string"
+        message_body["topic"] = test_topic
+        actual_value_topic, actual_value_publisher = extract_topic(message_body)
+        assert actual_value_topic == test_topic
         assert actual_value_publisher == "pub"
 
     def test_extract_topic_with_missing_topic(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
         del message_body["topic"]
         with pytest.raises(Exception):
-            actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
+            actual_value_topic, actual_value_publisher = extract_topic(message_body)
 
     def test_extract_topic_with_empty_topic(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
-        message_body["topic"] = ""
-        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
-        assert actual_value_topic == message_body["topic"]
-        assert actual_value_publisher == ""
+        test_topic = ""
+        message_body["topic"] = test_topic
+        with pytest.raises(Exception):
+            actual_value_topic, actual_value_publisher = extract_topic(message_body)
 
     def test_extract_topic_with_nothing_before_slash(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
-        message_body["topic"] = "/string"
-        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
-        assert actual_value_topic == message_body["topic"]
+        test_topic = "/string"
+        message_body["topic"] = test_topic
+        actual_value_topic, actual_value_publisher = extract_topic(message_body)
+        assert actual_value_topic == test_topic
         assert actual_value_publisher == ""

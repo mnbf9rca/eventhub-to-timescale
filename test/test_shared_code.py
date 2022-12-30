@@ -23,8 +23,9 @@ from shared_code import (  # noqa E402
 test_data = load_test_data()
 
 
-def extract_topic(messagebody: dict) -> tuple[str, str]:
-    """Extract the topic and publisher from the message body
+def sc_test_extract_topic(messagebody: dict) -> tuple[str, str]:
+    """(in test_shared_code)
+    Extract the topic and publisher from the message body
     @param messagebody: the message body
     @return: the topic and publisher
     """
@@ -45,7 +46,7 @@ def call_converter(
     test_event = create_event_hub_event(test_data_item["properties"])
     messagebody = test_data_item["properties"]["body"]
     # o_messagebody: dict = json.loads(messagebody)
-    topic, publisher = extract_topic(messagebody)
+    topic, publisher = sc_test_extract_topic(messagebody)
     if converter == "emon":
         return emon_to_timescale(test_event, messagebody, topic, publisher)
     elif converter == "glow":

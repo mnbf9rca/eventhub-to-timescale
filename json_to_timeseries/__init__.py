@@ -53,7 +53,16 @@ def send_to_converter(
 
 
 def extract_topic(messagebody: dict) -> tuple[str, str]:
-    topic: str = messagebody["topic"]
-    # the publisher is the first characters to the left of the first /
-    publisher = topic.split("/")[0]
-    return topic, publisher
+    try:
+        topic: str = messagebody.get("topic")
+        # the publisher is the first characters to the left of the first /
+        if topic:
+            publisher = topic.split("/")[0]
+            return topic, publisher
+        else:
+            logging.error(f"Error extracting topic: {messagebody}")
+            raise ValueError(f"Error extracting topic: {messagebody}")
+    except Exception as e:
+        logging.error(f"Error extracting topic: {e}")
+        raise
+    
