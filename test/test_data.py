@@ -44,8 +44,8 @@ def create_event_hub_event(event_properties: dict) -> EventHubEvent:
     }
     """
 
-    body = event_properties.get("body")
-    trigger_metadata = event_properties.get("trigger_metadata")
+    body: str | None = event_properties.get("body")
+    trigger_metadata: str | None = event_properties.get("trigger_metadata")
     if "enqueued_time" in event_properties:
         # Convert the enqueued time to a datetime object
         enqueued_time = datetime.datetime.strptime(
@@ -53,13 +53,14 @@ def create_event_hub_event(event_properties: dict) -> EventHubEvent:
           "%Y-%m-%dT%H:%M:%S.%fZ")
     else:
         enqueued_time = datetime.datetime.now()
-    partition_key = event_properties.get("partition_key")
-    sequence_number = event_properties.get("sequence_number")
-    offset = event_properties.get("offset")
+    partition_key: str | None = event_properties.get("partition_key")
+    sequence_number: int | None = event_properties.get("sequence_number")
+    offset: int | None = event_properties.get("offset")
     iothub_metadata = event_properties.get("iothub_metadata")
 
     return EventHubEvent(
-        body=body,
+        # azure functions encodes the message body as utf-8
+        body=json.dumps(body).encode("utf-8"),
         trigger_metadata=trigger_metadata,
         enqueued_time=enqueued_time,
         partition_key=partition_key,
