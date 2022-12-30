@@ -1,0 +1,14 @@
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "type": "eventHubTrigger",
+      "name": "event",
+      "direction": "in",
+      "eventHubName": "timescale",
+      "connection": "timeseries_to_timescale_EVENTHUB",
+      "cardinality": "many",
+      "consumerGroup": "%consumergroup%"
+    }
+  ]
+}
