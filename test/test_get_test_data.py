@@ -2,8 +2,6 @@ from unittest import TestCase
 import pytest
 import datetime
 import json
-import typing
-from unittest import TestCase
 from azure.functions import EventHubEvent
 
 from get_test_data import create_event_hub_event, load_test_data, recursive_json_parser
