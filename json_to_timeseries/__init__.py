@@ -4,11 +4,7 @@ from typing import Any, List
 
 import azure.functions as func
 
-from shared_code import (
-    glow_to_timescale,
-    homie_to_timescale,
-    emon_to_timescale,
-)
+from shared_code import glow_to_timescale, homie_to_timescale, emon_to_timescale
 
 
 def main(events: List[func.EventHubEvent]):
@@ -53,8 +49,7 @@ def send_to_converter(
         return emon_to_timescale(event, o_messagebody, topic, publisher)
     else:
         logging.error(f"Unknown publisher: {publisher}")
-        ValueError(f"Unknown publisher: {publisher}")
-        return
+        raise ValueError(f"Unknown publisher: {publisher}")
 
 
 def extract_topic(messagebody: dict) -> tuple[str, str]:
