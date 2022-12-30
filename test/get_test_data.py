@@ -1,6 +1,7 @@
 import json
 from azure.functions import EventHubEvent
 import datetime
+from dateutil import parser
 
 
 def recursive_json_parser(data) -> dict:
@@ -45,26 +46,21 @@ def create_event_hub_event(event_properties: dict) -> EventHubEvent:
     """
 
     body: str | None = event_properties.get("body")
-    trigger_metadata: str | None = event_properties.get("trigger_metadata")
+    if body :
+        body = body.encode("UTF-8") if type(body) == str else json.dumps(body).encode("UTF-8")
     if "enqueued_time" in event_properties:
         # Convert the enqueued time to a datetime object
-        enqueued_time = datetime.datetime.strptime(
-          event_properties["enqueued_time"],
-          "%Y-%m-%dT%H:%M:%S.%fZ")
+        enqueued_time = parser.parse(event_properties["enqueued_time"])
     else:
         enqueued_time = datetime.datetime.now()
-    partition_key: str | None = event_properties.get("partition_key")
-    sequence_number: int | None = event_properties.get("sequence_number")
-    offset: int | None = event_properties.get("offset")
-    iothub_metadata = event_properties.get("iothub_metadata")
 
     return EventHubEvent(
         # azure functions encodes the message body as utf-8
-        body=json.dumps(body).encode("utf-8"),
-        trigger_metadata=trigger_metadata,
+        body=body,
+        trigger_metadata=event_properties.get("trigger_metadata", {}),
         enqueued_time=enqueued_time,
-        partition_key=partition_key,
-        sequence_number=sequence_number,
-        offset=offset,
-        iothub_metadata=iothub_metadata,
+        partition_key= event_properties.get("partition_key"),
+        sequence_number=event_properties["sequence_number"], # sequence_number is required
+        offset=event_properties["offset"], # offset is required
+        iothub_metadata=event_properties.get("iothub_metadata", {}),
     )

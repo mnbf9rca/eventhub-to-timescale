@@ -6,7 +6,7 @@ import os
 import sys
 import logging
 
-from test_data import create_event_hub_event, load_test_data
+from get_test_data import create_event_hub_event, load_test_data
 
 
 # add the shared_code directory to the path

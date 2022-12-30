@@ -11,3 +11,4 @@ from .homie import homie_to_timescale # noqa F401
 from .emon import emon_to_timescale # noqa F401
 from .helpers import is_topic_of_interest # noqa F401
 from .helpers import to_datetime # noqa F401
+from .helpers import create_correlation_id # noqa F401

@@ -3,7 +3,9 @@ import sys
 from typing import Any, List
 from unittest import TestCase
 import pytest
-from test_data import create_event_hub_event, load_test_data
+from get_test_data import create_event_hub_event, load_test_data
+from azure.functions import EventHubEvent
+from datetime import datetime, timezone, timedelta
 
 # add the shared_code directory to the path
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -17,6 +19,7 @@ from shared_code import (  # noqa E402
     PayloadType,
     create_record_recursive,
     to_datetime,
+    create_correlation_id,
 )
 
 # import test data
@@ -451,6 +454,40 @@ class Test_Helpers:
             test_data = "2021-01-01T00:00:00"
             actual_value = to_datetime(test_data)
             TestCase().assertIs(type(actual_value), str)
+
+    class Test_create_correlation_id:
+        def test_create_correlation_id(self):
+            sample_event = EventHubEvent(
+                body=b"{}",
+                sequence_number=1,
+                enqueued_time=datetime(2020, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc),
+            )
+            expected_value = "2020-01-01T00:00:00.000000-1"
+            actual_value = create_correlation_id(sample_event)
+            TestCase().assertIs(type(actual_value), str)
+            TestCase().assertEqual(actual_value, expected_value)
+
+        def test_create_correlation_id_with_no_event(self):
+            with pytest.raises(Exception):
+                create_correlation_id(None)
+
+        def test_create_correlation_id_with_no_enqueued_time(self):
+            sample_event = EventHubEvent(
+                body=b"{}",
+                sequence_number=1,
+                enqueued_time=None,
+            )
+            with pytest.raises(Exception):
+                create_correlation_id(sample_event)
+
+        def test_create_correlation_id_with_no_sequence_number(self):
+            sample_event = EventHubEvent(
+                body=b"{}",
+                sequence_number=None,
+                enqueued_time=datetime(2020, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc),
+            )
+            with pytest.raises(Exception):
+                create_correlation_id(sample_event)
 
 
 if __name__ == "__main__":
