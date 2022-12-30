@@ -7,6 +7,11 @@ from get_test_data import create_event_hub_event, load_test_data
 from azure.functions import EventHubEvent
 from datetime import datetime, timezone
 
+import json
+from jsonschema import validate
+
+
+
 # add the shared_code directory to the path
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
@@ -21,6 +26,11 @@ from shared_code import (  # noqa E402
     to_datetime,
     create_correlation_id,
 )
+
+# load the schema
+schema_path = os.sep.join([SCRIPT_DIR, "timeseries.json"])
+with open(schema_path) as f:
+    schema = json.load(f)
 
 # import test data
 test_data = load_test_data()
@@ -60,6 +70,12 @@ def call_converter(
         raise ValueError(f"Unknown converter {converter}")
 
 
+def assert_valid_schema(data: dict, schema: dict):
+    """ Checks whether the given data matches the schema """
+
+    return validate(data, schema)
+
+
 class Test_Converter_Methods:
     class Test_Emon:
         def test_with_ignored_key(self):
@@ -74,6 +90,8 @@ class Test_Converter_Methods:
             expected_value = test_object["expected"]
             for actual, expected in zip(actual_value, expected_value):
                 TestCase().assertDictEqual(actual, expected)
+            assert_valid_schema(actual_value, schema)
+
 
     class Test_Glow:
         def test_glow_to_timescale_with_valid_json_for_electricity_meter(self):
@@ -81,17 +99,21 @@ class Test_Converter_Methods:
             expected_value = test_data["glow_electricitymeter"]["expected"]
             for actual, expected in zip(actual_value, expected_value):
                 TestCase().assertDictEqual(actual, expected)
+            assert_valid_schema(actual_value, schema)
+
 
         def test_glow_to_timescale_with_valid_json_for_gas_meter(self):
             actual_value = call_converter("glow", test_data["glow_gasmeter"])
             expected_value = test_data["glow_gasmeter"]["expected"]
             for actual, expected in zip(actual_value, expected_value):
                 TestCase().assertDictEqual(actual, expected)
+            assert_valid_schema(actual_value, schema)
 
         def test_glow_to_timescale_with_item_to_ignore(self):
             actual_value = call_converter("glow", test_data["homie_heartbeat"])
-            expected_value = test_data["homie_heartbeat"]["expected"]
-            assert actual_value == expected_value
+            expected_value = test_data["homie_heartbeat"]["expected"] # None
+            assert expected_value is None
+            assert actual_value is None
 
     class Test_Homie:
         def test_homie_to_timescale_with_valid_json_for_mode(self):
@@ -99,6 +121,7 @@ class Test_Converter_Methods:
             expected_value = test_data["homie_mode"]["expected"]
             for actual, expected in zip(actual_value, expected_value):
                 TestCase().assertDictEqual(actual, expected)
+            assert_valid_schema(actual_value, schema)
 
         def test_homie_to_timescale_with_ignored_json_for_heartbeat(self):
             actual_value = call_converter("homie", test_data["homie_heartbeat"])
@@ -113,6 +136,7 @@ class Test_Converter_Methods:
             expected_value = test_data["homie_measure_temperature"]["expected"]
             for actual, expected in zip(actual_value, expected_value):
                 TestCase().assertDictEqual(actual, expected)
+            assert_valid_schema(actual_value, schema)
 
     class Test_Timeseries:
         class Test_get_record_type:
@@ -187,6 +211,7 @@ class Test_Converter_Methods:
                 )
                 for actual, expected in zip(actual_value, expected_value):
                     TestCase().assertDictEqual(actual, expected)
+                assert_valid_schema(actual_value, schema)
 
             def test_create_record_recursive_with_empty_payload(self):
                 records = []
@@ -210,6 +235,7 @@ class Test_Converter_Methods:
                 )
                 for actual, expected in zip(actual_value, expected_value):
                     TestCase().assertDictEqual(actual, expected)
+                assert_valid_schema(actual_value, schema)
 
             def test_create_record_recursive_with_dict_of_payloads(self):
                 records = []
@@ -250,6 +276,7 @@ class Test_Converter_Methods:
                 )
                 for actual, expected in zip(actual_value, expected_value):
                     TestCase().assertDictEqual(actual, expected)
+                assert_valid_schema(actual_value, schema)
 
             def test_create_record_recursive_with_dict_of_payloads_ignoring_one(self):
                 records = []
@@ -282,6 +309,7 @@ class Test_Converter_Methods:
                 )
                 for actual, expected in zip(actual_value, expected_value):
                     TestCase().assertDictEqual(actual, expected)
+                assert_valid_schema(actual_value, schema)
 
             def test_create_record_recursive_with_dict_of_payloads_and_measurement_prefix(
                 self,
@@ -324,6 +352,7 @@ class Test_Converter_Methods:
                 )
                 for actual, expected in zip(actual_value, expected_value):
                     TestCase().assertDictEqual(actual, expected)
+                assert_valid_schema(actual_value, schema)
 
             def test_create_record_recursive_with_dict_of_payloads_and_measurement_prefix_ignoring_one(
                 self,
@@ -358,6 +387,7 @@ class Test_Converter_Methods:
                 )
                 for actual, expected in zip(actual_value, expected_value):
                     TestCase().assertDictEqual(actual, expected)
+                assert_valid_schema(actual_value, schema)
 
 
 class Test_Helpers:

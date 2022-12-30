@@ -1,4 +1,5 @@
 import json
+import os
 from azure.functions import EventHubEvent
 import datetime
 from dateutil import parser
@@ -27,7 +28,10 @@ def load_test_data():
     Load test data from a JSON file
     @return: a dictionary of test data
     """
-    with open("./test/test_data.json", "r") as f:
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    test_data_path = os.sep.join([SCRIPT_DIR, "test_data.json"])
+
+    with open(test_data_path, "r") as f:
         test_data = json.load(f)
     return recursive_json_parser(test_data)
 
