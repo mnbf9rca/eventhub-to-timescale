@@ -21,6 +21,7 @@ from json_to_timeseries import (  # noqa: E402
     extract_topic,
 )
 
+
 # import test data
 test_data = load_test_data()
 
