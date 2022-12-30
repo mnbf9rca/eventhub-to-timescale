@@ -8,7 +8,8 @@
       "program": "${file}",
       "purpose": ["debug-test"],
       "console": "integratedTerminal",
-      "justMyCode": false
+      "justMyCode": false,
+      "env": {"PYTEST_ADDOPTS": "--no-cov"}
     },
     {
       "name": "Python: Current File",

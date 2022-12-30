@@ -4,7 +4,7 @@ from azure.functions import EventHubEvent
 
 from .timeseries import create_atomic_record
 from .timeseries import PayloadType
-from .helpers import to_datetime
+from .helpers import to_datetime, create_correlation_id
 
 
 def homie_to_timescale(
@@ -28,7 +28,7 @@ def homie_to_timescale(
     measurement_of = topic.split("/")[-1]
     if measurement_of not in events_of_interest:
         return
-    correlation_id = f"{event.enqueued_time.isoformat()}-{event.sequence_number}"
+    correlation_id = create_correlation_id(event)
     # convert the message to a json object
     return [
         create_atomic_record(

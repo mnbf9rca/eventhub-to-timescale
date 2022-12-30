@@ -1,9 +1,7 @@
-import json
 from typing import List
 from datetime import datetime
 from dateutil import parser
-import logging
-
+from azure.functions import EventHubEvent
 
 
 def is_topic_of_interest(topic: str, events_of_interest: List[str]):
@@ -36,7 +34,9 @@ def to_datetime(timestamp: str) -> str:
         # check that it's in the max and min range for a timestamp
         if timestamp_float > 253402300799 or timestamp_float < 0:
             raise ValueError("timestamp is not in a recognisable format: %s", timestamp)
-        return datetime.fromtimestamp(float(timestamp)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        return datetime.fromtimestamp(float(timestamp)).strftime(
+            "%Y-%m-%dT%H:%M:%S.%fZ"
+        )
     except ValueError:
         pass
     except Exception as e:
@@ -48,3 +48,16 @@ def to_datetime(timestamp: str) -> str:
         raise ValueError("timestamp is not in a recognisable format: %s", timestamp)
     except Exception as e:
         raise e
+
+
+def create_correlation_id(event: EventHubEvent) -> str:
+    """Create a correlation id from the event
+    @param event: the event
+    @return: the correlation id
+    """
+    if event is None:
+        raise ValueError("event cannot be None")
+    if event.sequence_number is None:
+        raise ValueError("event.sequence_number cannot be None")
+    enqueued_time_str = event.enqueued_time.strftime("%Y-%m-%dT%H:%M:%S.%f")
+    return f"{enqueued_time_str}-{event.sequence_number}"
