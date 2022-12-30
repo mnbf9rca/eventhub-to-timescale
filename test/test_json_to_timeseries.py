@@ -193,3 +193,77 @@ class Test_main:
         actual_value = main(test_event_array)
         assert mocked_parse_message.call_count == 2
         assert actual_value == []
+
+    def test_main_calls_parse_message_with_one_record_and_one_error_and_one_record(self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture):
+        caplog.set_level(logging.DEBUG)
+        test_events = ["homie_heartbeat", "homie_mode", "homie_measure_temperature"]
+        test_event_array = [get_test_data(key)[0] for key in test_events]
+        mocked_parse_message = mocker.patch("json_to_timeseries.parse_message",  autospec=True)
+        return_value = ["test1", None, "test3"]
+        mocked_parse_message.side_effect = return_value
+        actual_value = main(test_event_array)
+        assert mocked_parse_message.call_count == 3
+        assert actual_value == [return_value[0], return_value[2]]
+        
+class Test_extract_topic:
+    def test_extract_topic_with_value(self):
+        _, message_body, _, _ = get_test_data("homie_measure_temperature")
+        message_body["topic"] = "homie/esp32-1/$homie"
+        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
+        assert actual_value_topic == message_body["topic"]
+        assert actual_value_publisher == "homie"
+
+    def test_extract_topic_with_value_and_slash(self):
+        _, message_body, _, _ = get_test_data("homie_measure_temperature")
+        message_body["topic"] = "homie/esp32-1/$homie/1"
+        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
+        assert actual_value_topic == message_body["topic"]
+        assert actual_value_publisher == "homie"
+    
+    def test_extract_topic_with_value_and_slash_and_slash(self):
+        _, message_body, _, _ = get_test_data("homie_measure_temperature")
+        message_body["topic"] = "homie/esp32-1/$homie/1/2"
+        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
+        assert actual_value_topic == message_body["topic"]
+        assert actual_value_publisher == "homie"
+
+    def test_extract_topic_with_value_and_single_slash(self):
+        _, message_body, _, _ = get_test_data("homie_measure_temperature")
+        message_body["topic"] = "pub/string"
+        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
+        assert actual_value_topic == message_body["topic"]
+        assert actual_value_publisher == "pub"
+
+    def test_extract_topic_with_value_and_no_slash(self):
+        _, message_body, _, _ = get_test_data("homie_measure_temperature")
+        message_body["topic"] = "pub"
+        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
+        assert actual_value_topic == message_body["topic"]
+        assert actual_value_publisher == "pub"
+
+    def test_extract_topic_with_value_and_double_slash(self):
+        _, message_body, _, _ = get_test_data("homie_measure_temperature")
+        message_body["topic"] = "pub//string"
+        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
+        assert actual_value_topic == message_body["topic"]
+        assert actual_value_publisher == "pub"
+
+    def test_extract_topic_with_missing_topic(self):
+        _, message_body, _, _ = get_test_data("homie_measure_temperature")
+        del message_body["topic"]
+        with pytest.raises(Exception):
+            actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
+
+    def test_extract_topic_with_empty_topic(self):
+        _, message_body, _, _ = get_test_data("homie_measure_temperature")
+        message_body["topic"] = ""
+        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
+        assert actual_value_topic == message_body["topic"]
+        assert actual_value_publisher == ""
+
+    def test_extract_topic_with_nothing_before_slash(self):
+        _, message_body, _, _ = get_test_data("homie_measure_temperature")
+        message_body["topic"] = "/string"
+        actual_value_topic, actual_value_publisher = jts_extract_topic(message_body)
+        assert actual_value_topic == message_body["topic"]
+        assert actual_value_publisher == ""
