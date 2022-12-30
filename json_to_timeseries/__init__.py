@@ -54,9 +54,7 @@ def send_to_converter(
 
 def extract_topic(messagebody: dict) -> tuple[str, str]:
     try:
-        topic: str = messagebody.get("topic")
-        # the publisher is the first characters to the left of the first /
-        if topic:
+        if topic := messagebody.get("topic"):
             publisher = topic.split("/")[0]
             return topic, publisher
         else:
