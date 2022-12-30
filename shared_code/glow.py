@@ -1,6 +1,5 @@
 import json
 from typing import Any, List
-from datetime import datetime
 
 from azure.functions import EventHubEvent
 

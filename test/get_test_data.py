@@ -10,7 +10,7 @@ def recursive_json_parser(data) -> dict:
     @param data: a string representing the JSON object
     @return: the parsed JSON object
     """
-   
+
     if isinstance(data, str):
         try:
             data = json.loads(data)
@@ -20,6 +20,7 @@ def recursive_json_parser(data) -> dict:
         for key, value in data.items():
             data[key] = recursive_json_parser(value)
     return data
+
 
 def load_test_data():
     """
@@ -46,8 +47,12 @@ def create_event_hub_event(event_properties: dict) -> EventHubEvent:
     """
 
     body: str | None = event_properties.get("body")
-    if body :
-        body = body.encode("UTF-8") if type(body) == str else json.dumps(body).encode("UTF-8")
+    if body:
+        body = (
+            body.encode("UTF-8")
+            if type(body) == str
+            else json.dumps(body).encode("UTF-8")
+        )
     if "enqueued_time" in event_properties:
         # Convert the enqueued time to a datetime object
         enqueued_time = parser.parse(event_properties["enqueued_time"])
@@ -59,8 +64,10 @@ def create_event_hub_event(event_properties: dict) -> EventHubEvent:
         body=body,
         trigger_metadata=event_properties.get("trigger_metadata", {}),
         enqueued_time=enqueued_time,
-        partition_key= event_properties.get("partition_key"),
-        sequence_number=event_properties["sequence_number"], # sequence_number is required
-        offset=event_properties["offset"], # offset is required
+        partition_key=event_properties.get("partition_key"),
+        sequence_number=event_properties[
+            "sequence_number"
+        ],  # sequence_number is required
+        offset=event_properties["offset"],  # offset is required
         iothub_metadata=event_properties.get("iothub_metadata", {}),
     )
