@@ -1,6 +1,7 @@
 import os
 import sys
 import importlib
+import psycopg2 as psycopg
 from psycopg2.extensions import connection
 
 import pytest
@@ -16,22 +17,16 @@ from shared_code import (  # noqa E402
 )
 
 # when developing locally, use .env file to set environment variables
-# will move this to dotenv-vault in future
+# TODO will move this to dotenv-vault in future
 dotenv_spec = importlib.util.find_spec("dotenv")
 if dotenv_spec is not None:
     print(f"loading dotenv from {os.getcwd()}")
     from dotenv import load_dotenv
-
     load_dotenv(verbose=True)
 
-db = TimescaleConnection()
-timescale_connection_string = os.environ["timescale_connection_string"]
 
-
-def connect_to_database() -> connection:
-    db.set_connection_string(timescale_connection_string)
-    conn: connection = db.get_connection()
-    return conn
+# connect to DB - independently of timescale.py (but with same connection string!!)
+conn = psycopg.connect(os.environ["timescale_connection_string"])
 
 
 class Test_create_single_timescale_record:
@@ -44,7 +39,7 @@ class Test_create_single_timescale_record:
             "measurement_data_type": "number",
             "measurement_value": "1",
         }
-        create_single_timescale_record(connect_to_database(), sample_record)
+        create_single_timescale_record(conn, sample_record)
 
 
 class Test_parse_measurement_value:
@@ -116,6 +111,7 @@ class Test_parse_measurement_value:
         assert actual_value == expected_value
         assert type(actual_value) == float
 
+
 class Test_identify_data_column:
     def test_identify_data_column_with_number(self):
         test_data_type = "number"
@@ -140,10 +136,27 @@ class Test_identify_data_column:
         with pytest.raises(ValueError):
             identify_data_column(test_data_type)
 
-    def test_identify_data_column_with_none(self):
+    def test_identify_data_column_passing_none(self):
         test_data_type = None
         with pytest.raises(ValueError):
             identify_data_column(test_data_type)
 
-    
-    
+    def test_identify_data_column_passing_empty_string(self):
+        test_data_type = ""
+        with pytest.raises(ValueError):
+            identify_data_column(test_data_type)
+
+    def test_identify_data_column_passing_int(self):
+        test_data_type = 1
+        with pytest.raises(ValueError):
+            identify_data_column(test_data_type)
+
+    def test_identify_data_column_passing_float(self):
+        test_data_type = 1.1
+        with pytest.raises(ValueError):
+            identify_data_column(test_data_type)
+
+    def test_identify_data_column_passing_boolean(self):
+        test_data_type = True
+        with pytest.raises(ValueError):
+            identify_data_column(test_data_type)
