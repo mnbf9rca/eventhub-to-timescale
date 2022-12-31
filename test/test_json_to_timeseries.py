@@ -214,7 +214,7 @@ class Test_parse_message:
         mocked_send_to_converter = mocker.patch(
             "json_to_timeseries.send_to_converter", autospec=True
         )
-        return_value = []
+        return_value = None
         mocked_send_to_converter.return_value = return_value
         expected_value = return_value  # should be []
         actual_value = parse_message(test_event)
@@ -273,7 +273,7 @@ class Test_main:
             "json_to_timeseries.parse_message", autospec=True
         )
         return_value = ["test1", "test2", "test3", "test4", "test5"]
-        mocked_parse_message.side_effect = return_value
+        mocked_parse_message.side_effect = return_value  # side_effect iterates over the list
         actual_value = main(test_event_array)
         assert mocked_parse_message.call_count == 5
         assert actual_value == return_value
@@ -288,7 +288,7 @@ class Test_main:
             "json_to_timeseries.parse_message", autospec=True
         )
         return_value = ["test1"]
-        mocked_parse_message.side_effect = return_value
+        mocked_parse_message.side_effect = return_value  # side_effect iterates over the list
         actual_value = main(test_event_array)
         assert mocked_parse_message.call_count == 1
         assert actual_value == return_value
@@ -302,11 +302,26 @@ class Test_main:
         mocked_parse_message = mocker.patch(
             "json_to_timeseries.parse_message", autospec=True
         )
-        return_value = []
-        mocked_parse_message.side_effect = return_value
+        return_value = None
+        mocked_parse_message.return_value = return_value  # return_value is the same each time
         actual_value = main(test_event_array)
         assert mocked_parse_message.call_count == 0
-        assert actual_value == return_value
+        assert actual_value == [] # initial value
+
+    def test_main_calls_parse_message_with_valid_input_returning_no_records(
+        self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
+    ):
+        caplog.set_level(logging.DEBUG)
+        test_events = ["homie_heartbeat", "homie_heartbeat"]
+        test_event_array = [get_test_data(key)[0] for key in test_events]
+        mocked_parse_message = mocker.patch(
+            "json_to_timeseries.parse_message", autospec=True
+        )
+        return_value = None
+        mocked_parse_message.return_value = return_value
+        actual_value = main(test_event_array)
+        assert mocked_parse_message.call_count == 2
+        assert actual_value == [] # initial value
 
     def test_main_calls_parse_message_with_one_record_and_one_error(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
@@ -318,7 +333,7 @@ class Test_main:
             "json_to_timeseries.parse_message", autospec=True
         )
         return_value = ["test1", None]
-        mocked_parse_message.side_effect = return_value
+        mocked_parse_message.side_effect = return_value  # side_effect iterates over the list
         actual_value = main(test_event_array)
         assert mocked_parse_message.call_count == 2
         assert actual_value == [return_value[0]]
@@ -333,7 +348,7 @@ class Test_main:
             "json_to_timeseries.parse_message", autospec=True
         )
         return_value = [None, None]
-        mocked_parse_message.side_effect = return_value
+        mocked_parse_message.side_effect = return_value  # side_effect iterates over the list
         actual_value = main(test_event_array)
         assert mocked_parse_message.call_count == 2
         assert actual_value == []
@@ -348,7 +363,7 @@ class Test_main:
             "json_to_timeseries.parse_message", autospec=True
         )
         return_value = ["test1", None, "test3"]
-        mocked_parse_message.side_effect = return_value
+        mocked_parse_message.side_effect = return_value  # side_effect iterates over the list
         actual_value = main(test_event_array)
         assert mocked_parse_message.call_count == 3
         assert actual_value == [return_value[0], return_value[2]]
