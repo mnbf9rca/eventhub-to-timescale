@@ -33,8 +33,8 @@ def parse_message(event: func.EventHubEvent):
         logging.error(f"Error converting message: {e}")
         raise
 
-    logging.info(f"Payload: {payload}")
-    return [json.dumps(p) for p in payload]
+    logging.debug(f"Parsed payload: {payload}")
+    return [json.dumps(p) for p in payload] if payload else None
 
 
 def send_to_converter(
