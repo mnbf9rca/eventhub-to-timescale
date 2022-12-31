@@ -19,6 +19,10 @@
 name: Deploy Python project to Azure Function App
 
 on:
+  workflow_run:
+    workflows: ["Run pytest"] # run after tests, not concurrently
+    types:
+      - completed
   push:
     branches:
     - "main"
@@ -30,6 +34,7 @@ env:
 
 jobs:
   build-and-deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} # only run if tests succeed
     runs-on: ubuntu-latest
     environment: dev
     steps:

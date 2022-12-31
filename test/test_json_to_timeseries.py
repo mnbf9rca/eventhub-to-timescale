@@ -214,11 +214,10 @@ class Test_parse_message:
         mocked_send_to_converter = mocker.patch(
             "json_to_timeseries.send_to_converter", autospec=True
         )
-        return_value = []
+        return_value = None
         mocked_send_to_converter.return_value = return_value
-        expected_value = return_value  # should be []
         actual_value = parse_message(test_event)
-        assert actual_value == expected_value
+        assert actual_value is None
         assert mocked_send_to_converter.call_count == 1
 
     def test_parse_message_calls_send_to_converter_where_extract_topic_errors(
@@ -302,11 +301,11 @@ class Test_main:
         mocked_parse_message = mocker.patch(
             "json_to_timeseries.parse_message", autospec=True
         )
-        return_value = []
-        mocked_parse_message.side_effect = return_value
+        return_value = None
+        mocked_parse_message.return_value = return_value
         actual_value = main(test_event_array)
         assert mocked_parse_message.call_count == 0
-        assert actual_value == return_value
+        assert actual_value == []  # initial value
 
     def test_main_calls_parse_message_with_one_record_and_one_error(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
