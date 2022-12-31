@@ -72,7 +72,7 @@ def identify_data_column(measurement_type: str) -> str:
     @return: the column name for the data
     """
     if measurement_type == "boolean":
-        return "measurement_boolean"
+        return "measurement_bool"
     elif measurement_type == "number":
         return "measurement_number"
     elif measurement_type == "string":

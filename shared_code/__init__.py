@@ -15,3 +15,4 @@ from .helpers import create_correlation_id # noqa F401
 from .timescale import create_single_timescale_record # noqa F401
 from .timescale import TimescaleConnection # noqa F401
 from .timescale import parse_measurement_value # noqa F401
+from .timescale import identify_data_column # noqa F401
