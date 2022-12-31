@@ -10,7 +10,7 @@ import json
 
 
 # create a singleton method which returns a connection to the timescale database using psycopg2 and the
-# connection string timescale_connection_string
+# connection string TIMESCALE_CONNECTION_STRING
 class TimescaleConnection:
     def __init__(self, connection_string: str = None):
         self.connection_string = connection_string
@@ -33,7 +33,7 @@ class TimescaleConnection:
         self.close_connection()
 
 
-#timescale_connection_string = os.environ.get("timescale_connection_string")
+#timescale_connection_string = os.environ.get("TIMESCALE_CONNECTION_STRING")
 #db = TimescaleConnection(timescale_connection_string).get_connection()
 
 

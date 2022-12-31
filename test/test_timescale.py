@@ -26,7 +26,7 @@ if dotenv_spec is not None:
 
 
 # connect to DB - independently of timescale.py (but with same connection string!!)
-conn = psycopg.connect(os.environ["timescale_connection_string"])
+conn = psycopg.connect(os.environ["TIMESCALE_CONNECTION_STRING"])
 
 
 class Test_create_single_timescale_record:
