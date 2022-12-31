@@ -84,13 +84,13 @@ def parse_measurement_value(measurement_type: str, measurement_value: str) -> An
     @return: the parsed measurement value
     """
     if measurement_type == "boolean":
-        if measurement_value.lower() in ["true", "false"]:
-            return True if measurement_value.lower() == "true" else False
+        if measurement_value.lower() in {"true", "false"}:
+            return measurement_value.lower() == "true"
         else:
             raise ValueError(f"Invalid boolean value: {measurement_value}")
     elif measurement_type == "number":
         return float(measurement_value)
     elif measurement_type == "string":
-        return str(measurement_value)
+        return measurement_value
     else:
         raise ValueError(f"Unknown measurement type: {measurement_type}")

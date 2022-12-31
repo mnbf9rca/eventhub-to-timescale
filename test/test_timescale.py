@@ -59,11 +59,7 @@ class db_helpers:
             assert record[4] == expected_record["measurement_value"]
             none_fields = [2, 6]
         elif expected_record["measurement_data_type"] == "boolean":
-            assert record[6] is (
-                True
-                if expected_record["measurement_value"].lower() == "true"
-                else False
-            )
+            assert record[6] is (expected_record["measurement_value"].lower() == "true")
             none_fields = [2, 4]
         else:
             raise ValueError("invalid measurement_data_type")
