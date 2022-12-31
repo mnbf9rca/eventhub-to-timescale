@@ -1,8 +1,7 @@
 import os
 from typing import Any, List
 
-import psycopg2 as psycopg
-from psycopg2.extensions import connection
+import psycopg as psycopg
 
 from jsonschema import validate
 import json
@@ -46,25 +45,23 @@ with open(schema_path) as f:
 
 
 def create_single_timescale_record(
-    conn: connection, record: dict[str, Any]
+    conn: psycopg.Connection, record: dict[str, Any]
 ) -> None:
     """Create a single timescale record
     @param record: the record to create
     """
     # TODO: validate(instance=record, schema=schema)
-    with conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                f"INSERT INTO conditions (timestamp, measurement_subject, correlation_id, measurement_name, {identify_data_column(record['measurement_data_type'])}) VALUES (%s, %s, %s, %s, %s)",  # noqa: E501
-                (
-                    record["timestamp"],
-                    record["measurement_subject"],
-                    record["correlation_id"],
-                    record["measurement_name"],
-                    parse_measurement_value(record["measurement_data_type"], record["measurement_value"]),
-                ),
-            )
-
+    with conn.cursor() as cur:
+        cur.execute(
+            f"INSERT INTO conditions (timestamp, measurement_subject, correlation_id, measurement_name, {identify_data_column(record['measurement_data_type'])}) VALUES (%s, %s, %s, %s, %s)",  # noqa: E501
+            (
+                record["timestamp"],
+                record["measurement_subject"],
+                record["correlation_id"],
+                record["measurement_name"],
+                parse_measurement_value(record["measurement_data_type"], record["measurement_value"]),
+            ),
+        )
 
 def identify_data_column(measurement_type: str) -> str:
     """Identify the column name for the data

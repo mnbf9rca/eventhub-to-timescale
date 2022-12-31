@@ -1,11 +1,12 @@
 import datetime
+from typing import Any, Tuple
 from dateutil import parser
 import os
 import sys
 import importlib
 import uuid
-import psycopg2 as psycopg
-from psycopg2.extensions import connection
+import psycopg
+
 
 import pytest
 
@@ -29,36 +30,13 @@ if dotenv_spec is not None:
     load_dotenv(verbose=True)
 
 
-# connect to DB - independently of timescale.py (but with same connection string!!)
-conn = psycopg.connect(os.environ["TIMESCALE_CONNECTION_STRING"])
+class db_helpers:
+    """Helper functions for the database"""
 
-
-class Test_create_single_timescale_record:
-    list_of_test_correlation_ids = []
-
-    def teardown_method(self):
-        # delete all records from the DB
-        with conn:
-            with conn.cursor() as cur:
-                for correlation_id in self.list_of_test_correlation_ids:
-                    cur.execute(
-                        f"DELETE FROM conditions WHERE correlation_id = '{correlation_id}'"
-                    )
-
-    def test_create_single_timescale_record(self):
-        this_correlation_id = f"test_{str(uuid.uuid4())}"
-        self.list_of_test_correlation_ids.append(this_correlation_id)
-        sample_record = {
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "measurement_subject": "testsubject",
-            "correlation_id": f"test_{str(uuid.uuid4())}",
-            "measurement_name": "testname",
-            "measurement_data_type": "number",
-            "measurement_value": "1",
-        }
-        create_single_timescale_record(conn, sample_record)
-        # check that the record was created in the DB by searching for correlation_id
-        field_names = (
+    @staticmethod
+    def field_names():
+        """return the field names for the conditions table"""
+        return (
             "timestamp, "
             + "measurement_subject, "
             + "measurement_number, "
@@ -68,21 +46,176 @@ class Test_create_single_timescale_record:
             + "measurement_bool"
         )
 
-        with conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    f"SELECT {field_names} FROM conditions WHERE correlation_id = '{sample_record['correlation_id']}'"
-                )
-                actual_record = cur.fetchone()
-                assert actual_record is not None
-                assert actual_record[0] == parser.parse(sample_record["timestamp"])
-                assert actual_record[1] == sample_record["measurement_subject"]
-                assert actual_record[2] == 1.0
-                assert actual_record[3] == sample_record["measurement_name"]
-                assert actual_record[4] is None
-                assert actual_record[5] == sample_record["correlation_id"]
-                assert actual_record[6] is None
+    @staticmethod
+    def check_record(record: Tuple[Any, ...], expected_record: dict[str, Any]):
+        """Check that the record matches the expected record
+        @param record: the record to check
+        @param expected_record: the expected record
+        """
+        if expected_record["measurement_data_type"] == "number":
+            assert record[2] == float(expected_record["measurement_value"])
+            none_fields = [4, 6]
+        elif expected_record["measurement_data_type"] == "string":
+            assert record[4] == expected_record["measurement_value"]
+            none_fields = [2, 6]
+        elif expected_record["measurement_data_type"] == "boolean":
+            assert record[6] is (
+                True
+                if expected_record["measurement_value"].lower() == "true"
+                else False
+            )
+            none_fields = [2, 4]
+        else:
+            raise ValueError("invalid measurement_data_type")
 
+        for field in none_fields:
+            assert record[field] is None
+        assert record[0] == parser.parse(expected_record["timestamp"])
+        assert record[1] == expected_record["measurement_subject"]
+        assert record[3] == expected_record["measurement_name"]
+        assert record[5] == expected_record["correlation_id"]
+
+    @staticmethod
+    def check_single_record_exists(
+        conn: psycopg.Connection, expected_record: dict[str, Any]
+    ):
+        """Check that the record exists in the database
+        @param conn: the database connection
+        @param expected_record: the expected record
+        """
+        # check that the connection is still open - psycopg will close it if its used in a with block inside the method or test
+        assert (
+            conn.closed is False
+        ), "The connection is closed. Check that you are not using a with conn block inside the method or test"
+        with conn.cursor() as cur:
+            cur.execute(
+                f"SELECT {db_helpers.field_names()} FROM conditions WHERE correlation_id = %s",
+                (expected_record["correlation_id"],),
+            )
+            actual_record = cur.fetchall()
+            assert cur.rowcount == 1
+            assert actual_record is not None
+            db_helpers.check_record(actual_record[0], expected_record)
+
+
+class Test_create_single_timescale_record_against_actual_database:
+    conn: psycopg.Connection = None
+    list_of_test_correlation_ids = []
+
+    def generate_correlation_id(self) -> str:
+        # do this here so that we can store the value and use it in the teardown method
+        correlation_id = f"test_{str(uuid.uuid4())}"
+        self.list_of_test_correlation_ids.append(correlation_id)
+        return correlation_id
+
+    def setup_method(self):
+        # create a connection to the database just for this test class, reuse it for all tests
+        self.conn = psycopg.connect(os.environ["TIMESCALE_CONNECTION_STRING"])
+
+    def teardown_method(self):
+        # delete all records from the DB
+        with self.conn as conn:  # will close the connection after the blocks
+            with conn.cursor() as cur:
+                for correlation_id in self.list_of_test_correlation_ids:
+                    cur.execute(
+                        f"DELETE FROM conditions WHERE correlation_id = '{correlation_id}'"
+                    )
+
+    def test_create_single_timescale_record_of_type_number_with_int(self):
+        this_correlation_id: str = self.generate_correlation_id()
+        sample_record = {
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "measurement_subject": "testsubject",
+            "correlation_id": this_correlation_id,
+            "measurement_name": "testname",
+            "measurement_data_type": "number",
+            "measurement_value": "1",
+        }
+        create_single_timescale_record(self.conn, sample_record)
+        # check that the record was created in the DB by searching for correlation_id
+        db_helpers.check_single_record_exists(self.conn, sample_record)
+
+    def test_create_single_timescale_record_of_type_number_with_float(self):
+        this_correlation_id: str = self.generate_correlation_id()
+        sample_record = {
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "measurement_subject": "testsubject",
+            "correlation_id": this_correlation_id,
+            "measurement_name": "testname",
+            "measurement_data_type": "number",
+            "measurement_value": "1.1",
+        }
+        create_single_timescale_record(self.conn, sample_record)
+        # check that the record was created in the DB by searching for correlation_id
+        db_helpers.check_single_record_exists(self.conn, sample_record)
+
+    def test_create_single_timescale_record_of_type_string(self):
+        this_correlation_id: str = self.generate_correlation_id()
+        sample_record = {
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "measurement_subject": "testsubject",
+            "correlation_id": this_correlation_id,
+            "measurement_name": "testname",
+            "measurement_data_type": "string",
+            "measurement_value": "test",
+        }
+        create_single_timescale_record(self.conn, sample_record)
+        # check that the record was created in the DB by searching for correlation_id
+        db_helpers.check_single_record_exists(self.conn, sample_record)
+
+    def test_create_single_timescale_record_of_type_boolean(self):
+        this_correlation_id: str = self.generate_correlation_id()
+        sample_record = {
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "measurement_subject": "testsubject",
+            "correlation_id": this_correlation_id,
+            "measurement_name": "testname",
+            "measurement_data_type": "boolean",
+            "measurement_value": "true",
+        }
+        create_single_timescale_record(self.conn, sample_record)
+        # check that the record was created in the DB by searching for correlation_id
+        db_helpers.check_single_record_exists(self.conn, sample_record)
+
+    def test_create_single_timescale_record_of_type_boolean_with_false(self):
+        this_correlation_id: str = self.generate_correlation_id()
+        sample_record = {
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "measurement_subject": "testsubject",
+            "correlation_id": this_correlation_id,
+            "measurement_name": "testname",
+            "measurement_data_type": "boolean",
+            "measurement_value": "false",
+        }
+        create_single_timescale_record(self.conn, sample_record)
+        # check that the record was created in the DB by searching for correlation_id
+        db_helpers.check_single_record_exists(self.conn, sample_record)
+
+    def test_create_single_timescale_record_of_type_boolean_with_invalid_value(self):
+        this_correlation_id: str = self.generate_correlation_id()
+        sample_record = {
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "measurement_subject": "testsubject",
+            "correlation_id": this_correlation_id,
+            "measurement_name": "testname",
+            "measurement_data_type": "boolean",
+            "measurement_value": "invalid",
+        }
+        with pytest.raises(ValueError):
+            create_single_timescale_record(self.conn, sample_record)
+
+    def test_create_single_timescale_record_of_type_number_with_invalid_value(self):
+        this_correlation_id: str = self.generate_correlation_id()
+        sample_record = {
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "measurement_subject": "testsubject",
+            "correlation_id": this_correlation_id,
+            "measurement_name": "testname",
+            "measurement_data_type": "number",
+            "measurement_value": "invalid",
+        }
+        with pytest.raises(ValueError):
+            create_single_timescale_record(self.conn, sample_record)
 
 
 class Test_parse_measurement_value:
