@@ -1,26 +1,15 @@
 import json
 import os
+import sys
+from typing import List
 from azure.functions import EventHubEvent
 import datetime
 from dateutil import parser
 
-
-def recursive_json_parser(data) -> dict:
-    """
-    recursively parse JSON object
-    @param data: a string representing the JSON object
-    @return: the parsed JSON object
-    """
-
-    if isinstance(data, str):
-        try:
-            data = json.loads(data)
-        except json.JSONDecodeError:
-            pass
-    elif isinstance(data, dict):
-        for key, value in data.items():
-            data[key] = recursive_json_parser(value)
-    return data
+# add the shared_code directory to the path
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(SCRIPT_DIR))
+from shared_code import recursively_deserialize  # noqa: E402
 
 
 def load_test_data():
@@ -32,8 +21,21 @@ def load_test_data():
     test_data_path = os.sep.join([SCRIPT_DIR, "test_data.json"])
 
     with open(test_data_path, "r") as f:
-        test_data = json.load(f)
-    return recursive_json_parser(test_data)
+        raw_test_data = f.read()
+    whole_object = recursively_deserialize(raw_test_data)
+    # in functions, the payload is a string, but in tests it is a dict because it is loaded from JSON
+    # within whole_object, for each item, replace [properties][body] with json.dumps([properties][body])
+    for item in whole_object:
+        if (
+            isinstance(whole_object[item], (dict, List, tuple)) and
+            "properties" in whole_object[item] and
+            "body" in whole_object[item]["properties"] and
+            isinstance(whole_object[item]["properties"]["body"]["payload"], dict)
+        ):
+            whole_object[item]["properties"]["body"]["payload"] = json.dumps(
+                whole_object[item]["properties"]["body"]["payload"]
+            )
+    return whole_object
 
 
 def create_event_hub_event(event_properties: dict) -> EventHubEvent:

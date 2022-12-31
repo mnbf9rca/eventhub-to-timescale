@@ -1,7 +1,9 @@
-from typing import List
+import json
+from typing import Any, List
 from datetime import datetime
 from dateutil import parser
 from azure.functions import EventHubEvent
+import logging
 
 
 def is_topic_of_interest(topic: str, events_of_interest: List[str]):
@@ -61,3 +63,27 @@ def create_correlation_id(event: EventHubEvent) -> str:
         raise ValueError("event.sequence_number cannot be None")
     enqueued_time_str = event.enqueued_time.strftime("%Y-%m-%dT%H:%M:%S.%f")
     return f"{enqueued_time_str}-{event.sequence_number}"
+
+def recursively_deserialize(item: Any) -> dict:
+    """Recursively deserialize a string
+    @param string: the string
+    @return: the deserialized string
+    """
+    if isinstance(item, dict):
+        return {key: recursively_deserialize(value) for key, value in item.items()}
+    elif isinstance(item, (list, tuple)):
+        return [recursively_deserialize(value) for value in item]
+    if isinstance(item, str):
+        try:
+            deserialized_item = json.loads(item)
+            # if it's an iterative type, then recursively deserialize it
+            # otherwise return the original item
+            # this list comes from https://docs.python.org/3/library/json.html#json.JSONDecoder
+            if isinstance(deserialized_item, (dict, list, tuple)):
+                return recursively_deserialize(deserialized_item)
+            else:
+                return item
+        except json.JSONDecodeError:
+            return item
+    else:
+        return item
