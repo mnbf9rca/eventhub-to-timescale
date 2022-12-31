@@ -80,7 +80,7 @@ class Test_Converter_Methods:
     class Test_Emon:
         def test_with_ignored_key(self):
             actual_value = call_converter("emon", test_data["homie_heartbeat"])
-            expected_value = test_data["homie_heartbeat"]["expected"]
+            expected_value = test_data["homie_heartbeat"]["expected"]  # None
             assert expected_value is None
             assert actual_value is None
 
@@ -111,7 +111,7 @@ class Test_Converter_Methods:
 
         def test_glow_to_timescale_with_item_to_ignore(self):
             actual_value = call_converter("glow", test_data["homie_heartbeat"])
-            expected_value = test_data["homie_heartbeat"]["expected"] # None
+            expected_value = test_data["homie_heartbeat"]["expected"]  # None
             assert expected_value is None
             assert actual_value is None
 
@@ -125,7 +125,7 @@ class Test_Converter_Methods:
 
         def test_homie_to_timescale_with_ignored_json_for_heartbeat(self):
             actual_value = call_converter("homie", test_data["homie_heartbeat"])
-            expected_value = test_data["homie_heartbeat"]["expected"]
+            expected_value = test_data["homie_heartbeat"]["expected"]  # None
             assert expected_value is None
             assert actual_value is None
 
