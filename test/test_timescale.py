@@ -1,6 +1,9 @@
+import datetime
+from dateutil import parser
 import os
 import sys
 import importlib
+import uuid
 import psycopg2 as psycopg
 from psycopg2.extensions import connection
 
@@ -22,6 +25,7 @@ dotenv_spec = importlib.util.find_spec("dotenv")
 if dotenv_spec is not None:
     print(f"loading dotenv from {os.getcwd()}")
     from dotenv import load_dotenv
+
     load_dotenv(verbose=True)
 
 
@@ -30,16 +34,55 @@ conn = psycopg.connect(os.environ["TIMESCALE_CONNECTION_STRING"])
 
 
 class Test_create_single_timescale_record:
+    list_of_test_correlation_ids = []
+
+    def teardown_method(self):
+        # delete all records from the DB
+        with conn:
+            with conn.cursor() as cur:
+                for correlation_id in self.list_of_test_correlation_ids:
+                    cur.execute(
+                        f"DELETE FROM conditions WHERE correlation_id = '{correlation_id}'"
+                    )
+
     def test_create_single_timescale_record(self):
+        this_correlation_id = f"test_{str(uuid.uuid4())}"
+        self.list_of_test_correlation_ids.append(this_correlation_id)
         sample_record = {
-            "timestamp": "2021-09-01T00:00:00.000Z",
-            "measurement_subject": "test",
-            "correlation_id": "test",
-            "measurement_name": "test",
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "measurement_subject": "testsubject",
+            "correlation_id": f"test_{str(uuid.uuid4())}",
+            "measurement_name": "testname",
             "measurement_data_type": "number",
             "measurement_value": "1",
         }
         create_single_timescale_record(conn, sample_record)
+        # check that the record was created in the DB by searching for correlation_id
+        field_names = (
+            "timestamp, "
+            + "measurement_subject, "
+            + "measurement_number, "
+            + "measurement_name, "
+            + "measurement_string, "
+            + "correlation_id, "
+            + "measurement_bool"
+        )
+
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    f"SELECT {field_names} FROM conditions WHERE correlation_id = '{sample_record['correlation_id']}'"
+                )
+                actual_record = cur.fetchone()
+                assert actual_record is not None
+                assert actual_record[0] == parser.parse(sample_record["timestamp"])
+                assert actual_record[1] == sample_record["measurement_subject"]
+                assert actual_record[2] == 1.0
+                assert actual_record[3] == sample_record["measurement_name"]
+                assert actual_record[4] is None
+                assert actual_record[5] == sample_record["correlation_id"]
+                assert actual_record[6] is None
+
 
 
 class Test_parse_measurement_value:
