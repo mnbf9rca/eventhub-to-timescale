@@ -1,9 +1,10 @@
 {
   "scriptFile": "__init__.py",
+  "disabled": true,
   "bindings": [
     {
       "type": "eventHubTrigger",
-      "name": "event",
+      "name": "events",
       "direction": "in",
       "eventHubName": "timescale",
       "connection": "timeseries_to_timescale_EVENTHUB",

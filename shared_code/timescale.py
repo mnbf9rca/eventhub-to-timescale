@@ -1,11 +1,12 @@
 import os
 from typing import Any, List
+import logging
 
 import psycopg as psycopg
+import azure.functions as func
 
-from jsonschema import validate
+from jsonschema import validate, ValidationError
 import json
-
 
 
 # create a singleton method which returns a connection to the timescale database using psycopg2 and the
@@ -32,16 +33,32 @@ class TimescaleConnection:
         self.close_connection()
 
 
-#timescale_connection_string = os.environ.get("TIMESCALE_CONNECTION_STRING")
-#db = TimescaleConnection(timescale_connection_string).get_connection()
-
-
 # load timeseries source schema
 schema_path = os.sep.join(
     [os.path.dirname(os.path.abspath(__file__)), "timeseries.json"]
 )
 with open(schema_path) as f:
     schema = json.load(f)
+
+def create_timescale_records_from_batch_of_events(
+    conn: psycopg.Connection, record: str
+) -> None:
+    """Create timescale records from events
+    @param events: the events to create records from
+    """
+    unwrapped_records = list(map(json.loads, json.loads(record)))
+    try:
+        validate(instance=unwrapped_records, schema=schema)
+    except ValidationError as e:
+        logging.error(f"Failed to validate record set: {e}")
+        raise
+
+    try:
+        for record in unwrapped_records:
+            create_single_timescale_record(conn, record)
+    except Exception as e:
+        logging.error(f"Failed to create timescale records: {e}")
+        raise
 
 
 def create_single_timescale_record(
@@ -52,7 +69,7 @@ def create_single_timescale_record(
     """
     # TODO: validate(instance=record, schema=schema)
     with conn.cursor() as cur:
-        cur.execute(
+        result = cur.execute(
             f"INSERT INTO conditions (timestamp, measurement_subject, correlation_id, measurement_name, {identify_data_column(record['measurement_data_type'])}) VALUES (%s, %s, %s, %s, %s)",  # noqa: E501
             (
                 record["timestamp"],
@@ -62,6 +79,8 @@ def create_single_timescale_record(
                 parse_measurement_value(record["measurement_data_type"], record["measurement_value"]),
             ),
         )
+        if result.rowcount != 1:
+            raise ValueError(f"Failed to insert record: {record}")
 
 def identify_data_column(measurement_type: str) -> str:
     """Identify the column name for the data
