@@ -1,6 +1,5 @@
 import datetime
 from unittest.mock import MagicMock
-from unittest import TestCase
 from typing import Any, Tuple
 from dateutil import parser
 import os
@@ -16,7 +15,7 @@ from jsonschema import ValidationError
 
 
 # import test data
-from get_test_data import create_event_hub_event, load_test_data
+from get_test_data import load_test_data
 
 test_data = load_test_data()
 
@@ -92,7 +91,10 @@ class db_helpers:
         @param conn: the database connection
         @param expected_record: the expected record
         """
-        # check that the connection is still open - psycopg will close it if its used in a with block inside the method or test
+        # check that the connection is still open - psycopg will close it
+        # if its used in a with block inside the method or test
+        # https://www.psycopg.org/psycopg3/docs/basic/from_pg2.html#with-connection
+        # which is itself a failure as we want to reuse the connection
         assert (
             conn.closed is False
         ), "The connection is closed. Check that you are not using a with conn block inside the method or test"
@@ -216,7 +218,7 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "boolean",
             "measurement_value": "invalid",
         }
-        with pytest.raises(ValueError, match=r".*Invalid boolean value.*") as e:
+        with pytest.raises(ValueError, match=r".*Invalid boolean value.*"):
             create_single_timescale_record(self.conn, sample_record)
 
     def test_of_type_number_with_invalid_value(self):
@@ -230,7 +232,9 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "number",
             "measurement_value": "invalid",
         }
-        with pytest.raises(ValueError, match=r".*could not convert string to float: 'invalid'*") as e:
+        with pytest.raises(
+            ValueError, match=r".*could not convert string to float: 'invalid'*"
+        ):
             create_single_timescale_record(self.conn, sample_record)
 
 
@@ -250,7 +254,7 @@ class Test_create_single_timescale_record_with_mock:
         mock_conn, mock_cursor = get_mock_conn_cursor(mocker)
         mock_execute = mock_cursor.__enter__()
         mock_execute.execute.side_effect = Exception("test exception")
-        with pytest.raises(Exception, match=r".*test exception*") as e:
+        with pytest.raises(Exception, match=r".*test exception*"):
             create_single_timescale_record(mock_conn, self.sample_record)
 
     def test_where_no_records_returned(self, mocker):
@@ -258,17 +262,15 @@ class Test_create_single_timescale_record_with_mock:
         mock_result: MagicMock = mock_conn.cursor().__enter__().execute()
         with mock_result(new=mocker.PropertyMock):
             mock_result.rowcount = 0
-        with pytest.raises(ValueError, match=r".*Failed to insert record*") as e:
+        with pytest.raises(ValueError, match=r".*Failed to insert record*"):
             create_single_timescale_record(mock_conn, self.sample_record)
 
-    def test_where_more_than_one_records_returned(
-        self, mocker
-    ):
+    def test_where_more_than_one_records_returned(self, mocker):
         mock_conn, _ = get_mock_conn_cursor(mocker)
         mock_result: MagicMock = mock_conn.cursor().__enter__().execute()
         with mock_result(new=mocker.PropertyMock):
             mock_result.rowcount = 3
-        with pytest.raises(ValueError, match=r".*Inserted too many records.*") as e:
+        with pytest.raises(ValueError, match=r".*Inserted too many records.*"):
             create_single_timescale_record(mock_conn, self.sample_record)
 
 
@@ -287,9 +289,7 @@ def get_mock_conn_cursor(
 
 
 class Test_create_timescale_records_from_batch_of_events:
-    def test_from_batch_of_events(
-        self, mocker: pytest_mock.MockFixture
-    ):
+    def test_from_batch_of_events(self, mocker: pytest_mock.MockFixture):
         mocked_create_single_timescale_record = mocker.patch(
             "shared_code.timescale.create_single_timescale_record", autospec=True
         )
@@ -378,7 +378,9 @@ class Test_parse_measurement_value:
     def test_with_number_and_string(self):
         test_data_type = "number"
         test_value = "test"
-        with pytest.raises(ValueError, match=r".*could not convert string to float: 'test'.*") as e:
+        with pytest.raises(
+            ValueError, match=r".*could not convert string to float: 'test'.*"
+        ):
             parse_measurement_value(test_data_type, test_value)
 
     def test_with_number_and_number(self):
@@ -392,7 +394,7 @@ class Test_parse_measurement_value:
     def test_with_boolean_and_string(self):
         test_data_type = "boolean"
         test_value = "test"
-        with pytest.raises(ValueError, match=r".*Invalid boolean value: test.*") as e:
+        with pytest.raises(ValueError, match=r".*Invalid boolean value: test.*"):
             parse_measurement_value(test_data_type, test_value)
 
     def test_with_boolean_and_true(self):
@@ -430,7 +432,9 @@ class Test_parse_measurement_value:
     def test_with_invalid_measurement_type(self):
         test_data_type = "invalid"
         test_value = "test"
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: invalid*") as e:
+        with pytest.raises(
+            ValueError, match=r".*Unknown measurement type: invalid*"
+        ):
             parse_measurement_value(test_data_type, test_value)
 
 
@@ -455,32 +459,38 @@ class Test_identify_data_column:
 
     def test_with_invalid_data_type(self):
         test_data_type = "invalid"
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: invalid.*") as e:
+        with pytest.raises(
+            ValueError, match=r".*Unknown measurement type: invalid.*"
+        ):
             identify_data_column(test_data_type)
 
     def test_passing_none(self):
         test_data_type = None
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: None.*") as e:
+        with pytest.raises(
+            ValueError, match=r".*Unknown measurement type: None.*"
+        ):
             identify_data_column(test_data_type)
 
     def test_passing_empty_string(self):
         test_data_type = ""
-        with pytest.raises(ValueError, match=r".*Unknown measurement type:.*") as e:
+        with pytest.raises(ValueError, match=r".*Unknown measurement type:.*"):
             identify_data_column(test_data_type)
 
     def test_passing_int(self):
         test_data_type = 1
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: 1.*") as e:
+        with pytest.raises(ValueError, match=r".*Unknown measurement type: 1.*"):
             identify_data_column(test_data_type)
 
     def test_passing_float(self):
         test_data_type = 1.1
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: 1.1.*") as e:
+        with pytest.raises(ValueError, match=r".*Unknown measurement type: 1.1.*"):
             identify_data_column(test_data_type)
 
     def test_passing_boolean(self):
         test_data_type = True
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: True.*") as e:
+        with pytest.raises(
+            ValueError, match=r".*Unknown measurement type: True.*"
+        ):
             identify_data_column(test_data_type)
 
 
@@ -508,7 +518,9 @@ class Test_validate_all_fields_in_record:
             "measurement_data_type": "number",
         }
         # missing measurement_bool
-        with pytest.raises(ValueError, match=r".*Missing fields:.*measurement_value.*") as e:
+        with pytest.raises(
+            ValueError, match=r".*Missing fields:.*measurement_value.*"
+        ):
             validate_all_fields_in_record(test_record)
 
     def test_with_multiple_missing_fields(self):
@@ -520,7 +532,10 @@ class Test_validate_all_fields_in_record:
             "measurement_of": "test",
         }
         # missing measurement_data_type, measurement_value
-        with pytest.raises(ValueError, match=r"^(?=.*Missing fields:)(?=.*measurement_data_type)(?=.*measurement_value).*$") as e:
+        with pytest.raises(
+            ValueError,
+            match=r"^(?=.*Missing fields:)(?=.*measurement_data_type)(?=.*measurement_value).*$",
+        ):
             validate_all_fields_in_record(test_record)
 
     def test_with_additional_fields(self):

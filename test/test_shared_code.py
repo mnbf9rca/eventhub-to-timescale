@@ -95,10 +95,11 @@ class Test_Converter_Methods:
 
         def test_ignored_publisher(self):
             test_object: dict = test_data["emontx4_json"]
-            with pytest.raises(ValueError) as e:
+            with pytest.raises(
+                ValueError,
+                match=r".*Invalid publisher: [eE]mon processor only handles [eE]mon messages, not incorrect_publisher.*",  # noqa E501
+            ):
                 call_converter("emon", test_object, "incorrect_publisher")
-            assert "incorrect_publisher" in str(e.value)
-            assert "emon processor only handles emon messages" in str(e.value).lower()
 
     class Test_glow_to_timescale:
         def test_with_valid_json_for_electricity_meter(self):
@@ -117,10 +118,11 @@ class Test_Converter_Methods:
 
         def test_ignored_publisher(self):
             test_object: dict = test_data["glow_gasmeter"]
-            with pytest.raises(ValueError) as e:
+            with pytest.raises(
+                ValueError,
+                match=r".*Invalid publisher: [gG]low processor only handles [gG]low messages, not incorrect_publisher.*",  # noqa E501
+            ):
                 call_converter("glow", test_object, "incorrect_publisher")
-            assert "incorrect_publisher" in str(e.value)
-            assert "glow processor only handles glow messages" in str(e.value).lower()
 
         def test_with_item_to_ignored_measurement(self):
             actual_value = call_converter("glow", test_data["glow_ignored"])
@@ -153,10 +155,11 @@ class Test_Converter_Methods:
 
         def test_ignored_publisher(self):
             test_object: dict = test_data["homie_mode"]
-            with pytest.raises(ValueError) as e:
+            with pytest.raises(
+                ValueError,
+                match=r".*Invalid publisher: [hH]omie processor only handles [hH]omie messages not incorrect_publisher.*",  # noqa E501
+            ):
                 call_converter("homie", test_object, "incorrect_publisher")
-            assert "incorrect_publisher" in str(e.value)
-            assert "homie processor only handles homie messages" in str(e.value).lower()
 
     class Test_Timeseries:
         class Test_get_record_type:
@@ -173,7 +176,9 @@ class Test_Converter_Methods:
                 assert actual_value == PayloadType.NUMBER
 
             def test_with_none(self):
-                with pytest.raises(Exception):
+                with pytest.raises(
+                    TypeError, match=r".*Unknown type <class 'NoneType'>.*"
+                ):
                     get_record_type(None)
 
             def test_with_empty_string(self):
@@ -185,11 +190,11 @@ class Test_Converter_Methods:
                 assert actual_value == PayloadType.BOOLEAN
 
             def test_with_dict(self):
-                with pytest.raises(Exception):
+                with pytest.raises(TypeError, match=r".*Unknown type <class 'dict'>.*"):
                     get_record_type({"a": 1})
 
             def test_with_list(self):
-                with pytest.raises(Exception):
+                with pytest.raises(TypeError, match=r".*Unknown type <class 'list'>.*"):
                     get_record_type(["a", 1])
 
         class Test_create_record_recursive:
@@ -577,17 +582,26 @@ class Test_Helpers:
 
         def test_with_an_incompatible_string(self):
             test_data = "lemon"
-            with pytest.raises(Exception):
+            with pytest.raises(
+                ValueError,
+                match=r".*timestamp is not in a recognisable format: lemon.*",
+            ):
                 to_datetime(test_data)
 
         def test_with_an_incompatible_dict(self):
             test_data = {"a": 1}
-            with pytest.raises(Exception):
+            with pytest.raises(
+                TypeError,
+                match=r".*float\(\) argument must be a string or a number, not 'dict'*",
+            ):
                 to_datetime(test_data)
 
         def test_with_an_incompatible_int(self):
             test_data = -1
-            with pytest.raises(Exception):
+            with pytest.raises(
+                TypeError,
+                match=r".*Parser must be a string or character stream, not int.*",
+            ):
                 to_datetime(test_data)
 
         def test_to_datetime_check_type(self):
@@ -608,7 +622,7 @@ class Test_Helpers:
             TestCase().assertEqual(actual_value, expected_value)
 
         def test_with_no_event(self):
-            with pytest.raises(Exception):
+            with pytest.raises(ValueError, match=r".*event cannot be None.*"):
                 create_correlation_id(None)
 
         def test_with_no_enqueued_time(self):
@@ -617,7 +631,10 @@ class Test_Helpers:
                 sequence_number=1,
                 enqueued_time=None,
             )
-            with pytest.raises(Exception):
+            with pytest.raises(
+                AttributeError,
+                match=r".*'NoneType' object has no attribute 'strftime'.*",
+            ):
                 create_correlation_id(sample_event)
 
         def test_with_no_sequence_number(self):
@@ -626,7 +643,7 @@ class Test_Helpers:
                 sequence_number=None,
                 enqueued_time=datetime(2020, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc),
             )
-            with pytest.raises(Exception):
+            with pytest.raises(ValueError, match=r".*sequence_number cannot be None.*"):
                 create_correlation_id(sample_event)
 
     class Test_recursively_deserialize:

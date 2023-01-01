@@ -1,9 +1,8 @@
 import os
-from typing import Any, List
+from typing import Any
 import logging
 
 import psycopg as psycopg
-import azure.functions as func
 
 
 from jsonschema import validate, ValidationError
@@ -16,6 +15,7 @@ schema_path = os.sep.join(
 )
 with open(schema_path) as f:
     schema = json.load(f)
+
 
 def create_timescale_records_from_batch_of_events(
     conn: psycopg.Connection, record_set: str
@@ -50,20 +50,24 @@ def create_single_timescale_record(
     # TODO: validate(instance=record, schema=schema)
     validate_all_fields_in_record(record)
     with conn.cursor() as cur:
-        result = cur.execute(f"INSERT INTO conditions (timestamp, measurement_publisher, measurement_subject, correlation_id, measurement_of, {identify_data_column(record['measurement_data_type'])}) VALUES (%s, %s, %s, %s, %s, %s)",  # noqa: E501
+        result = cur.execute(
+            f"INSERT INTO conditions (timestamp, measurement_publisher, measurement_subject, correlation_id, measurement_of, {identify_data_column(record['measurement_data_type'])}) VALUES (%s, %s, %s, %s, %s, %s)",  # noqa: E501
             (
                 record["timestamp"],
                 record["measurement_publisher"],
                 record["measurement_subject"],
                 record["correlation_id"],
                 record["measurement_of"],
-                parse_measurement_value(record["measurement_data_type"], record["measurement_value"]),
+                parse_measurement_value(
+                    record["measurement_data_type"], record["measurement_value"]
+                ),
             ),
         )
         if result.rowcount < 1:
             raise ValueError(f"Failed to insert record: {record}")
         elif result.rowcount > 1:
             raise ValueError(f"Inserted too many records: {record}")
+
 
 def validate_all_fields_in_record(record: dict[str, Any]) -> None:
     """Validate at least the required fields are in the record
@@ -78,9 +82,7 @@ def validate_all_fields_in_record(record: dict[str, Any]) -> None:
         "measurement_data_type",
         "measurement_value",
     ]
-    if missing_fields := [
-        field for field in required_fields if field not in record
-    ]:
+    if missing_fields := [field for field in required_fields if field not in record]:
         raise ValueError(f"Missing fields: {missing_fields}")
 
 
@@ -97,6 +99,7 @@ def identify_data_column(measurement_type: str) -> str:
         return "measurement_string"
     else:
         raise ValueError(f"Unknown measurement type: {measurement_type}")
+
 
 def parse_measurement_value(measurement_type: str, measurement_value: str) -> Any:
     """Parse the measurement value
