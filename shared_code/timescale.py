@@ -29,14 +29,15 @@ def create_timescale_records_from_batch_of_events(
         validate(instance=unwrapped_records, schema=schema)
     except ValidationError as e:
         logging.error(f"Failed to validate schema of record set: {e}")
-        raise
+        unraised_errors.append(e)
+        return unraised_errors
 
     for record in unwrapped_records:
         try:
             create_single_timescale_record(conn, record)
         except Exception as e:
             logging.error(f"Failed to create timescale records: {e}")
-            unraised_errors.append()
+            unraised_errors.append(e)
     return unraised_errors if len(unraised_errors) > 0 else None
 
 

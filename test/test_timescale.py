@@ -10,6 +10,9 @@ import pytest_mock
 import json
 import pytest
 
+from jsonschema import ValidationError
+
+
 # import test data
 from get_test_data import create_event_hub_event, load_test_data
 test_data = load_test_data()
@@ -239,7 +242,33 @@ class Test_create_timescale_records_from_batch_of_events:
         actual_value = create_timescale_records_from_batch_of_events(mock_conn, test_value)
         assert actual_value is None
 
+    def test_create_timescale_records_from_batch_of_events_with_single_error(self, mocker: pytest_mock.MockFixture):
+        mocked_create_single_timescale_record = mocker.patch(
+            "shared_code.timescale.create_single_timescale_record", autospec=True
+        )
+        
+        mock_conn_o = mocker.patch("psycopg.connect", autospec=True)
+        mock_conn = mock_conn_o.return_value
+        test_value = self.stringify_test_data("timeseries_emon_electricitymeter")
+        patch_value = [None, None, None, Exception("test exception"), None, None, None]
+        mocked_create_single_timescale_record.side_effect = patch_value
+        actual_value = create_timescale_records_from_batch_of_events(mock_conn, test_value)
+        assert len(actual_value) == 1
+        assert actual_value[0] == patch_value[3]
 
+    def test_create_timescale_records_from_batch_of_events_with_incorrect_schema(self, mocker: pytest_mock.MockFixture):
+        mocked_create_single_timescale_record = mocker.patch(
+            "shared_code.timescale.create_single_timescale_record", autospec=True
+        )
+        
+        mock_conn_o = mocker.patch("psycopg.connect", autospec=True)
+        mock_conn = mock_conn_o.return_value
+        test_value = self.stringify_test_data("timeseries_emon_electricitymeter_missing_timestamp")
+        patch_value = None
+        mocked_create_single_timescale_record.return_value = patch_value
+        actual_value = create_timescale_records_from_batch_of_events(mock_conn, test_value)
+        assert len(actual_value) == 1
+        assert isinstance(actual_value[0], ValidationError)
 
 class Test_parse_measurement_value:
     def test_parse_measurement_value_with_string_and_string(self):
