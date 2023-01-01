@@ -62,7 +62,7 @@ def call_converter(
     messagebody = test_data_item["properties"]["body"]
     # o_messagebody: dict = json.loads(messagebody)
     topic, publisher = sc_test_extract_topic(messagebody)
-    publisher_to_send = override_publisher if override_publisher else publisher
+    publisher_to_send = override_publisher or publisher
     if converter == "emon":
         return emon_to_timescale(test_event, messagebody, topic, publisher_to_send)
     elif converter == "glow":

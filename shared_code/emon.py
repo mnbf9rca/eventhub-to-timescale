@@ -19,7 +19,9 @@ def emon_to_timescale(
     """
     # examine the topic. We're only interested in topics where the last part is in events_of_interest
     if publisher.lower() != "emon":
-        raise ValueError("Invalid publisher: emon processor only handles emon messages, not %s" % publisher)
+        raise ValueError(
+            f"Invalid publisher: emon processor only handles emon messages, not {publisher}"
+        )
     events_of_interest = ["emonTx4"]
     measurement_subject = is_topic_of_interest(topic, events_of_interest)
     if measurement_subject is None:
