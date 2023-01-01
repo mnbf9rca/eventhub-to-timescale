@@ -185,6 +185,7 @@ class Test_Converter_Methods:
                     "timestamp": "2021-01-01T00:00:00",
                     "correlation_id": "123",
                     "measurement_subject": "emonTx4",
+                    "measurement_publisher": "emon",
                     "ignore_keys": None,
                     "measurement_of_prefix": None,
                 }
@@ -192,6 +193,7 @@ class Test_Converter_Methods:
                     {
                         "timestamp": test_data["timestamp"],
                         "measurement_subject": test_data["measurement_subject"],
+                        "measurement_publisher": test_data["measurement_publisher"],
                         "measurement_of": "a",
                         "measurement_value": 1,
                         "measurement_data_type": PayloadType.NUMBER.value,
@@ -203,6 +205,7 @@ class Test_Converter_Methods:
                     records,
                     test_data["timestamp"],
                     test_data["correlation_id"],
+                    test_data["measurement_publisher"],
                     test_data["measurement_subject"],
                     test_data["ignore_keys"],
                     test_data["measurement_of_prefix"],
@@ -218,6 +221,7 @@ class Test_Converter_Methods:
                     "timestamp": "2021-01-01T00:00:00",
                     "correlation_id": "123",
                     "measurement_subject": "emonTx4",
+                    "measurement_publisher": "emon",
                     "ignore_keys": None,
                     "measurement_of_prefix": None,
                 }
@@ -227,6 +231,7 @@ class Test_Converter_Methods:
                     records,
                     test_data["timestamp"],
                     test_data["correlation_id"],
+                    test_data["measurement_publisher"],
                     test_data["measurement_subject"],
                     test_data["ignore_keys"],
                     test_data["measurement_of_prefix"],
@@ -242,6 +247,7 @@ class Test_Converter_Methods:
                     "timestamp": "2021-01-01T00:00:00",
                     "correlation_id": "123",
                     "measurement_subject": "emonTx4",
+                    "measurement_publisher": "emon",
                     "ignore_keys": None,
                     "measurement_of_prefix": None,
                 }
@@ -249,6 +255,7 @@ class Test_Converter_Methods:
                     {
                         "timestamp": test_data["timestamp"],
                         "measurement_subject": test_data["measurement_subject"],
+                        "measurement_publisher": test_data["measurement_publisher"],
                         "measurement_of": "a",
                         "measurement_value": 1,
                         "measurement_data_type": PayloadType.NUMBER.value,
@@ -257,6 +264,7 @@ class Test_Converter_Methods:
                     {
                         "timestamp": test_data["timestamp"],
                         "measurement_subject": test_data["measurement_subject"],
+                        "measurement_publisher": test_data["measurement_publisher"],
                         "measurement_of": "b",
                         "measurement_value": 2,
                         "measurement_data_type": PayloadType.NUMBER.value,
@@ -268,6 +276,7 @@ class Test_Converter_Methods:
                     records,
                     test_data["timestamp"],
                     test_data["correlation_id"],
+                    test_data["measurement_publisher"],
                     test_data["measurement_subject"],
                     test_data["ignore_keys"],
                     test_data["measurement_of_prefix"],
@@ -283,6 +292,7 @@ class Test_Converter_Methods:
                     "timestamp": "2021-01-01T00:00:00",
                     "correlation_id": "123",
                     "measurement_subject": "emonTx4",
+                    "measurement_publisher": "emon",
                     "ignore_keys": ["a"],
                     "measurement_of_prefix": None,
                 }
@@ -290,6 +300,7 @@ class Test_Converter_Methods:
                     {
                         "timestamp": test_data["timestamp"],
                         "measurement_subject": test_data["measurement_subject"],
+                        "measurement_publisher": test_data["measurement_publisher"],
                         "measurement_of": "b",
                         "measurement_value": 2,
                         "measurement_data_type": PayloadType.NUMBER.value,
@@ -301,6 +312,7 @@ class Test_Converter_Methods:
                     records,
                     test_data["timestamp"],
                     test_data["correlation_id"],
+                    test_data["measurement_publisher"],
                     test_data["measurement_subject"],
                     test_data["ignore_keys"],
                     test_data["measurement_of_prefix"],
@@ -318,6 +330,7 @@ class Test_Converter_Methods:
                     "timestamp": "2021-01-01T00:00:00",
                     "correlation_id": "123",
                     "measurement_subject": "emonTx4",
+                    "measurement_publisher": "emon",
                     "ignore_keys": None,
                     "measurement_of_prefix": "prefix",
                 }
@@ -325,6 +338,7 @@ class Test_Converter_Methods:
                     {
                         "timestamp": test_data["timestamp"],
                         "measurement_subject": test_data["measurement_subject"],
+                        "measurement_publisher": test_data["measurement_publisher"],
                         "measurement_of": "prefix_a",
                         "measurement_value": 1,
                         "measurement_data_type": PayloadType.NUMBER.value,
@@ -333,6 +347,7 @@ class Test_Converter_Methods:
                     {
                         "timestamp": test_data["timestamp"],
                         "measurement_subject": test_data["measurement_subject"],
+                        "measurement_publisher": test_data["measurement_publisher"],
                         "measurement_of": "prefix_b",
                         "measurement_value": 2,
                         "measurement_data_type": PayloadType.NUMBER.value,
@@ -344,6 +359,7 @@ class Test_Converter_Methods:
                     records,
                     test_data["timestamp"],
                     test_data["correlation_id"],
+                    test_data["measurement_publisher"],
                     test_data["measurement_subject"],
                     test_data["ignore_keys"],
                     test_data["measurement_of_prefix"],
@@ -361,6 +377,7 @@ class Test_Converter_Methods:
                     "timestamp": "2021-01-01T00:00:00",
                     "correlation_id": "123",
                     "measurement_subject": "emonTx4",
+                    "measurement_publisher": "emon",
                     "ignore_keys": ["a"],
                     "measurement_of_prefix": "prefix",
                 }
@@ -368,6 +385,7 @@ class Test_Converter_Methods:
                     {
                         "timestamp": test_data["timestamp"],
                         "measurement_subject": test_data["measurement_subject"],
+                        "measurement_publisher": test_data["measurement_publisher"],
                         "measurement_of": "prefix_b",
                         "measurement_value": 2,
                         "measurement_data_type": PayloadType.NUMBER.value,
@@ -379,6 +397,7 @@ class Test_Converter_Methods:
                     records,
                     test_data["timestamp"],
                     test_data["correlation_id"],
+                    test_data["measurement_publisher"],
                     test_data["measurement_subject"],
                     test_data["ignore_keys"],
                     test_data["measurement_of_prefix"],
