@@ -230,6 +230,7 @@ class Test_create_single_timescale_record_with_mock:
             "measurement_of": "testname",
             "measurement_data_type": "number",
             "measurement_value": "1",
+            "measurement_publisher": "testpublisher",
         }
     def test_create_single_timescale_record_where_cursor_raises_exception(self, mocker):
         mock_conn, mock_cursor = get_mock_conn_cursor(mocker)
