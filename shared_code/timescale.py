@@ -38,7 +38,7 @@ def create_timescale_records_from_batch_of_events(
         except Exception as e:
             logging.error(f"Failed to create timescale records: {e}")
             unraised_errors.append(e)
-    return unraised_errors if len(unraised_errors) > 0 else None
+    return unraised_errors or None
 
 
 def create_single_timescale_record(
