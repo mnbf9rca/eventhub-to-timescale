@@ -11,7 +11,6 @@ import json
 from jsonschema import validate
 
 
-
 # add the shared_code directory to the path
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
@@ -25,6 +24,7 @@ from shared_code import (  # noqa E402
     create_record_recursive,
     to_datetime,
     create_correlation_id,
+    recursively_deserialize,
 )
 
 # load the schema
@@ -71,7 +71,7 @@ def call_converter(
 
 
 def assert_valid_schema(data: dict, schema: dict):
-    """ Checks whether the given data matches the schema """
+    """Checks whether the given data matches the schema"""
 
     return validate(data, schema)
 
@@ -92,7 +92,6 @@ class Test_Converter_Methods:
                 TestCase().assertDictEqual(actual, expected)
             assert_valid_schema(actual_value, schema)
 
-
     class Test_Glow:
         def test_glow_to_timescale_with_valid_json_for_electricity_meter(self):
             actual_value = call_converter("glow", test_data["glow_electricitymeter"])
@@ -100,7 +99,6 @@ class Test_Converter_Methods:
             for actual, expected in zip(actual_value, expected_value):
                 TestCase().assertDictEqual(actual, expected)
             assert_valid_schema(actual_value, schema)
-
 
         def test_glow_to_timescale_with_valid_json_for_gas_meter(self):
             actual_value = call_converter("glow", test_data["glow_gasmeter"])
@@ -111,7 +109,7 @@ class Test_Converter_Methods:
 
         def test_glow_to_timescale_with_item_to_ignore(self):
             actual_value = call_converter("glow", test_data["homie_heartbeat"])
-            expected_value = test_data["homie_heartbeat"]["expected"] # None
+            expected_value = test_data["homie_heartbeat"]["expected"]  # None
             assert expected_value is None
             assert actual_value is None
 
@@ -518,6 +516,57 @@ class Test_Helpers:
             )
             with pytest.raises(Exception):
                 create_correlation_id(sample_event)
+
+    class Test_recursively_deserialize:
+        def test_recursively_deserialize_with_valid_json(self):
+            actual_value = recursively_deserialize('{"a": 1}')
+            assert actual_value == {"a": 1}
+
+        def test_recursively_deserialize_with_invalid_json(self):
+            actual_value = recursively_deserialize('{"a": 1')
+            assert actual_value == '{"a": 1'
+
+        def test_recursively_deserialize_with_none(self):
+            actual_value = recursively_deserialize(None)
+            assert actual_value is None
+
+        def test_recursively_deserialize_with_empty_string(self):
+            actual_value = recursively_deserialize("")
+            assert actual_value == ""
+
+        def test_recursively_deserialize_with_nested_object(self):
+            actual_value = recursively_deserialize('{"a": {"b": 1}}')
+            assert actual_value == {"a": {"b": 1}}
+
+        def test_recursively_deserialize_with_nested_array(self):
+            actual_value = recursively_deserialize('{"a": [{"b": 1}]}')
+            assert actual_value == {"a": [{"b": 1}]}
+
+        def test_recursively_deserialize_with_nested_array_and_object(self):
+            actual_value = recursively_deserialize('{"a": [{"b": 1}, {"c": 2}]}')
+            assert actual_value == {"a": [{"b": 1}, {"c": 2}]}
+
+        def test_recursively_deserialize_with_nested_array_and_object_and_string(self):
+            actual_value = recursively_deserialize('{"a": [{"b": 1}, {"c": 2}, "d"]}')
+            assert actual_value == {"a": [{"b": 1}, {"c": 2}, "d"]}
+
+        def test_recursively_deserialize_with_data_from_test_data_json(self):
+            test_data = '{"homie_heartbeat": {"type": "EventHubEvent", "properties": {"body": "[{\\"a\\": \\"1\\", \\"b\\": \\"2\\"}, {\\"c\\": 3, \\"d\\": 4}]"}}}'  # noqa: E501
+            expected_value = {
+                "homie_heartbeat": {
+                    "type": "EventHubEvent",
+                    "properties": {"body": [{"a": "1", "b": "2"}, {"c": 3, "d": 4}]},
+                }
+            }
+            actual_value = recursively_deserialize(test_data)
+            assert actual_value == expected_value
+
+        def test_recursively_deserialize_simple_dict_string(self):
+            test_data = '{"a": 1, "b": 2}'
+            expected_value = {"a": 1, "b": 2}
+            actual_value = recursively_deserialize(test_data)
+            assert actual_value == expected_value
+    
 
 
 if __name__ == "__main__":
