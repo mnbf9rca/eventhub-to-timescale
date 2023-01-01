@@ -1,0 +1,50 @@
+{
+  "$id": "https://cynexia.com/schemas/timeseries.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "array",
+  "items": [
+    {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The time at which the measurement was taken. For example, 2018-01-01T12:00:00Z."
+        },
+        "measurement_subject": {
+          "type": "string",
+          "description": "The device which created the measurement. For example, a sensor ID or a device ID."
+        },
+        "measurement_of": {
+          "type": "string",
+          "description": "The thing which was measured. For example, a measure-temperature or state."
+        },
+        "measurement_value": {
+          "type": ["string", "number", "boolean"],
+          "description": "The value of the measurement. For example, 23.5 or Home."
+        },
+        "measurement_data_type": {
+          "type": "string",
+          "enum": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "description": "The data type of the measurement value. Must be one of: string, number, or boolean."
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "A unique ID that can be used to correlate multiple measurements together. For example, a unique ID for a user or a session."
+        }
+      },
+      "required": [
+        "timestamp",
+        "measurement_subject",
+        "measurement_of",
+        "measurement_value",
+        "measurement_data_type"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}
