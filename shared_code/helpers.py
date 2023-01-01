@@ -34,9 +34,7 @@ def to_datetime(timestamp: str) -> str:
         # and for homie i'm not sure where the timestamp is coming from
         # check that it's in the max and min range for a timestamp
         if timestamp_float > 253402300799 or timestamp_float < 0:
-            raise ValueError(
-                "timestamp is not in a recognisable format: %s" % timestamp
-            )
+            raise ValueError(f"timestamp is not in a recognisable format: {timestamp}")
         return datetime.fromtimestamp(float(timestamp)).strftime(
             "%Y-%m-%dT%H:%M:%S.%fZ"
         )
@@ -48,7 +46,7 @@ def to_datetime(timestamp: str) -> str:
     try:
         return parser.parse(timestamp).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     except parser.ParserError:
-        raise ValueError("timestamp is not in a recognisable format: %s" % timestamp)
+        raise ValueError(f"timestamp is not in a recognisable format: {timestamp}")
     except Exception as e:
         raise e
 
