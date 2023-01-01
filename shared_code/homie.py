@@ -18,8 +18,10 @@ def homie_to_timescale(
     @return: a list of timescale records
     """
     if publisher != "homie":
-        raise ValueError("Invalid publisher: Homie processor only handles Homie messages not %s" % publisher)
-    
+        raise ValueError(
+            f"Invalid publisher: Homie processor only handles Homie messages not {publisher}"
+        )
+
     # examine the topic. We're only interested in topics where the last part is one we're interested in
     events_of_interest = [
         "measure-temperature",
