@@ -78,13 +78,10 @@ def validate_all_fields_in_record(record: dict[str, Any]) -> None:
         "measurement_data_type",
         "measurement_value",
     ]
-    missing_fields = []
-    for field in required_fields:
-        if field not in record:
-            missing_fields.append(field)
-    
-    if missing_fields:
-            raise ValueError(f"Missing fields: {missing_fields}")
+    if missing_fields := [
+        field for field in required_fields if field not in record
+    ]:
+        raise ValueError(f"Missing fields: {missing_fields}")
 
 
 def identify_data_column(measurement_type: str) -> str:
