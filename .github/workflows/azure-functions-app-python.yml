@@ -23,7 +23,6 @@ on:
     workflows: ["Run pytest"] # run after tests, not concurrently
     types:
       - completed
-  push:
     branches:
     - "main"
 
