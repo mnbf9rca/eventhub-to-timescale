@@ -46,19 +46,21 @@ def create_timescale_records_from_batch_of_events(
     """Create timescale records from events
     @param events: the events to create records from
     """
+    unraised_errors = []
     unwrapped_records = list(map(json.loads, json.loads(record)))
     try:
         validate(instance=unwrapped_records, schema=schema)
     except ValidationError as e:
         logging.error(f"Failed to validate record set: {e}")
         raise
-
-    try:
-        for record in unwrapped_records:
+        # TODO move try to surround create_single_timescale_record
+    for record in unwrapped_records:
+        try:
             create_single_timescale_record(conn, record)
-    except Exception as e:
-        logging.error(f"Failed to create timescale records: {e}")
-        raise
+        except Exception as e:
+            logging.error(f"Failed to create timescale records: {e}")
+            unraised_errors.append()
+    return unraised_errors if len(unraised_errors) > 0 else None
 
 
 def create_single_timescale_record(
@@ -70,12 +72,12 @@ def create_single_timescale_record(
     # TODO: validate(instance=record, schema=schema)
     with conn.cursor() as cur:
         result = cur.execute(
-            f"INSERT INTO conditions (timestamp, measurement_subject, correlation_id, measurement_name, {identify_data_column(record['measurement_data_type'])}) VALUES (%s, %s, %s, %s, %s)",  # noqa: E501
+            f"INSERT INTO conditions (timestamp, measurement_subject, correlation_id, measurement_of, {identify_data_column(record['measurement_data_type'])}) VALUES (%s, %s, %s, %s, %s)",  # noqa: E501
             (
                 record["timestamp"],
                 record["measurement_subject"],
                 record["correlation_id"],
-                record["measurement_name"],
+                record["measurement_of"],
                 parse_measurement_value(record["measurement_data_type"], record["measurement_value"]),
             ),
         )
