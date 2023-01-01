@@ -11,6 +11,10 @@
           "format": "date-time",
           "description": "The time at which the measurement was taken. For example, 2018-01-01T12:00:00Z."
         },
+        "measurement_publisher": {
+          "type": "string",
+          "description": "The service or device which published or generated this record."
+        },
         "measurement_subject": {
           "type": "string",
           "description": "The device which created the measurement. For example, a sensor ID or a device ID."
@@ -40,6 +44,7 @@
       "required": [
         "timestamp",
         "measurement_subject",
+        "measurement_publisher",
         "measurement_of",
         "measurement_value",
         "measurement_data_type"
