@@ -1,6 +1,6 @@
 {
   "scriptFile": "__init__.py",
-  "disabled": true,
+  "disabled": false,
   "bindings": [
     {
       "type": "eventHubTrigger",
