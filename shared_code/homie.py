@@ -25,7 +25,8 @@ def homie_to_timescale(
         "mode",
         "thermostat-setpoint",
     ]
-    measurement_of = topic.split("/")[-1]
+    topic_parts = topic.split("/")
+    measurement_of = topic_parts[-1]
     if measurement_of not in events_of_interest:
         return
     correlation_id = create_correlation_id(event)
@@ -33,7 +34,8 @@ def homie_to_timescale(
     return [
         create_atomic_record(
             source_timestamp=to_datetime(messagebody["timestamp"]),
-            measurement_subject=publisher,
+            measurement_subject=topic_parts[-2],
+            measurement_publisher=publisher,
             measurement_of=measurement_of,
             measurement_value=messagebody["payload"],
             measurement_data_type=PayloadType.STRING
