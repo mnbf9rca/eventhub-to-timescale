@@ -6,9 +6,13 @@ import sys
 import importlib
 import uuid
 import psycopg
-
-
+import pytest_mock
+import json
 import pytest
+
+# import test data
+from get_test_data import create_event_hub_event, load_test_data
+test_data = load_test_data()
 
 # add the shared_code directory to the path
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -212,6 +216,29 @@ class Test_create_single_timescale_record_against_actual_database:
         }
         with pytest.raises(ValueError):
             create_single_timescale_record(self.conn, sample_record)
+
+
+class Test_create_timescale_records_from_batch_of_events:
+    def stringify_test_data(self, test_dataset_name: str) -> str:
+        return json.dumps(list(map(json.dumps, test_data[test_dataset_name]["body"])))
+
+    def setup_method(self, mocker: pytest_mock.MockFixture):
+        pass
+
+
+    def test_create_timescale_records_from_batch_of_events(self, mocker: pytest_mock.MockFixture):
+        mocked_create_single_timescale_record = mocker.patch(
+            "shared_code.timescale.create_single_timescale_record", autospec=True
+        )
+        
+        mock_conn_o = mocker.patch("psycopg.connect", autospec=True)
+        mock_conn = mock_conn_o.return_value
+        test_value = self.stringify_test_data("timeseries_emon_electricitymeter")
+        patch_value = None
+        mocked_create_single_timescale_record.return_value = patch_value
+        actual_value = create_timescale_records_from_batch_of_events(mock_conn, test_value)
+        assert actual_value is None
+
 
 
 class Test_parse_measurement_value:

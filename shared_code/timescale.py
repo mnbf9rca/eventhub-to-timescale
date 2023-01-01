@@ -5,6 +5,7 @@ import logging
 import psycopg as psycopg
 import azure.functions as func
 
+
 from jsonschema import validate, ValidationError
 import json
 
@@ -17,19 +18,19 @@ with open(schema_path) as f:
     schema = json.load(f)
 
 def create_timescale_records_from_batch_of_events(
-    conn: psycopg.Connection, record: str
+    conn: psycopg.Connection, record_set: str
 ) -> None:
     """Create timescale records from events
     @param events: the events to create records from
     """
     unraised_errors = []
-    unwrapped_records = list(map(json.loads, json.loads(record)))
+    unwrapped_records = list(map(json.loads, json.loads(record_set)))
     try:
         validate(instance=unwrapped_records, schema=schema)
     except ValidationError as e:
-        logging.error(f"Failed to validate record set: {e}")
+        logging.error(f"Failed to validate schema of record set: {e}")
         raise
-        # TODO move try to surround create_single_timescale_record
+
     for record in unwrapped_records:
         try:
             create_single_timescale_record(conn, record)
