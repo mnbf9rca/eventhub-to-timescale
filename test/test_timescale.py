@@ -333,7 +333,7 @@ class Test_create_timescale_records_from_batch_of_events:
             mock_conn, test_value
         )
         assert len(actual_value) == 7
-        for i in range(0, 7):
+        for i in range(7):
             assert actual_value[i] == side_effect[i]    
 
 

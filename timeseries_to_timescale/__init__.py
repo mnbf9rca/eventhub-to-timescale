@@ -16,13 +16,14 @@ def main(events: List[func.EventHubEvent]):
         for event in events:
             try:
                 record_batch = event.get_body().decode('utf-8')
-                raised_errors = create_timescale_records_from_batch_of_events(conn, record_batch)
-                if raised_errors:
+                if raised_errors := create_timescale_records_from_batch_of_events(
+                    conn, record_batch
+                ):
                     errors.extend(raised_errors)
             except Exception as e:
                 logging.error(f"Error creating timescale records: {e}")
                 errors.append(e)
-    if len(errors) > 0:
+    if errors:
         raise Exception(errors)
 
                 
