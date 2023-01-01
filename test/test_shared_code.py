@@ -592,7 +592,7 @@ class Test_Helpers:
             test_data = {"a": 1}
             with pytest.raises(
                 TypeError,
-                match=r".*argument must be a string or a number, not 'dict'*",
+                match=r"float\(\) argument must be a string or a (real )?number, not 'dict'",
             ):
                 to_datetime(test_data)
 
