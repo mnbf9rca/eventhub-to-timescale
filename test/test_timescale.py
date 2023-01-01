@@ -27,6 +27,7 @@ from shared_code import (  # noqa E402
     parse_measurement_value,
     identify_data_column,
     create_timescale_records_from_batch_of_events,
+    validate_all_fields_in_record,
 )
 
 # when developing locally, use .env file to set environment variables
@@ -231,17 +232,19 @@ class Test_create_single_timescale_record_against_actual_database:
         with pytest.raises(ValueError):
             create_single_timescale_record(self.conn, sample_record)
 
+
 class Test_create_single_timescale_record_with_mock:
     sample_record = {
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "measurement_subject": "testsubject",
-            "correlation_id": "mocked_correlation_id",
-            "measurement_of": "testname",
-            "measurement_data_type": "number",
-            "measurement_publisher": "testpublisher",
-            "measurement_value": "1",
-            "measurement_publisher": "testpublisher",
-        }
+        "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        "measurement_subject": "testsubject",
+        "correlation_id": "mocked_correlation_id",
+        "measurement_of": "testname",
+        "measurement_data_type": "number",
+        "measurement_publisher": "testpublisher",
+        "measurement_value": "1",
+        "measurement_publisher": "testpublisher",
+    }
+
     def test_create_single_timescale_record_where_cursor_raises_exception(self, mocker):
         mock_conn, mock_cursor = get_mock_conn_cursor(mocker)
         mock_cursor.execute.side_effect = Exception("test exception")
@@ -258,7 +261,9 @@ class Test_create_single_timescale_record_with_mock:
             assert isinstance()(e, ValueError)
             assert "Failed to insert record" in str(e)
 
-    def test_create_single_timescale_record_where_more_than_one_records_returned(self, mocker):
+    def test_create_single_timescale_record_where_more_than_one_records_returned(
+        self, mocker
+    ):
         mock_conn, _ = get_mock_conn_cursor(mocker)
         mock_result: MagicMock = mock_conn.cursor().__enter__().execute()
         with mock_result(new=mocker.PropertyMock):
@@ -267,6 +272,7 @@ class Test_create_single_timescale_record_with_mock:
             create_single_timescale_record(mock_conn, self.sample_record)
             assert isinstance()(e, ValueError)
             assert "Inserted too many records" in str(e)
+
 
 def stringify_test_data(test_dataset_name: str) -> str:
     """loads test data from json file and returns it as a string"""
@@ -335,17 +341,23 @@ class Test_create_timescale_records_from_batch_of_events:
             "shared_code.timescale.create_single_timescale_record", autospec=True
         )
         mock_conn, _ = get_mock_conn_cursor(mocker)
-        test_value = stringify_test_data(
-            "timeseries_emon_electricitymeter"
-        )
-        side_effect = [Exception("test exception 1"), Exception("test exception 2"), Exception("test exception 3"), Exception("test exception 4"), Exception("test exception 5"), Exception("test exception 6"), Exception("test exception 7")]
+        test_value = stringify_test_data("timeseries_emon_electricitymeter")
+        side_effect = [
+            Exception("test exception 1"),
+            Exception("test exception 2"),
+            Exception("test exception 3"),
+            Exception("test exception 4"),
+            Exception("test exception 5"),
+            Exception("test exception 6"),
+            Exception("test exception 7"),
+        ]
         mocked_create_single_timescale_record.side_effect = side_effect
         actual_value = create_timescale_records_from_batch_of_events(
             mock_conn, test_value
         )
         assert len(actual_value) == 7
         for i in range(7):
-            assert actual_value[i] == side_effect[i]    
+            assert actual_value[i] == side_effect[i]
 
 
 class Test_parse_measurement_value:
@@ -416,7 +428,7 @@ class Test_parse_measurement_value:
         actual_value = parse_measurement_value(test_data_type, test_value)
         assert actual_value == expected_value
         assert type(actual_value) == float
-    
+
     def test_parse_measurement_value_with_invalid_measurement_type(self):
         test_data_type = "invalid"
         test_value = "test"
@@ -472,3 +484,62 @@ class Test_identify_data_column:
         test_data_type = True
         with pytest.raises(ValueError):
             identify_data_column(test_data_type)
+
+
+class Test_validate_all_fields_in_record:
+    def test_validate_all_fields_in_record_with_valid_record(self):
+        test_record = {
+            "timestamp": "2021-01-01T00:00:00.000Z",
+            "measurement_publisher": "test",
+            "measurement_subject": "test",
+            "correlation_id": "test",
+            "measurement_of": "test",
+            "measurement_data_type": "number",
+            "measurement_value": "1",
+        }
+        actual_value = validate_all_fields_in_record(test_record)
+        assert actual_value is None
+
+    def test_validate_all_fields_in_record_with_one_missing_field(self):
+        test_record = {
+            "timestamp": "2021-01-01T00:00:00.000Z",
+            "measurement_publisher": "test",
+            "measurement_subject": "test",
+            "correlation_id": "test",
+            "measurement_of": "test",
+            "measurement_data_type": "number",
+        }
+        # missing measurement_bool
+        with pytest.raises(ValueError) as e:
+            validate_all_fields_in_record(test_record)
+        assert "Missing fields:" in str(e.value)
+        assert "measurement_value" in str(e.value)
+
+    def test_validate_all_fields_in_record_with_multiple_missing_fields(self):
+        test_record = {
+            "timestamp": "2021-01-01T00:00:00.000Z",
+            "measurement_publisher": "test",
+            "measurement_subject": "test",
+            "correlation_id": "test",
+            "measurement_of": "test",
+        }
+        # missing measurement_data_type, measurement_value
+        with pytest.raises(ValueError) as e:
+            validate_all_fields_in_record(test_record)
+        assert "Missing fields:" in str(e.value)
+        assert "measurement_data_type" in str(e.value)
+        assert "measurement_value" in str(e.value)
+
+    def test_validate_all_fields_in_record_with_additional_fields(self):
+        test_record = {
+            "timestamp": "2021-01-01T00:00:00.000Z",
+            "measurement_publisher": "test",
+            "measurement_subject": "test",
+            "correlation_id": "test",
+            "measurement_of": "test",
+            "measurement_data_type": "number",
+            "measurement_value": "1",
+            "additional_field": "test",
+        }
+        actual_value = validate_all_fields_in_record(test_record)
+        assert actual_value is None

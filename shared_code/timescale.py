@@ -66,7 +66,7 @@ def create_single_timescale_record(
             raise ValueError(f"Inserted too many records: {record}")
 
 def validate_all_fields_in_record(record: dict[str, Any]) -> None:
-    """Validate all fields in a record
+    """Validate at least the required fields are in the record
     @param record: the record to validate
     """
     required_fields = [
@@ -78,11 +78,13 @@ def validate_all_fields_in_record(record: dict[str, Any]) -> None:
         "measurement_data_type",
         "measurement_value",
     ]
+    missing_fields = []
     for field in required_fields:
         if field not in record:
-            raise ValueError(f"Missing field: {field}")
-    if record["measurement_data_type"] not in {"boolean", "number", "string"}:
-        raise ValueError(f"Invalid measurement data type: {record['measurement_data_type']}")
+            missing_fields.append(field)
+    
+    if missing_fields:
+            raise ValueError(f"Missing fields: {missing_fields}")
 
 
 def identify_data_column(measurement_type: str) -> str:
