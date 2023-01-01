@@ -25,7 +25,7 @@ def glow_to_timescale(
     events_of_interest = ["electricitymeter", "gasmeter"]
     topic_parts = topic.split("/")
     if publisher.lower() != "glow":
-        raise ValueError("Invalid publisher: Glow processor only handles Glow messages")
+        raise ValueError("Invalid publisher: Glow processor only handles Glow messages, not %s" % publisher)
     measurement_subject = topic_parts[-1]
     if measurement_subject not in events_of_interest:
         return

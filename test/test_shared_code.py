@@ -49,7 +49,9 @@ def sc_test_extract_topic(messagebody: dict) -> tuple[str, str]:
 
 
 def call_converter(
-    converter: str, test_data_item: dict[str, Any]
+    converter: str,
+    test_data_item: dict[str, Any],
+    override_publisher: str = None
 ) -> List[dict[str, Any]]:
     """Call the converter with the test data item
     @param converter: the converter to call - homie, emon, glow
@@ -60,12 +62,13 @@ def call_converter(
     messagebody = test_data_item["properties"]["body"]
     # o_messagebody: dict = json.loads(messagebody)
     topic, publisher = sc_test_extract_topic(messagebody)
+    publisher_to_send = override_publisher if override_publisher else publisher
     if converter == "emon":
-        return emon_to_timescale(test_event, messagebody, topic, publisher)
+        return emon_to_timescale(test_event, messagebody, topic, publisher_to_send)
     elif converter == "glow":
-        return glow_to_timescale(test_event, messagebody, topic, publisher)
+        return glow_to_timescale(test_event, messagebody, topic, publisher_to_send)
     elif converter == "homie":
-        return homie_to_timescale(test_event, messagebody, topic, publisher)
+        return homie_to_timescale(test_event, messagebody, topic, publisher_to_send)
     else:
         raise ValueError(f"Unknown converter {converter}")
 
@@ -79,8 +82,8 @@ def assert_valid_schema(data: dict, schema: dict):
 class Test_Converter_Methods:
     class Test_Emon:
         def test_with_ignored_key(self):
-            actual_value = call_converter("emon", test_data["homie_heartbeat"])
-            expected_value = test_data["homie_heartbeat"]["expected"]
+            actual_value = call_converter("emon", test_data["emon_ignored"])
+            expected_value = test_data["emon_ignored"]["expected"]
             assert expected_value is None
             assert actual_value is None
 
@@ -91,6 +94,15 @@ class Test_Converter_Methods:
             for actual, expected in zip(actual_value, expected_value):
                 TestCase().assertDictEqual(actual, expected)
             assert_valid_schema(actual_value, schema)
+
+        def test_ignored_publisher(self):
+            test_object: dict = test_data["emontx4_json"]
+            with pytest.raises(ValueError) as e:
+                call_converter("emon", test_object, "incorrect_publisher")
+            assert "incorrect_publisher" in str(e.value)
+            assert "emon processor only handles emon messages" in str(e.value).lower()
+
+
 
     class Test_Glow:
         def test_glow_to_timescale_with_valid_json_for_electricity_meter(self):
@@ -107,8 +119,15 @@ class Test_Converter_Methods:
                 TestCase().assertDictEqual(actual, expected)
             assert_valid_schema(actual_value, schema)
 
-        def test_glow_to_timescale_with_item_to_ignore(self):
-            actual_value = call_converter("glow", test_data["homie_heartbeat"])
+        def test_ignored_publisher(self):
+            test_object: dict = test_data["glow_gasmeter"]
+            with pytest.raises(ValueError) as e:
+                call_converter("glow", test_object, "incorrect_publisher")
+            assert "incorrect_publisher" in str(e.value)
+            assert "glow processor only handles glow messages" in str(e.value).lower()
+
+        def test_glow_to_timescale_with_item_to_ignored_measurement(self):
+            actual_value = call_converter("glow", test_data["glow_ignored"])
             expected_value = test_data["homie_heartbeat"]["expected"]  # None
             assert expected_value is None
             assert actual_value is None
@@ -135,6 +154,14 @@ class Test_Converter_Methods:
             for actual, expected in zip(actual_value, expected_value):
                 TestCase().assertDictEqual(actual, expected)
             assert_valid_schema(actual_value, schema)
+
+        def test_ignored_publisher(self):
+            test_object: dict = test_data["homie_mode"]
+            with pytest.raises(ValueError) as e:
+                call_converter("homie", test_object, "incorrect_publisher")
+            assert "incorrect_publisher" in str(e.value)
+            assert "homie processor only handles homie messages" in str(e.value).lower()
+
 
     class Test_Timeseries:
         class Test_get_record_type:
