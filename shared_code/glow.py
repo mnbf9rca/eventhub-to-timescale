@@ -11,7 +11,7 @@ def glow_to_timescale(
     event: EventHubEvent,
     messagebody: dict,
     topic: str,
-    _publisher: str,
+    publisher: str,
 ) -> List[dict[str, Any]]:
     """
     Convert a message from the Glow MQTT broker to a list of records for TimescaleDB
@@ -23,7 +23,10 @@ def glow_to_timescale(
     """
     # examine the topic. We're only interested in topics where the last part is in events_of_interest
     events_of_interest = ["electricitymeter", "gasmeter"]
-    measurement_subject = topic.split("/")[-1]
+    topic_parts = topic.split("/")
+    if publisher.lower() != "glow":
+        raise ValueError("Invalid publisher: Glow processor only handles Glow messages")
+    measurement_subject = topic_parts[-1]
     if measurement_subject not in events_of_interest:
         return
 
@@ -43,22 +46,24 @@ def glow_to_timescale(
         "cumulativevolunits",
     ]
     records = create_record_recursive(
-        message_payload[measurement_subject]["energy"]["import"],
-        records,
-        timestamp,
-        correlation_id,
-        measurement_subject,
+        payload=message_payload[measurement_subject]["energy"]["import"],
+        records=records,
+        timestamp=timestamp,
+        correlation_id=correlation_id,
+        measurement_publisher=publisher,
+        measurement_subject=measurement_subject,
         ignore_keys=ignore_keys,
         measurement_of_prefix="import",
     )
 
     if measurement_subject == "electricitymeter":
         records = create_record_recursive(
-            message_payload[measurement_subject]["power"],
-            records,
-            timestamp,
-            correlation_id,
-            measurement_subject,
+            payload=message_payload[measurement_subject]["power"],
+            records=records,
+            timestamp=timestamp,
+            correlation_id=correlation_id,
+            measurement_publisher=publisher,
+            measurement_subject=measurement_subject,
             ignore_keys=ignore_keys,
             measurement_of_prefix="power",
         )
