@@ -3,7 +3,6 @@ from typing import Any, List
 from datetime import datetime
 from dateutil import parser
 from azure.functions import EventHubEvent
-import logging
 
 
 def is_topic_of_interest(topic: str, events_of_interest: List[str]):
@@ -35,7 +34,7 @@ def to_datetime(timestamp: str) -> str:
         # and for homie i'm not sure where the timestamp is coming from
         # check that it's in the max and min range for a timestamp
         if timestamp_float > 253402300799 or timestamp_float < 0:
-            raise ValueError("timestamp is not in a recognisable format: %s", timestamp)
+            raise ValueError(f"timestamp is not in a recognisable format: {timestamp}")
         return datetime.fromtimestamp(float(timestamp)).strftime(
             "%Y-%m-%dT%H:%M:%S.%fZ"
         )
@@ -47,7 +46,7 @@ def to_datetime(timestamp: str) -> str:
     try:
         return parser.parse(timestamp).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     except parser.ParserError:
-        raise ValueError("timestamp is not in a recognisable format: %s", timestamp)
+        raise ValueError(f"timestamp is not in a recognisable format: {timestamp}")
     except Exception as e:
         raise e
 
@@ -64,6 +63,7 @@ def create_correlation_id(event: EventHubEvent) -> str:
     enqueued_time_str = event.enqueued_time.strftime("%Y-%m-%dT%H:%M:%S.%f")
     return f"{enqueued_time_str}-{event.sequence_number}"
 
+
 def recursively_deserialize(item: Any) -> dict:
     """Recursively deserialize a string
     @param string: the string
@@ -77,9 +77,9 @@ def recursively_deserialize(item: Any) -> dict:
         return item
     try:
         deserialized_item = json.loads(item)
-            # if it's an iterative type, then recursively deserialize it
-            # otherwise return the original item
-            # this list comes from https://docs.python.org/3/library/json.html#json.JSONDecoder
+        # if it's an iterative type, then recursively deserialize it
+        # otherwise return the original item
+        # this list comes from https://docs.python.org/3/library/json.html#json.JSONDecoder
         return (
             recursively_deserialize(deserialized_item)
             if isinstance(deserialized_item, (dict, list, tuple))

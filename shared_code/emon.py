@@ -39,6 +39,7 @@ def emon_to_timescale(
         correlation_id=correlation_id,
         measurement_publisher=publisher,
         measurement_subject=measurement_subject,
+        ignore_keys=["time"],
     )
 
     return records
