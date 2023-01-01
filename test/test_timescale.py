@@ -52,7 +52,8 @@ class db_helpers:
             + "measurement_of, "
             + "measurement_string, "
             + "correlation_id, "
-            + "measurement_bool"
+            + "measurement_bool, "
+            + "measurement_publisher"
         )
 
     @staticmethod
@@ -79,6 +80,7 @@ class db_helpers:
         assert record[1] == expected_record["measurement_subject"]
         assert record[3] == expected_record["measurement_of"]
         assert record[5] == expected_record["correlation_id"]
+        assert record[7] == expected_record["measurement_publisher"]
 
     @staticmethod
     def check_single_record_exists(
@@ -132,6 +134,7 @@ class Test_create_single_timescale_record_against_actual_database:
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "measurement_subject": "testsubject",
             "correlation_id": this_correlation_id,
+            "measurement_publisher": "testpublisher",
             "measurement_of": "testname",
             "measurement_data_type": "number",
             "measurement_value": "1",
@@ -146,6 +149,7 @@ class Test_create_single_timescale_record_against_actual_database:
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "measurement_subject": "testsubject",
             "correlation_id": this_correlation_id,
+            "measurement_publisher": "testpublisher",
             "measurement_of": "testname",
             "measurement_data_type": "number",
             "measurement_value": "1.1",
@@ -161,6 +165,7 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_subject": "testsubject",
             "correlation_id": this_correlation_id,
             "measurement_of": "testname",
+            "measurement_publisher": "testpublisher",
             "measurement_data_type": "string",
             "measurement_value": "test",
         }
@@ -174,6 +179,7 @@ class Test_create_single_timescale_record_against_actual_database:
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "measurement_subject": "testsubject",
             "correlation_id": this_correlation_id,
+            "measurement_publisher": "testpublisher",
             "measurement_of": "testname",
             "measurement_data_type": "boolean",
             "measurement_value": "true",
@@ -188,6 +194,7 @@ class Test_create_single_timescale_record_against_actual_database:
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "measurement_subject": "testsubject",
             "correlation_id": this_correlation_id,
+            "measurement_publisher": "testpublisher",
             "measurement_of": "testname",
             "measurement_data_type": "boolean",
             "measurement_value": "false",
@@ -203,6 +210,7 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_subject": "testsubject",
             "correlation_id": this_correlation_id,
             "measurement_of": "testname",
+            "measurement_publisher": "testpublisher",
             "measurement_data_type": "boolean",
             "measurement_value": "invalid",
         }
@@ -216,6 +224,7 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_subject": "testsubject",
             "correlation_id": this_correlation_id,
             "measurement_of": "testname",
+            "measurement_publisher": "testpublisher",
             "measurement_data_type": "number",
             "measurement_value": "invalid",
         }
@@ -229,6 +238,7 @@ class Test_create_single_timescale_record_with_mock:
             "correlation_id": "mocked_correlation_id",
             "measurement_of": "testname",
             "measurement_data_type": "number",
+            "measurement_publisher": "testpublisher",
             "measurement_value": "1",
             "measurement_publisher": "testpublisher",
         }
@@ -375,7 +385,7 @@ class Test_parse_measurement_value:
         with pytest.raises(ValueError):
             parse_measurement_value(test_data_type, test_value)
 
-    def test_parse_measurement_value_with_boolean_and_boolean(self):
+    def test_parse_measurement_value_with_boolean_and_true(self):
         test_data_type = "boolean"
         test_value = "true"
         expected_value = True
@@ -383,7 +393,7 @@ class Test_parse_measurement_value:
         assert actual_value == expected_value
         assert type(actual_value) == bool
 
-    def test_parse_measurement_value_with_boolean_and_boolean(self):
+    def test_parse_measurement_value_with_boolean_and_false(self):
         test_data_type = "boolean"
         test_value = "false"
         expected_value = False

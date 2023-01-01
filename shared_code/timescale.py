@@ -48,11 +48,12 @@ def create_single_timescale_record(
     @param record: the record to create
     """
     # TODO: validate(instance=record, schema=schema)
+    validate_all_fields_in_record(record)
     with conn.cursor() as cur:
-        result = cur.execute(
-            f"INSERT INTO conditions (timestamp, measurement_subject, correlation_id, measurement_of, {identify_data_column(record['measurement_data_type'])}) VALUES (%s, %s, %s, %s, %s)",  # noqa: E501
+        result = cur.execute(f"INSERT INTO conditions (timestamp, measurement_publisher, measurement_subject, correlation_id, measurement_of, {identify_data_column(record['measurement_data_type'])}) VALUES (%s, %s, %s, %s, %s, %s)",  # noqa: E501
             (
                 record["timestamp"],
+                record["measurement_publisher"],
                 record["measurement_subject"],
                 record["correlation_id"],
                 record["measurement_of"],
@@ -63,6 +64,26 @@ def create_single_timescale_record(
             raise ValueError(f"Failed to insert record: {record}")
         elif result.rowcount > 1:
             raise ValueError(f"Inserted too many records: {record}")
+
+def validate_all_fields_in_record(record: dict[str, Any]) -> None:
+    """Validate all fields in a record
+    @param record: the record to validate
+    """
+    required_fields = [
+        "timestamp",
+        "measurement_publisher",
+        "measurement_subject",
+        "correlation_id",
+        "measurement_of",
+        "measurement_data_type",
+        "measurement_value",
+    ]
+    for field in required_fields:
+        if field not in record:
+            raise ValueError(f"Missing field: {field}")
+    if record["measurement_data_type"] not in {"boolean", "number", "string"}:
+        raise ValueError(f"Invalid measurement data type: {record['measurement_data_type']}")
+
 
 def identify_data_column(measurement_type: str) -> str:
     """Identify the column name for the data
