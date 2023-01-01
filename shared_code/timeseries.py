@@ -14,6 +14,7 @@ class PayloadType(Enum):
 def create_atomic_record(
     source_timestamp: str,
     measurement_subject: str,
+    measurement_publisher: str,
     measurement_of: str,
     measurement_value: Any,
     measurement_data_type: PayloadType,
@@ -31,6 +32,7 @@ def create_atomic_record(
     return {
         "timestamp": source_timestamp,
         "measurement_subject": measurement_subject,
+        "measurement_publisher": measurement_publisher,
         "measurement_of": measurement_of,
         "measurement_value": measurement_value,
         "measurement_data_type": measurement_data_type.value,
@@ -43,6 +45,7 @@ def create_record_recursive(
     records: List,
     timestamp: str,
     correlation_id: str,
+    measurement_publisher: str,
     measurement_subject: str,
     ignore_keys: list = None,
     measurement_of_prefix: str = None,
@@ -53,6 +56,7 @@ def create_record_recursive(
         records (Array[TimescaleRecord]): list of records to be returned
         timestamp (str): timestamp in ISO format
         correlation_id (str): unique id for the record
+        measurement_publisher (str): publisher of the record
         measurement_subject (str): subject of the record
         ignore_keys (list): list of keys to ignore (also will not be recursed)
         measurement_of_prefix (str): prefix to add to the measurement_of field
@@ -66,22 +70,24 @@ def create_record_recursive(
         if ignore_keys is None or key not in ignore_keys:
             if isinstance(payload[key], dict):
                 create_record_recursive(
-                    payload[key],
-                    records,
-                    timestamp,
-                    correlation_id,
-                    measurement_subject,
-                    ignore_keys,
-                    measurement_of_prefix,
+                    payload=payload[key],
+                    records=records,
+                    timestamp=timestamp,
+                    correlation_id=correlation_id,
+                    measurement_publisher=measurement_publisher,
+                    measurement_subject=measurement_subject,
+                    ignore_keys=ignore_keys,
+                    measurement_of_prefix=measurement_of_prefix,
                 )
             else:
                 records.append(
                     create_atomic_record(
                         source_timestamp=timestamp,
+                        measurement_publisher=measurement_publisher,
                         measurement_subject=measurement_subject,
-                        measurement_of=key
-                        if measurement_of_prefix is None
-                        else f"{measurement_of_prefix}_{key}",
+                        measurement_of=(key
+                                        if measurement_of_prefix is None
+                                        else f"{measurement_of_prefix}_{key}"),
                         measurement_value=payload[key],
                         measurement_data_type=get_record_type(payload[key]),
                         correlation_id=correlation_id,
