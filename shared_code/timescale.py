@@ -9,30 +9,6 @@ from jsonschema import validate, ValidationError
 import json
 
 
-# create a singleton method which returns a connection to the timescale database using psycopg2 and the
-# connection string TIMESCALE_CONNECTION_STRING
-class TimescaleConnection:
-    def __init__(self, connection_string: str = None):
-        self.connection_string = connection_string
-        self.connection = None
-
-    def set_connection_string(self, connection_string: str) -> None:
-        self.connection_string = connection_string
-
-    def get_connection(self):
-        if self.connection is None:
-            self.connection = psycopg.connect(self.connection_string)
-        return self.connection
-
-    def close_connection(self) -> None:
-        if self.connection is not None:
-            self.connection.close()
-            self.connection = None
-
-    def __del__(self):
-        self.close_connection()
-
-
 # load timeseries source schema
 schema_path = os.sep.join(
     [os.path.dirname(os.path.abspath(__file__)), "timeseries.json"]
