@@ -59,8 +59,10 @@ def create_single_timescale_record(
                 parse_measurement_value(record["measurement_data_type"], record["measurement_value"]),
             ),
         )
-        if result.rowcount != 1:
+        if result.rowcount < 1:
             raise ValueError(f"Failed to insert record: {record}")
+        elif result.rowcount > 1:
+            raise ValueError(f"Inserted too many records: {record}")
 
 def identify_data_column(measurement_type: str) -> str:
     """Identify the column name for the data

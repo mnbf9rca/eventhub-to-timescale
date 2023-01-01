@@ -1,4 +1,5 @@
 import datetime
+from unittest.mock import MagicMock
 from typing import Any, Tuple
 from dateutil import parser
 import os
@@ -15,6 +16,7 @@ from jsonschema import ValidationError
 
 # import test data
 from get_test_data import create_event_hub_event, load_test_data
+
 test_data = load_test_data()
 
 # add the shared_code directory to the path
@@ -24,7 +26,7 @@ from shared_code import (  # noqa E402
     create_single_timescale_record,
     parse_measurement_value,
     identify_data_column,
-    create_timescale_records_from_batch_of_events
+    create_timescale_records_from_batch_of_events,
 )
 
 # when developing locally, use .env file to set environment variables
@@ -220,55 +222,120 @@ class Test_create_single_timescale_record_against_actual_database:
         with pytest.raises(ValueError):
             create_single_timescale_record(self.conn, sample_record)
 
+class Test_create_single_timescale_record_with_mock:
+    sample_record = {
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "measurement_subject": "testsubject",
+            "correlation_id": "mocked_correlation_id",
+            "measurement_of": "testname",
+            "measurement_data_type": "number",
+            "measurement_value": "1",
+        }
+    def test_create_single_timescale_record_where_cursor_raises_exception(self, mocker):
+        mock_conn, mock_cursor = get_mock_conn_cursor(mocker)
+        mock_cursor.execute.side_effect = Exception("test exception")
+        with pytest.raises(Exception):
+            create_single_timescale_record(mock_conn, self.sample_record)
+
+    def test_create_single_timescale_record_where_no_records_returned(self, mocker):
+        mock_conn, _ = get_mock_conn_cursor(mocker)
+        mock_result: MagicMock = mock_conn.cursor().__enter__().execute()
+        with mock_result(new=mocker.PropertyMock):
+            mock_result.rowcount = 0
+        with pytest.raises(Exception) as e:
+            create_single_timescale_record(mock_conn, self.sample_record)
+            assert isinstance()(e, ValueError)
+            assert "Failed to insert record" in str(e)
+
+    def test_create_single_timescale_record_where_more_than_one_records_returned(self, mocker):
+        mock_conn, _ = get_mock_conn_cursor(mocker)
+        mock_result: MagicMock = mock_conn.cursor().__enter__().execute()
+        with mock_result(new=mocker.PropertyMock):
+            mock_result.rowcount = 3
+        with pytest.raises(Exception) as e:
+            create_single_timescale_record(mock_conn, self.sample_record)
+            assert isinstance()(e, ValueError)
+            assert "Inserted too many records" in str(e)
+
+def stringify_test_data(test_dataset_name: str) -> str:
+    """loads test data from json file and returns it as a string"""
+    return json.dumps(list(map(json.dumps, test_data[test_dataset_name]["body"])))
+
+
+def get_mock_conn_cursor(
+    mocker: pytest_mock.MockFixture,
+) -> Tuple[MagicMock, MagicMock]:
+    """creates a mock connection and cursor and returns them"""
+    mock_conn_o = mocker.patch("psycopg.connect", autospec=True)
+    mock_conn = mock_conn_o.return_value
+    return mock_conn, mock_conn.cursor.return_value
+
 
 class Test_create_timescale_records_from_batch_of_events:
-    def stringify_test_data(self, test_dataset_name: str) -> str:
-        return json.dumps(list(map(json.dumps, test_data[test_dataset_name]["body"])))
-
-    def setup_method(self, mocker: pytest_mock.MockFixture):
-        pass
-
-
-    def test_create_timescale_records_from_batch_of_events(self, mocker: pytest_mock.MockFixture):
+    def test_create_timescale_records_from_batch_of_events(
+        self, mocker: pytest_mock.MockFixture
+    ):
         mocked_create_single_timescale_record = mocker.patch(
             "shared_code.timescale.create_single_timescale_record", autospec=True
         )
-        
-        mock_conn_o = mocker.patch("psycopg.connect", autospec=True)
-        mock_conn = mock_conn_o.return_value
-        test_value = self.stringify_test_data("timeseries_emon_electricitymeter")
+        mock_conn, _ = get_mock_conn_cursor(mocker)
+        test_value = stringify_test_data("timeseries_emon_electricitymeter")
         patch_value = None
         mocked_create_single_timescale_record.return_value = patch_value
-        actual_value = create_timescale_records_from_batch_of_events(mock_conn, test_value)
+        actual_value = create_timescale_records_from_batch_of_events(
+            mock_conn, test_value
+        )
         assert actual_value is None
 
-    def test_create_timescale_records_from_batch_of_events_with_single_error(self, mocker: pytest_mock.MockFixture):
+    def test_create_timescale_records_from_batch_of_events_with_single_error(
+        self, mocker: pytest_mock.MockFixture
+    ):
         mocked_create_single_timescale_record = mocker.patch(
             "shared_code.timescale.create_single_timescale_record", autospec=True
         )
-        
-        mock_conn_o = mocker.patch("psycopg.connect", autospec=True)
-        mock_conn = mock_conn_o.return_value
-        test_value = self.stringify_test_data("timeseries_emon_electricitymeter")
+        mock_conn, _ = get_mock_conn_cursor(mocker)
+        test_value = stringify_test_data("timeseries_emon_electricitymeter")
         patch_value = [None, None, None, Exception("test exception"), None, None, None]
         mocked_create_single_timescale_record.side_effect = patch_value
-        actual_value = create_timescale_records_from_batch_of_events(mock_conn, test_value)
+        actual_value = create_timescale_records_from_batch_of_events(
+            mock_conn, test_value
+        )
         assert len(actual_value) == 1
         assert actual_value[0] == patch_value[3]
 
-    def test_create_timescale_records_from_batch_of_events_with_incorrect_schema(self, mocker: pytest_mock.MockFixture):
+    def test_create_timescale_records_from_batch_of_events_with_schema_error(
+        self, mocker: pytest_mock.MockFixture
+    ):
+
+        mock_conn, _ = get_mock_conn_cursor(mocker)
+        test_value = stringify_test_data(
+            "timeseries_emon_electricitymeter_missing_timestamp"
+        )
+        actual_value = create_timescale_records_from_batch_of_events(
+            mock_conn, test_value
+        )
+        assert len(actual_value) == 1
+        assert isinstance(actual_value[0], ValidationError)
+
+    def test_create_timescale_records_from_batch_of_events_where_create_single_timescale_record_errors(
+        self, mocker: pytest_mock.MockFixture
+    ):
         mocked_create_single_timescale_record = mocker.patch(
             "shared_code.timescale.create_single_timescale_record", autospec=True
         )
-        
-        mock_conn_o = mocker.patch("psycopg.connect", autospec=True)
-        mock_conn = mock_conn_o.return_value
-        test_value = self.stringify_test_data("timeseries_emon_electricitymeter_missing_timestamp")
-        patch_value = None
-        mocked_create_single_timescale_record.return_value = patch_value
-        actual_value = create_timescale_records_from_batch_of_events(mock_conn, test_value)
-        assert len(actual_value) == 1
-        assert isinstance(actual_value[0], ValidationError)
+        mock_conn, _ = get_mock_conn_cursor(mocker)
+        test_value = stringify_test_data(
+            "timeseries_emon_electricitymeter"
+        )
+        side_effect = [Exception("test exception 1"), Exception("test exception 2"), Exception("test exception 3"), Exception("test exception 4"), Exception("test exception 5"), Exception("test exception 6"), Exception("test exception 7")]
+        mocked_create_single_timescale_record.side_effect = side_effect
+        actual_value = create_timescale_records_from_batch_of_events(
+            mock_conn, test_value
+        )
+        assert len(actual_value) == 7
+        for i in range(0, 7):
+            assert actual_value[i] == side_effect[i]    
+
 
 class Test_parse_measurement_value:
     def test_parse_measurement_value_with_string_and_string(self):
@@ -338,6 +405,12 @@ class Test_parse_measurement_value:
         actual_value = parse_measurement_value(test_data_type, test_value)
         assert actual_value == expected_value
         assert type(actual_value) == float
+    
+    def test_parse_measurement_value_with_invalid_measurement_type(self):
+        test_data_type = "invalid"
+        test_value = "test"
+        with pytest.raises(ValueError):
+            parse_measurement_value(test_data_type, test_value)
 
 
 class Test_identify_data_column:
