@@ -9,7 +9,7 @@ from get_test_data import create_event_hub_event, load_test_data
 
 
 class Test_create_event_hub_event:
-    def test_create_event_hub_event_with_valid_dict(self):
+    def test_with_valid_dict(self):
         sample_event = {
             "body": '{"c": 3}',
             "trigger_metadata": {"a": "1", "b": "2"},
@@ -44,7 +44,7 @@ class Test_create_event_hub_event:
             json.loads(actual_value.get_body().decode("UTF-8")),
         )
 
-    def test_create_event_hub_event_with_empty_body(self):
+    def test_with_empty_body(self):
         sample_event = {
             "trigger_metadata": {"a": "1", "b": "2"},
             "enqueued_time": "2020-01-01T00:00:00.000Z",
@@ -75,7 +75,7 @@ class Test_create_event_hub_event:
         )
         assert actual_value.get_body() == expected_value.get_body()
 
-    def test_create_event_hub_event_with_empty_dict_as_body(self):
+    def test_with_empty_dict_as_body(self):
         sample_event = {
             "body": {},
             "trigger_metadata": {"a": "1", "b": "2"},
@@ -107,7 +107,7 @@ class Test_create_event_hub_event:
         )
         TestCase().assertDictEqual(actual_value.get_body(), expected_value.get_body())
 
-    def test_create_event_hub_event_with_missing_timestamp(self):
+    def test_with_missing_timestamp(self):
         sample_event = {
             "body": '{"c": 3}',
             "trigger_metadata": {"a": "1", "b": "2"},
@@ -142,7 +142,7 @@ class Test_create_event_hub_event:
             json.loads(actual_value.get_body().decode("UTF-8")),
         )
 
-    def test_create_event_hub_event_with_missing_sequence_throws_error(self):
+    def test_with_missing_sequence_throws_error(self):
         sample_event = {
             "body": '{"c": 3}',
             "trigger_metadata": {"a": "1", "b": "2"},
@@ -154,7 +154,7 @@ class Test_create_event_hub_event:
         with pytest.raises(KeyError):
             create_event_hub_event(sample_event)
 
-    def test_create_event_hub_event_with_missing_offset_throws_error(self):
+    def test_with_missing_offset_throws_error(self):
         sample_event = {
             "body": '{"c": 3}',
             "trigger_metadata": {"a": "1", "b": "2"},
@@ -166,7 +166,7 @@ class Test_create_event_hub_event:
         with pytest.raises(KeyError):
             create_event_hub_event(sample_event)
 
-    def test_create_event_hub_event_with_only_body_offset_sequence_number(self):
+    def test_with_only_body_offset_sequence_number(self):
         sample_event = {
             "body": '{"c": 3}',
             "offset": "456",
@@ -199,7 +199,7 @@ class Test_create_event_hub_event:
 
 
 class Test_load_test_data:
-    def test_load_test_data_returns_dict(self, mocker: pytest_mock.MockerFixture):
+    def test_returns_dict(self, mocker: pytest_mock.MockerFixture):
         test_data = {"a": 1, "b": 2}
         mocked_open = mocker.mock_open(read_data=json.dumps(test_data))
         builtin_open = "builtins.open"
@@ -208,7 +208,7 @@ class Test_load_test_data:
         assert isinstance(actual_value, dict)
         TestCase().assertDictEqual(actual_value, test_data)
 
-    def test_load_test_data_throws_error_if_file_not_found(
+    def test_throws_error_if_file_not_found(
         self, mocker: pytest_mock.MockerFixture
     ):
         mocked_open = mocker.mock_open()
@@ -218,7 +218,7 @@ class Test_load_test_data:
         with pytest.raises(FileNotFoundError):
             load_test_data()
 
-    def test_load_test_data_returns_dict_for_doubly_dumped_json(
+    def test_returns_dict_for_doubly_dumped_json(
         self, mocker: pytest_mock.MockerFixture
     ):
         sub_test_data = {"d": 3, "e": 4}

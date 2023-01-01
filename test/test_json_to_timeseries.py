@@ -62,7 +62,7 @@ def get_test_data(test_name: str):
 
 
 class Test_send_to_converter:
-    def test_send_to_converter_glow_electricitymeter(
+    def test_glow_electricitymeter(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -79,7 +79,7 @@ class Test_send_to_converter:
         assert spy_homie_to_timescale.call_count == 0
         assert spy_emon_to_timescale.call_count == 0
 
-    def test_send_to_converter_glow_gasmeter(
+    def test_glow_gasmeter(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -94,7 +94,7 @@ class Test_send_to_converter:
         assert spy_homie_to_timescale.call_count == 0
         assert spy_emon_to_timescale.call_count == 0
 
-    def test_send_to_converter_homie_mode(
+    def test_homie_mode(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -109,7 +109,7 @@ class Test_send_to_converter:
         assert spy_homie_to_timescale.call_count == 1
         assert spy_emon_to_timescale.call_count == 0
 
-    def test_send_to_converter_homie_measure_temperature(
+    def test_homie_measure_temperature(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -126,7 +126,7 @@ class Test_send_to_converter:
         assert spy_homie_to_timescale.call_count == 1
         assert spy_emon_to_timescale.call_count == 0
 
-    def test_send_to_converter_emontx4_json(
+    def test_emontx4_json(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -141,7 +141,7 @@ class Test_send_to_converter:
         assert spy_homie_to_timescale.call_count == 0
         assert spy_emon_to_timescale.call_count == 1
 
-    def test_send_to_converter_unknown_publisher(
+    def test_unknown_publisher(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -163,7 +163,7 @@ class Test_send_to_converter:
 
 
 class Test_parse_message:
-    def test_parse_message_calls_send_to_converter(
+    def test_calls_send_to_converter(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -180,7 +180,7 @@ class Test_parse_message:
         assert actual_value == expected_value
         assert mocked_send_to_converter.call_count == 1
 
-    def test_parse_message_calls_send_to_converter_which_returns_two_items(
+    def test_calls_send_to_converter_which_returns_two_items(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -206,7 +206,7 @@ class Test_parse_message:
         assert actual_value == expected_value
         assert mocked_send_to_converter.call_count == 1
 
-    def test_parse_message_calls_send_to_converter_which_returns_no_items(
+    def test_calls_send_to_converter_which_returns_no_items(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -220,7 +220,7 @@ class Test_parse_message:
         assert actual_value is None
         assert mocked_send_to_converter.call_count == 1
 
-    def test_parse_message_calls_send_to_converter_where_extract_topic_errors(
+    def test_calls_send_to_converter_where_extract_topic_errors(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -239,7 +239,7 @@ class Test_parse_message:
         assert mocked_send_to_converter.call_count == 0
         assert exception_text in caplog.text
 
-    def test_parse_message_where_send_to_converter_errors(
+    def test_where_send_to_converter_errors(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -256,7 +256,7 @@ class Test_parse_message:
 
 
 class Test_main:
-    def test_main_calls_parse_message_with_five_records(
+    def test_calls_parse_message_with_five_records(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -277,7 +277,7 @@ class Test_main:
         assert mocked_parse_message.call_count == 5
         assert actual_value == return_value
 
-    def test_main_calls_parse_message_with_one_record(
+    def test_calls_parse_message_with_one_record(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -292,7 +292,7 @@ class Test_main:
         assert mocked_parse_message.call_count == 1
         assert actual_value == return_value
 
-    def test_main_calls_parse_message_with_no_records(
+    def test_calls_parse_message_with_no_records(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -307,7 +307,7 @@ class Test_main:
         assert mocked_parse_message.call_count == 0
         assert actual_value == []  # initial value
 
-    def test_main_calls_parse_message_with_one_record_and_one_error(
+    def test_calls_parse_message_with_one_record_and_one_error(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -322,7 +322,7 @@ class Test_main:
         assert mocked_parse_message.call_count == 2
         assert actual_value == [return_value[0]]
 
-    def test_main_calls_parse_message_with_two_errors(
+    def test_calls_parse_message_with_two_errors(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -337,7 +337,7 @@ class Test_main:
         assert mocked_parse_message.call_count == 2
         assert actual_value == []
 
-    def test_main_calls_parse_message_with_one_record_and_one_error_and_one_record(
+    def test_calls_parse_message_with_one_record_and_one_error_and_one_record(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
     ):
         caplog.set_level(logging.DEBUG)
@@ -354,7 +354,7 @@ class Test_main:
 
 
 class Test_extract_topic:
-    def test_extract_topic_with_value(self):
+    def test_with_value(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
         test_topic = "homie/esp32-1/$homie"
         message_body["topic"] = test_topic
@@ -362,7 +362,7 @@ class Test_extract_topic:
         assert actual_value_topic == test_topic
         assert actual_value_publisher == "homie"
 
-    def test_extract_topic_with_value_and_slash(self):
+    def test_with_value_and_slash(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
         test_topic = "homie/esp32-1/$homie/1"
         message_body["topic"] = test_topic
@@ -370,7 +370,7 @@ class Test_extract_topic:
         assert actual_value_topic == test_topic
         assert actual_value_publisher == "homie"
 
-    def test_extract_topic_with_value_and_slash_and_slash(self):
+    def test_with_value_and_slash_and_slash(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
         test_topic = "homie/esp32-1/$homie/1/2"
         message_body["topic"] = test_topic
@@ -378,7 +378,7 @@ class Test_extract_topic:
         assert actual_value_topic == test_topic
         assert actual_value_publisher == "homie"
 
-    def test_extract_topic_with_value_and_single_slash(self):
+    def test_with_value_and_single_slash(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
         test_topic = "pub/string"
         message_body["topic"] = test_topic
@@ -386,7 +386,7 @@ class Test_extract_topic:
         assert actual_value_topic == test_topic
         assert actual_value_publisher == "pub"
 
-    def test_extract_topic_with_value_and_no_slash(self):
+    def test_with_value_and_no_slash(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
         test_topic = "pub"
         message_body["topic"] = test_topic
@@ -394,7 +394,7 @@ class Test_extract_topic:
         assert actual_value_topic == test_topic
         assert actual_value_publisher == "pub"
 
-    def test_extract_topic_with_value_and_double_slash(self):
+    def test_with_value_and_double_slash(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
         test_topic = "pub//string"
         message_body["topic"] = test_topic
@@ -402,20 +402,20 @@ class Test_extract_topic:
         assert actual_value_topic == test_topic
         assert actual_value_publisher == "pub"
 
-    def test_extract_topic_with_missing_topic(self):
+    def test_with_missing_topic(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
         del message_body["topic"]
         with pytest.raises(Exception):
             actual_value_topic, actual_value_publisher = extract_topic(message_body)
 
-    def test_extract_topic_with_empty_topic(self):
+    def test_with_empty_topic(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
         test_topic = ""
         message_body["topic"] = test_topic
         with pytest.raises(Exception):
             actual_value_topic, actual_value_publisher = extract_topic(message_body)
 
-    def test_extract_topic_with_nothing_before_slash(self):
+    def test_with_nothing_before_slash(self):
         _, message_body, _, _ = get_test_data("homie_measure_temperature")
         test_topic = "/string"
         message_body["topic"] = test_topic
