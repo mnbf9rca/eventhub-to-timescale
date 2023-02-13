@@ -21,14 +21,14 @@ tests-no-zope = ["cloudpickle", "cloudpickle", "hypothesis", "hypothesis", "mypy
 
 [[package]]
 name = "azure-functions"
-version = "1.12.0"
+version = "1.13.2"
 description = "Azure Functions for Python"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "azure-functions-1.12.0.tar.gz", hash = "sha256:e8e470d87327f76fcc25a038757f38d19c0182091ed183bd2239505a4e61587a"},
-    {file = "azure_functions-1.12.0-py3-none-any.whl", hash = "sha256:443b049652ede41e57a698230cc3848d20e5b53dff52bc4a636ee0820813f1b5"},
+    {file = "azure-functions-1.13.2.tar.gz", hash = "sha256:ba56f9d5e62c82c6980b075086ac351033aa3c246af22a20e1534965f5b90e00"},
+    {file = "azure_functions-1.13.2-py3-none-any.whl", hash = "sha256:6f00b2f148fade949e58db6704a0db545b07bc7cd386de55885b8679b1522b55"},
 ]
 
 [package.extras]
@@ -839,4 +839,4 @@ testing = ["coverage (>=6.2)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "f8e1fd08f857c0b497922f593499356ce5cc33173dc1ace9c3563485ade920b9"
+content-hash = "8bc135b18af5046b7221ff437422d89c9992f443d80a94b7b9184497661ba7f3"
