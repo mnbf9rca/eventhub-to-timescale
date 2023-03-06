@@ -21,18 +21,18 @@ tests-no-zope = ["cloudpickle", "cloudpickle", "hypothesis", "hypothesis", "mypy
 
 [[package]]
 name = "azure-functions"
-version = "1.12.0"
+version = "1.13.3"
 description = "Azure Functions for Python"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "azure-functions-1.12.0.tar.gz", hash = "sha256:e8e470d87327f76fcc25a038757f38d19c0182091ed183bd2239505a4e61587a"},
-    {file = "azure_functions-1.12.0-py3-none-any.whl", hash = "sha256:443b049652ede41e57a698230cc3848d20e5b53dff52bc4a636ee0820813f1b5"},
+    {file = "azure-functions-1.13.3.tar.gz", hash = "sha256:77f38c90b8eff8708ded4cabdbe0eff40e2da628549fc010061452376cc2e70d"},
+    {file = "azure_functions-1.13.3-py3-none-any.whl", hash = "sha256:242b35f47ae2586c7b99480338bb60f8116c4ad53284ac6235da98076d22830c"},
 ]
 
 [package.extras]
-dev = ["coverage", "flake8 (>=4.0.1,<4.1.0)", "mypy", "pytest", "pytest-cov", "requests (>=2.0.0,<3.0.0)"]
+dev = ["coverage", "flake8 (>=4.0.1,<4.1.0)", "flake8-logging-format", "mypy", "pytest", "pytest-cov", "requests (>=2.0.0,<3.0.0)"]
 
 [[package]]
 name = "black"
@@ -839,4 +839,4 @@ testing = ["coverage (>=6.2)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "f8e1fd08f857c0b497922f593499356ce5cc33173dc1ace9c3563485ade920b9"
+content-hash = "dd106a89373f5591e3a40d137320cd51a5b09ef94d6150f95660f32fe941083e"
