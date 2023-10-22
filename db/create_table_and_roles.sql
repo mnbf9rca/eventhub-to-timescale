@@ -41,6 +41,9 @@ BEGIN
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_subject_idx ON ' || target_table_name || ' (measurement_subject)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_timestamp_idx ON ' || target_table_name || ' ("timestamp" DESC)';
 
+    -- install timesdcale
+    CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
+
     -- convert the table to a hypertable
     PERFORM create_hypertable(target_table_name, 'timestamp');
 
