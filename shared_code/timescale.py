@@ -1,12 +1,53 @@
 import os
 from typing import Any
 import logging
+from dotenv_vault import load_dotenv
 
 import psycopg as psycopg
 
 
 from jsonschema import validate, ValidationError
 import json
+
+if not load_dotenv():
+    logging.error("Failed to load dotenv")
+    raise Exception("Failed to load dotenv")
+
+
+def get_connection_string() -> str:
+    """Get the connection string for the timescale database
+    @return: the connection string
+    """
+    # if we have a connection string in the environment, use that
+    # otherwise, look for the individual components
+    # which are POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, TABLE_NAME
+    if connection_string := os.environ.get("TIMESCALE_CONNECTION_STRING"):
+        return connection_string
+    else:
+        required_env_vars = [
+            "POSTGRES_DB",
+            "POSTGRES_USER",
+            "POSTGRES_PASSWORD",
+            "POSTGRES_HOST",
+            "POSTGRES_PORT",
+        ]
+        if missing_env_vars := [
+            env_var for env_var in required_env_vars if env_var not in os.environ
+        ]:
+            raise ValueError(
+                f"Missing required environment variables: {missing_env_vars}"
+            )
+        return f"dbname={os.environ['POSTGRES_DB']} user={os.environ['POSTGRES_USER']} password={os.environ['POSTGRES_PASSWORD']} host={os.environ['POSTGRES_HOST']} port={os.environ['POSTGRES_PORT']}"  # noqa: E501
+
+
+def get_table_name() -> str:
+    """Get the table name for the timescale database
+    @return: the table name
+    """
+    if table_name := os.environ.get("TABLE_NAME"):
+        return table_name
+    else:
+        raise ValueError("Missing required environment variable: TABLE_NAME")
 
 
 # load timeseries source schema
@@ -18,7 +59,7 @@ with open(schema_path) as f:
 
 
 def create_timescale_records_from_batch_of_events(
-    conn: psycopg.Connection, record_set: str
+    conn: psycopg.Connection, record_set: str, table_name: str
 ) -> None:
     """Create timescale records from events
     @param events: the events to create records from
@@ -34,7 +75,7 @@ def create_timescale_records_from_batch_of_events(
 
     for record in unwrapped_records:
         try:
-            create_single_timescale_record(conn, record)
+            create_single_timescale_record(conn, record, table_name)
         except Exception as e:
             logging.error(f"Failed to create timescale records: {e}")
             unraised_errors.append(e)
@@ -42,7 +83,7 @@ def create_timescale_records_from_batch_of_events(
 
 
 def create_single_timescale_record(
-    conn: psycopg.Connection, record: dict[str, Any]
+    conn: psycopg.Connection, record: dict[str, Any], table_name: str
 ) -> None:
     """Create a single timescale record
     @param record: the record to create
@@ -51,7 +92,7 @@ def create_single_timescale_record(
     validate_all_fields_in_record(record)
     with conn.cursor() as cur:
         result = cur.execute(
-            f"INSERT INTO conditions (timestamp, measurement_publisher, measurement_subject, correlation_id, measurement_of, {identify_data_column(record['measurement_data_type'])}) VALUES (%s, %s, %s, %s, %s, %s)",  # noqa: E501
+            f"INSERT INTO {table_name} (timestamp, measurement_publisher, measurement_subject, correlation_id, measurement_of, {identify_data_column(record['measurement_data_type'])}) VALUES (%s, %s, %s, %s, %s, %s)",  # noqa: E501
             (
                 record["timestamp"],
                 record["measurement_publisher"],
