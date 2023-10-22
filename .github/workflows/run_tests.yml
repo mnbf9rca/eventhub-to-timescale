@@ -26,7 +26,7 @@ jobs:
 
     services:
       postgres:
-        image: timescale/timescaledb:latest-pg15
+        image: timescale/timescaledb:latest-pg15@sha256:6dfd0356c701a5490f417c2f866eabb9d58aad135b0a47024e67198850edf541
         env:
           POSTGRES_DB: ${{ env.POSTGRES_DB }}
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
@@ -38,7 +38,7 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
       - name: Create TABLE_NAME variable
         run: |
@@ -57,14 +57,14 @@ jobs:
           psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB -f db/create_table_and_roles.sql  -v table_name=$TABLE_NAME
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4
         with:
           python-version: ${{ matrix.python-version }}
       # - name: Install OS dependencies
       #   run: |
       #     DEBIAN_FRONTEND=noninteractive apt update
       #     DEBIAN_FRONTEND=noninteractive apt install curl
-      - uses: snok/install-poetry@v1
+      - uses: snok/install-poetry@93ada01c735cc8a383ce0ce2ae205a21c415379b # v1
         with:
           version: 1.6.1 # pin the version as they keep changing their APIs
           virtualenvs-create: false
@@ -97,13 +97,13 @@ jobs:
 
       - name: Coverage comment
         id: coverage_comment
-        uses: py-cov-action/python-coverage-comment-action@v3
+        uses: py-cov-action/python-coverage-comment-action@95a386cd05f6dc16fba1932ff0b70ab457f83f56 # v3
         with:
           GITHUB_TOKEN: ${{ github.token }}
           VERBOSE: true
 
       - name: Store Pull Request comment to be posted
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3
         if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
         with:
           # If you use a different name, update COMMENT_ARTIFACT_NAME accordingly
