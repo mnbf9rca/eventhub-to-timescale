@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "eventhub-to-timescale"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["rob al <mnbf9rca@users.noreply.github.com>"]
 license = "MIT"
@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [{include = "eventhub_to_timescale"}]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.9,<3.12"
 azure-functions = "^1.12.0"
 python-dateutil = "^2.8.2"
 psycopg = {extras = ["binary"], version = "^3.1.8"}
@@ -18,9 +18,7 @@ python-dotenv-vault = "^0.6.3"
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"
 jsonpickle = "^3.0.1"
-python-dotenv = "^0.21.1"
 pytest-cov = "^4.1.0"
-
 
 
 [tool.poetry.group.test.dependencies]
