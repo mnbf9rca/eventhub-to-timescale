@@ -1,5 +1,4 @@
 import logging
-import os
 from dotenv_vault import load_dotenv
 from typing import List
 
