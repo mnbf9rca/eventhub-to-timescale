@@ -1,5 +1,5 @@
 import datetime
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from typing import Any, Tuple
 from dateutil import parser
 import os
@@ -28,6 +28,8 @@ from shared_code import (  # noqa E402
     identify_data_column,
     create_timescale_records_from_batch_of_events,
     validate_all_fields_in_record,
+    get_table_name,
+    get_connection_string,
 )
 
 # when developing locally, use .env file to set environment variables
@@ -42,6 +44,8 @@ if dotenv_spec is not None:
 
 class db_helpers:
     """Helper functions for the database"""
+
+    test_table_name = "conditions_dev"
 
     @staticmethod
     def field_names():
@@ -85,7 +89,7 @@ class db_helpers:
 
     @staticmethod
     def check_single_record_exists(
-        conn: psycopg.Connection, expected_record: dict[str, Any]
+        conn: psycopg.Connection, expected_record: dict[str, Any], table_name: str
     ):
         """Check that the record exists in the database
         @param conn: the database connection
@@ -100,13 +104,56 @@ class db_helpers:
         ), "The connection is closed. Check that you are not using a with conn block inside the method or test"
         with conn.cursor() as cur:
             cur.execute(
-                f"SELECT {db_helpers.field_names()} FROM conditions WHERE correlation_id = %s",
+                f"SELECT {db_helpers.field_names()} FROM {table_name} WHERE correlation_id = %s",
                 (expected_record["correlation_id"],),
             )
             actual_record = cur.fetchall()
             assert cur.rowcount == 1
             assert actual_record is not None
             db_helpers.check_record(actual_record[0], expected_record)
+
+
+class Test_get_table_name:
+    def test_get_table_name_success(self):
+        with patch.dict(os.environ, {"TABLE_NAME": "test_table"}):
+            assert get_table_name() == "test_table"
+
+    def test_get_table_name_failure(self):
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(ValueError) as excinfo:
+                get_table_name()
+            assert (
+                str(excinfo.value)
+                == "Missing required environment variable: TABLE_NAME"
+            )
+
+
+class Test_get_connection_string:
+    def test_get_connection_string_from_env(self):
+        with patch.dict(
+            os.environ, {"TIMESCALE_CONNECTION_STRING": "test_conn_string"}
+        ):
+            assert get_connection_string() == "test_conn_string"
+
+    def test_get_connection_string_from_components(self):
+        mock_env_vars = {
+            "POSTGRES_DB": "test_db",
+            "POSTGRES_USER": "test_user",
+            "POSTGRES_PASSWORD": "test_password",
+            "POSTGRES_HOST": "test_host",
+            "POSTGRES_PORT": "test_port",
+        }
+        with patch.dict(os.environ, mock_env_vars, clear=True):
+            expected_conn_string = "dbname=test_db user=test_user password=test_password host=test_host port=test_port"
+            assert get_connection_string() == expected_conn_string
+
+    def test_get_connection_string_missing_env_vars(self):
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(ValueError) as excinfo:
+                get_connection_string()
+            assert str(excinfo.value).startswith(
+                "Missing required environment variables:"
+            )
 
 
 class Test_create_single_timescale_record_against_actual_database:
@@ -129,7 +176,7 @@ class Test_create_single_timescale_record_against_actual_database:
             with conn.cursor() as cur:
                 for correlation_id in self.list_of_test_correlation_ids:
                     cur.execute(
-                        f"DELETE FROM conditions WHERE correlation_id = '{correlation_id}'"
+                        f"DELETE FROM conditions_dev WHERE correlation_id = '{correlation_id}'"
                     )
 
     def test_of_type_number_with_int(self):
@@ -143,9 +190,11 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "number",
             "measurement_value": "1",
         }
-        create_single_timescale_record(self.conn, sample_record)
+        create_single_timescale_record(self.conn, sample_record, "conditions_dev")
         # check that the record was created in the DB by searching for correlation_id
-        db_helpers.check_single_record_exists(self.conn, sample_record)
+        db_helpers.check_single_record_exists(
+            self.conn, sample_record, "conditions_dev"
+        )
 
     def test_of_type_number_with_float(self):
         this_correlation_id: str = self.generate_correlation_id()
@@ -158,9 +207,11 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "number",
             "measurement_value": "1.1",
         }
-        create_single_timescale_record(self.conn, sample_record)
+        create_single_timescale_record(self.conn, sample_record, "conditions_dev")
         # check that the record was created in the DB by searching for correlation_id
-        db_helpers.check_single_record_exists(self.conn, sample_record)
+        db_helpers.check_single_record_exists(
+            self.conn, sample_record, "conditions_dev"
+        )
 
     def test_of_type_string(self):
         this_correlation_id: str = self.generate_correlation_id()
@@ -173,9 +224,11 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "string",
             "measurement_value": "test",
         }
-        create_single_timescale_record(self.conn, sample_record)
+        create_single_timescale_record(self.conn, sample_record, "conditions_dev")
         # check that the record was created in the DB by searching for correlation_id
-        db_helpers.check_single_record_exists(self.conn, sample_record)
+        db_helpers.check_single_record_exists(
+            self.conn, sample_record, "conditions_dev"
+        )
 
     def test_of_type_boolean(self):
         this_correlation_id: str = self.generate_correlation_id()
@@ -188,9 +241,11 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "boolean",
             "measurement_value": "true",
         }
-        create_single_timescale_record(self.conn, sample_record)
+        create_single_timescale_record(self.conn, sample_record, "conditions_dev")
         # check that the record was created in the DB by searching for correlation_id
-        db_helpers.check_single_record_exists(self.conn, sample_record)
+        db_helpers.check_single_record_exists(
+            self.conn, sample_record, "conditions_dev"
+        )
 
     def test_of_type_boolean_with_false(self):
         this_correlation_id: str = self.generate_correlation_id()
@@ -203,9 +258,11 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "boolean",
             "measurement_value": "false",
         }
-        create_single_timescale_record(self.conn, sample_record)
+        create_single_timescale_record(self.conn, sample_record, "conditions_dev")
         # check that the record was created in the DB by searching for correlation_id
-        db_helpers.check_single_record_exists(self.conn, sample_record)
+        db_helpers.check_single_record_exists(
+            self.conn, sample_record, "conditions_dev"
+        )
 
     def test_of_type_boolean_with_invalid_value(self):
         this_correlation_id: str = self.generate_correlation_id()
@@ -219,7 +276,7 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_value": "invalid",
         }
         with pytest.raises(ValueError, match=r".*Invalid boolean value.*"):
-            create_single_timescale_record(self.conn, sample_record)
+            create_single_timescale_record(self.conn, sample_record, "conditions_dev")
 
     def test_of_type_number_with_invalid_value(self):
         this_correlation_id: str = self.generate_correlation_id()
@@ -235,7 +292,7 @@ class Test_create_single_timescale_record_against_actual_database:
         with pytest.raises(
             ValueError, match=r".*could not convert string to float: 'invalid'*"
         ):
-            create_single_timescale_record(self.conn, sample_record)
+            create_single_timescale_record(self.conn, sample_record, "conditions_dev")
 
 
 class Test_create_single_timescale_record_with_mock:
@@ -255,7 +312,9 @@ class Test_create_single_timescale_record_with_mock:
         mock_execute = mock_cursor.__enter__()
         mock_execute.execute.side_effect = Exception("test exception")
         with pytest.raises(Exception, match=r".*test exception*"):
-            create_single_timescale_record(mock_conn, self.sample_record)
+            create_single_timescale_record(
+                mock_conn, self.sample_record, "conditions_dev"
+            )
 
     def test_where_no_records_returned(self, mocker):
         mock_conn, _ = get_mock_conn_cursor(mocker)
@@ -263,7 +322,9 @@ class Test_create_single_timescale_record_with_mock:
         with mock_result(new=mocker.PropertyMock):
             mock_result.rowcount = 0
         with pytest.raises(ValueError, match=r".*Failed to insert record*"):
-            create_single_timescale_record(mock_conn, self.sample_record)
+            create_single_timescale_record(
+                mock_conn, self.sample_record, "conditions_dev"
+            )
 
     def test_where_more_than_one_records_returned(self, mocker):
         mock_conn, _ = get_mock_conn_cursor(mocker)
@@ -271,7 +332,9 @@ class Test_create_single_timescale_record_with_mock:
         with mock_result(new=mocker.PropertyMock):
             mock_result.rowcount = 3
         with pytest.raises(ValueError, match=r".*Inserted too many records.*"):
-            create_single_timescale_record(mock_conn, self.sample_record)
+            create_single_timescale_record(
+                mock_conn, self.sample_record, "conditions_dev"
+            )
 
 
 def stringify_test_data(test_dataset_name: str) -> str:
@@ -321,7 +384,6 @@ class Test_create_timescale_records_from_batch_of_events:
     def test_from_batch_of_events_with_schema_error(
         self, mocker: pytest_mock.MockFixture
     ):
-
         mock_conn, _ = get_mock_conn_cursor(mocker)
         test_value = stringify_test_data(
             "timeseries_emon_electricitymeter_missing_timestamp"
@@ -432,9 +494,7 @@ class Test_parse_measurement_value:
     def test_with_invalid_measurement_type(self):
         test_data_type = "invalid"
         test_value = "test"
-        with pytest.raises(
-            ValueError, match=r".*Unknown measurement type: invalid*"
-        ):
+        with pytest.raises(ValueError, match=r".*Unknown measurement type: invalid*"):
             parse_measurement_value(test_data_type, test_value)
 
 
@@ -459,16 +519,12 @@ class Test_identify_data_column:
 
     def test_with_invalid_data_type(self):
         test_data_type = "invalid"
-        with pytest.raises(
-            ValueError, match=r".*Unknown measurement type: invalid.*"
-        ):
+        with pytest.raises(ValueError, match=r".*Unknown measurement type: invalid.*"):
             identify_data_column(test_data_type)
 
     def test_passing_none(self):
         test_data_type = None
-        with pytest.raises(
-            ValueError, match=r".*Unknown measurement type: None.*"
-        ):
+        with pytest.raises(ValueError, match=r".*Unknown measurement type: None.*"):
             identify_data_column(test_data_type)
 
     def test_passing_empty_string(self):
@@ -488,9 +544,7 @@ class Test_identify_data_column:
 
     def test_passing_boolean(self):
         test_data_type = True
-        with pytest.raises(
-            ValueError, match=r".*Unknown measurement type: True.*"
-        ):
+        with pytest.raises(ValueError, match=r".*Unknown measurement type: True.*"):
             identify_data_column(test_data_type)
 
 
@@ -518,9 +572,7 @@ class Test_validate_all_fields_in_record:
             "measurement_data_type": "number",
         }
         # missing measurement_bool
-        with pytest.raises(
-            ValueError, match=r".*Missing fields:.*measurement_value.*"
-        ):
+        with pytest.raises(ValueError, match=r".*Missing fields:.*measurement_value.*"):
             validate_all_fields_in_record(test_record)
 
     def test_with_multiple_missing_fields(self):
