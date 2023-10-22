@@ -20,17 +20,17 @@ tests-no-zope = ["cloudpickle", "cloudpickle", "hypothesis", "hypothesis", "mypy
 
 [[package]]
 name = "azure-functions"
-version = "1.12.0"
+version = "1.17.0"
 description = "Azure Functions for Python"
 optional = false
 python-versions = "*"
 files = [
-    {file = "azure-functions-1.12.0.tar.gz", hash = "sha256:e8e470d87327f76fcc25a038757f38d19c0182091ed183bd2239505a4e61587a"},
-    {file = "azure_functions-1.12.0-py3-none-any.whl", hash = "sha256:443b049652ede41e57a698230cc3848d20e5b53dff52bc4a636ee0820813f1b5"},
+    {file = "azure-functions-1.17.0.tar.gz", hash = "sha256:3329bd23b16563f1871f52a8f7164f96d8998903ae64cfbd56b98b03a69167fd"},
+    {file = "azure_functions-1.17.0-py3-none-any.whl", hash = "sha256:e6ad5f49f083754b30b6ffb16a1a6f6b41216d83ecbad26198cedda1ce6b36d0"},
 ]
 
 [package.extras]
-dev = ["coverage", "flake8 (>=4.0.1,<4.1.0)", "mypy", "pytest", "pytest-cov", "requests (==2.*)"]
+dev = ["coverage", "flake8 (>=4.0.1,<4.1.0)", "flake8-logging-format", "mypy", "pytest", "pytest-cov", "requests (==2.*)"]
 
 [[package]]
 name = "black"
