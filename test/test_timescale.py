@@ -63,7 +63,9 @@ class db_helpers:
             raise ValueError(
                 f"Missing required environment variables: {missing_env_vars}"
             )
-        return f"dbname={os.environ['POSTGRES_DB']} user={os.environ['POSTGRES_USER']} password={os.environ['POSTGRES_PASSWORD']} host={os.environ['POSTGRES_HOST']} port={os.environ['POSTGRES_PORT']}"  # noqa: E501
+        connstring = f"dbname={os.environ['POSTGRES_DB']} user={os.environ['POSTGRES_USER']} password={os.environ['POSTGRES_PASSWORD']} host={os.environ['POSTGRES_HOST']} port={os.environ['POSTGRES_PORT']}"  # noqa: E501
+        print("connstring:", connstring)
+        return connstring
 
 
     @staticmethod
