@@ -1,9 +1,11 @@
--- Define the table name and field for unique ID
+-- Create an instance of the conditions table named after the table_name parameter
 -- pass as table_name parameter e.g.
 -- psql -h localhost -U $POSTGRES_USER -d $POSTGRES_DB -f db/create_table_and_roles.sql -v table_name='your_table_name'
+SET session "myapp.table_name" = :table_name;
+
 DO $$
 DECLARE
-    target_table_name text := :table_name; -- Use :target_table_name as the parameter
+    target_table_name text := current_setting('myapp.table_name');
     reader_role_name text := target_table_name || '_reader';
     writer_role_name text := target_table_name || '_writer';
     reader_user_name text := target_table_name || '_reader_user';
