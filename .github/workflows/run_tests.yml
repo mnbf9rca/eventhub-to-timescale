@@ -22,9 +22,10 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
 
+
     services:
       postgres:
-        image: postgres:15
+        image: timescale/timescaledb:latest-pg15
         env:
           POSTGRES_DB: ${{ env.POSTGRES_DB }}
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
