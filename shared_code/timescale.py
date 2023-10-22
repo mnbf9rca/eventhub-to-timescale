@@ -49,6 +49,7 @@ def get_table_name() -> str:
     else:
         raise ValueError("Missing required environment variable: TABLE_NAME")
 
+
 # load timeseries source schema
 schema_path = os.sep.join(
     [os.path.dirname(os.path.abspath(__file__)), "timeseries.json"]

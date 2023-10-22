@@ -1,23 +1,29 @@
 import logging
 import os
-import json
+from dotenv_vault import load_dotenv
 from typing import List
 
 import azure.functions as func
 import psycopg
 
-from shared_code import (create_timescale_records_from_batch_of_events)
+from shared_code import (
+    create_timescale_records_from_batch_of_events,
+    get_connection_string,
+    get_table_name,
+)
+
+load_dotenv()
 
 
 def main(events: List[func.EventHubEvent]):
-    conn = psycopg.connect(os.environ["TIMESCALE_CONNECTION_STRING"])
+    conn = psycopg.connect(get_connection_string())
     errors: List[Exception] = []
     with conn:  # will close the connection when done
         for event in events:
             try:
-                record_batch = event.get_body().decode('utf-8')
+                record_batch = event.get_body().decode("utf-8")
                 if raised_errors := create_timescale_records_from_batch_of_events(
-                    conn, record_batch
+                    conn, record_batch, get_table_name()
                 ):
                     errors.extend(raised_errors)
             except Exception as e:
@@ -25,5 +31,3 @@ def main(events: List[func.EventHubEvent]):
                 errors.append(e)
     if errors:
         raise Exception(errors)
-
-                

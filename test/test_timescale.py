@@ -19,6 +19,7 @@ from get_test_data import load_test_data
 
 test_data = load_test_data()
 
+
 # add the shared_code directory to the path
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
@@ -34,18 +35,36 @@ from shared_code import (  # noqa E402
 
 # when developing locally, use .env file to set environment variables
 # TODO will move this to dotenv-vault in future
-dotenv_spec = importlib.util.find_spec("dotenv")
-if dotenv_spec is not None:
-    print(f"loading dotenv from {os.getcwd()}")
-    from dotenv import load_dotenv
+from dotenv import load_dotenv
 
-    load_dotenv(verbose=True)
+load_dotenv(verbose=True)
+# dotenv_spec = importlib.util.find_spec("dotenv")
+# if dotenv_spec is not None:
+#     print(f"loading dotenv from {os.getcwd()}")
+
 
 
 class db_helpers:
     """Helper functions for the database"""
 
-    test_table_name = "conditions_dev"
+    test_table_name = os.environ["TABLE_NAME"]
+    @staticmethod
+    def get_connection_string_for_test():
+        required_env_vars = [
+            "POSTGRES_DB",
+            "POSTGRES_USER",
+            "POSTGRES_PASSWORD",
+            "POSTGRES_HOST",
+            "POSTGRES_PORT",
+        ]
+        if missing_env_vars := [
+            env_var for env_var in required_env_vars if env_var not in os.environ
+        ]:
+            raise ValueError(
+                f"Missing required environment variables: {missing_env_vars}"
+            )
+        return f"dbname={os.environ['POSTGRES_DB']} user={os.environ['POSTGRES_USER']} password={os.environ['POSTGRES_PASSWORD']} host={os.environ['POSTGRES_HOST']} port={os.environ['POSTGRES_PORT']}"  # noqa: E501
+
 
     @staticmethod
     def field_names():
@@ -58,7 +77,8 @@ class db_helpers:
             + "measurement_string, "
             + "correlation_id, "
             + "measurement_bool, "
-            + "measurement_publisher"
+            + "measurement_publisher, "
+            + "measurement_unique_id"
         )
 
     @staticmethod
@@ -168,7 +188,7 @@ class Test_create_single_timescale_record_against_actual_database:
 
     def setup_method(self):
         # create a connection to the database just for this test class, reuse it for all tests
-        self.conn = psycopg.connect(os.environ["TIMESCALE_CONNECTION_STRING"])
+        self.conn = psycopg.connect(db_helpers.get_connection_string_for_test())
 
     def teardown_method(self):
         # delete all records from the DB
@@ -176,7 +196,7 @@ class Test_create_single_timescale_record_against_actual_database:
             with conn.cursor() as cur:
                 for correlation_id in self.list_of_test_correlation_ids:
                     cur.execute(
-                        f"DELETE FROM conditions_dev WHERE correlation_id = '{correlation_id}'"
+                        f"DELETE FROM {db_helpers.test_table_name} WHERE correlation_id = '{correlation_id}'"
                     )
 
     def test_of_type_number_with_int(self):
@@ -190,10 +210,10 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "number",
             "measurement_value": "1",
         }
-        create_single_timescale_record(self.conn, sample_record, "conditions_dev")
+        create_single_timescale_record(self.conn, sample_record, db_helpers.test_table_name)
         # check that the record was created in the DB by searching for correlation_id
         db_helpers.check_single_record_exists(
-            self.conn, sample_record, "conditions_dev"
+            self.conn, sample_record, db_helpers.test_table_name
         )
 
     def test_of_type_number_with_float(self):
@@ -207,10 +227,10 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "number",
             "measurement_value": "1.1",
         }
-        create_single_timescale_record(self.conn, sample_record, "conditions_dev")
+        create_single_timescale_record(self.conn, sample_record, db_helpers.test_table_name)
         # check that the record was created in the DB by searching for correlation_id
         db_helpers.check_single_record_exists(
-            self.conn, sample_record, "conditions_dev"
+            self.conn, sample_record, db_helpers.test_table_name
         )
 
     def test_of_type_string(self):
@@ -224,10 +244,10 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "string",
             "measurement_value": "test",
         }
-        create_single_timescale_record(self.conn, sample_record, "conditions_dev")
+        create_single_timescale_record(self.conn, sample_record, db_helpers.test_table_name)
         # check that the record was created in the DB by searching for correlation_id
         db_helpers.check_single_record_exists(
-            self.conn, sample_record, "conditions_dev"
+            self.conn, sample_record, db_helpers.test_table_name
         )
 
     def test_of_type_boolean(self):
@@ -241,10 +261,10 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "boolean",
             "measurement_value": "true",
         }
-        create_single_timescale_record(self.conn, sample_record, "conditions_dev")
+        create_single_timescale_record(self.conn, sample_record, db_helpers.test_table_name)
         # check that the record was created in the DB by searching for correlation_id
         db_helpers.check_single_record_exists(
-            self.conn, sample_record, "conditions_dev"
+            self.conn, sample_record, db_helpers.test_table_name
         )
 
     def test_of_type_boolean_with_false(self):
@@ -258,10 +278,10 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "boolean",
             "measurement_value": "false",
         }
-        create_single_timescale_record(self.conn, sample_record, "conditions_dev")
+        create_single_timescale_record(self.conn, sample_record, db_helpers.test_table_name)
         # check that the record was created in the DB by searching for correlation_id
         db_helpers.check_single_record_exists(
-            self.conn, sample_record, "conditions_dev"
+            self.conn, sample_record, db_helpers.test_table_name
         )
 
     def test_of_type_boolean_with_invalid_value(self):
@@ -276,7 +296,7 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_value": "invalid",
         }
         with pytest.raises(ValueError, match=r".*Invalid boolean value.*"):
-            create_single_timescale_record(self.conn, sample_record, "conditions_dev")
+            create_single_timescale_record(self.conn, sample_record, db_helpers.test_table_name)
 
     def test_of_type_number_with_invalid_value(self):
         this_correlation_id: str = self.generate_correlation_id()
@@ -292,7 +312,7 @@ class Test_create_single_timescale_record_against_actual_database:
         with pytest.raises(
             ValueError, match=r".*could not convert string to float: 'invalid'*"
         ):
-            create_single_timescale_record(self.conn, sample_record, "conditions_dev")
+            create_single_timescale_record(self.conn, sample_record, db_helpers.test_table_name)
 
 
 class Test_create_single_timescale_record_with_mock:
@@ -313,7 +333,7 @@ class Test_create_single_timescale_record_with_mock:
         mock_execute.execute.side_effect = Exception("test exception")
         with pytest.raises(Exception, match=r".*test exception*"):
             create_single_timescale_record(
-                mock_conn, self.sample_record, "conditions_dev"
+                mock_conn, self.sample_record, db_helpers.test_table_name
             )
 
     def test_where_no_records_returned(self, mocker):
@@ -323,7 +343,7 @@ class Test_create_single_timescale_record_with_mock:
             mock_result.rowcount = 0
         with pytest.raises(ValueError, match=r".*Failed to insert record*"):
             create_single_timescale_record(
-                mock_conn, self.sample_record, "conditions_dev"
+                mock_conn, self.sample_record, db_helpers.test_table_name
             )
 
     def test_where_more_than_one_records_returned(self, mocker):
@@ -333,7 +353,7 @@ class Test_create_single_timescale_record_with_mock:
             mock_result.rowcount = 3
         with pytest.raises(ValueError, match=r".*Inserted too many records.*"):
             create_single_timescale_record(
-                mock_conn, self.sample_record, "conditions_dev"
+                mock_conn, self.sample_record, db_helpers.test_table_name
             )
 
 
@@ -361,7 +381,7 @@ class Test_create_timescale_records_from_batch_of_events:
         patch_value = None
         mocked_create_single_timescale_record.return_value = patch_value
         actual_value = create_timescale_records_from_batch_of_events(
-            mock_conn, test_value
+            mock_conn, test_value, db_helpers.test_table_name
         )
         assert actual_value is None
 
@@ -376,7 +396,7 @@ class Test_create_timescale_records_from_batch_of_events:
         patch_value = [None, None, None, Exception("test exception"), None, None, None]
         mocked_create_single_timescale_record.side_effect = patch_value
         actual_value = create_timescale_records_from_batch_of_events(
-            mock_conn, test_value
+            mock_conn, test_value, db_helpers.test_table_name
         )
         assert len(actual_value) == 1
         assert actual_value[0] == patch_value[3]
@@ -389,7 +409,7 @@ class Test_create_timescale_records_from_batch_of_events:
             "timeseries_emon_electricitymeter_missing_timestamp"
         )
         actual_value = create_timescale_records_from_batch_of_events(
-            mock_conn, test_value
+            mock_conn, test_value, db_helpers.test_table_name
         )
         assert len(actual_value) == 1
         assert isinstance(actual_value[0], ValidationError)
@@ -413,7 +433,7 @@ class Test_create_timescale_records_from_batch_of_events:
         ]
         mocked_create_single_timescale_record.side_effect = side_effect
         actual_value = create_timescale_records_from_batch_of_events(
-            mock_conn, test_value
+            mock_conn, test_value, db_helpers.test_table_name
         )
         assert len(actual_value) == 7
         for i in range(7):
@@ -427,7 +447,7 @@ class Test_parse_measurement_value:
         expected_value = "test"
         actual_value = parse_measurement_value(test_data_type, test_value)
         assert actual_value == expected_value
-        assert type(actual_value) == str
+        assert isinstance(actual_value, str)
 
     def test_with_string_and_number(self):
         test_data_type = "string"
@@ -435,7 +455,7 @@ class Test_parse_measurement_value:
         expected_value = "1"
         actual_value = parse_measurement_value(test_data_type, test_value)
         assert actual_value == expected_value
-        assert type(actual_value) == str
+        assert isinstance(actual_value, str)
 
     def test_with_number_and_string(self):
         test_data_type = "number"
@@ -451,7 +471,7 @@ class Test_parse_measurement_value:
         expected_value = 1
         actual_value = parse_measurement_value(test_data_type, test_value)
         assert actual_value == expected_value
-        assert type(actual_value) == float
+        assert isinstance(actual_value, float)
 
     def test_with_boolean_and_string(self):
         test_data_type = "boolean"
@@ -465,7 +485,7 @@ class Test_parse_measurement_value:
         expected_value = True
         actual_value = parse_measurement_value(test_data_type, test_value)
         assert actual_value == expected_value
-        assert type(actual_value) == bool
+        assert isinstance(actual_value, bool)
 
     def test_with_boolean_and_false(self):
         test_data_type = "boolean"
@@ -473,7 +493,7 @@ class Test_parse_measurement_value:
         expected_value = False
         actual_value = parse_measurement_value(test_data_type, test_value)
         assert actual_value == expected_value
-        assert type(actual_value) == bool
+        assert isinstance(actual_value, bool)
 
     def test_with_number_and_float(self):
         test_data_type = "number"
@@ -481,7 +501,7 @@ class Test_parse_measurement_value:
         expected_value = 1.1
         actual_value = parse_measurement_value(test_data_type, test_value)
         assert actual_value == expected_value
-        assert type(actual_value) == float
+        assert isinstance(actual_value, float)
 
     def test_with_number_and_negative_float(self):
         test_data_type = "number"
@@ -489,7 +509,7 @@ class Test_parse_measurement_value:
         expected_value = -1.1
         actual_value = parse_measurement_value(test_data_type, test_value)
         assert actual_value == expected_value
-        assert type(actual_value) == float
+        assert isinstance(actual_value, float)
 
     def test_with_invalid_measurement_type(self):
         test_data_type = "invalid"

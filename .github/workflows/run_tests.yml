@@ -8,13 +8,32 @@ on:
     branches:
       - main
 
+env:
+  POSTGRES_DB: tsdb
+  POSTGRES_USER: pguser
+  POSTGRES_PASSWORD: pgpass
+  POSTGRES_PORT: 5432
+  POSTGRES_HOST: localhost
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_PORT: ${{ env.POSTGRES_PORT }}
+          POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +55,9 @@ jobs:
           python -m venv venv
           . venv/bin/activate
           poetry install --with test --without dev  --no-interaction --no-root --sync
+          echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
           python  -c "import os; print(os.environ['VIRTUAL_ENV'])"
+
       - name: Lint with flake8
         run: |
           . venv/bin/activate
@@ -44,14 +65,24 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Create TABLE_NAME variable
+        run: |
+          TABLE_NAME=conditions_ci_${{ matrix.python-version }} && TABLE_NAME=\${TABLE_NAME//./_}
+          echo "Table name is $TABLE_NAME"
+          echo "TABLE_NAME=$TABLE_NAME" >> $GITHUB_ENV
+
+      - name: Execute DB setup script
+        run: |
+          psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB -f db/create_table_and_roles.sql  -v table_name=$TABLE_NAME
+
       - name: Test with pytest
         env:
-          TIMESCALE_CONNECTION_STRING: ${{ secrets.TIMESCALE_CONNECTION_STRING }}
+          DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
         run: |
           . venv/bin/activate
-          pytest
+          pytest --cov-report=xml
 
-          
       - name: Coverage comment
         id: coverage_comment
         uses: py-cov-action/python-coverage-comment-action@v3
@@ -67,4 +98,3 @@ jobs:
           name: python-coverage-comment-action
           # If you use a different name, update COMMENT_FILENAME accordingly
           path: python-coverage-comment-action.txt
-
