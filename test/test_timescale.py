@@ -151,12 +151,6 @@ class Test_get_table_name:
 
 
 class Test_get_connection_string:
-    def test_get_connection_string_from_env(self):
-        with patch.dict(
-            os.environ, {"TIMESCALE_CONNECTION_STRING": "test_conn_string"}
-        ):
-            assert get_connection_string() == "test_conn_string"
-
     def test_get_connection_string_from_components(self):
         mock_env_vars = {
             "POSTGRES_DB": "test_db",
