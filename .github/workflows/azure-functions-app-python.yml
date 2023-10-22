@@ -37,14 +37,14 @@ jobs:
     environment: dev
     steps:
     - name: 'Checkout GitHub Action'
-      uses: actions/checkout@v4
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
     - name: Setup Python ${{ env.PYTHON_VERSION }} Environment
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4
       with:
         python-version: ${{ env.PYTHON_VERSION }}
 
-    - uses: snok/install-poetry@v1
+    - uses: snok/install-poetry@93ada01c735cc8a383ce0ce2ae205a21c415379b # v1
       with:
         version: 1.6.1 # pin the version as they keep changing their APIs
         virtualenvs-create: false
@@ -60,7 +60,7 @@ jobs:
 
 
     - name: 'Run Azure Functions Action'
-      uses: Azure/functions-action@v1
+      uses: Azure/functions-action@238dc3c45bb1b04e5d16ff9e75cddd1d86753bd6 # v1
       id: fa
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
