@@ -89,7 +89,7 @@ jobs:
           DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
           TABLE_NAME: ${{ env.TABLE_NAME }}
           POSTGRES_USER: ${{ format('{0}_writer_user', env.TABLE_NAME) }}
-          POSTGRES_PASSWORD: ${{ format('{0}_writer_pass', env.TABLE_NAME) }}
+          POSTGRES_PASSWORD: ${{ format('{0}_writer_user', env.TABLE_NAME) }}
         run: |
           . venv/bin/activate
           pytest --cov-report=xml
