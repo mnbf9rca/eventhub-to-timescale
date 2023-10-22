@@ -1,6 +1,42 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
-  ]
+    "config:best-practices"
+  ],
+  "automerge": true,
+  "automergeType": "pr",
+  "ignoreTests": false,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "extends": [
+      "schedule:daily"
+    ],
+    "automerge": true
+  },
+  "minor": {
+    "automerge": true,
+    "extends": [
+      "schedule:automergeDaily"
+    ]
+  },
+  "patch": {
+    "automerge": true,
+    "extends": [
+      "schedule:automergeDaily"
+    ]
+  },
+  "pin": {
+    "automerge": true,
+    "extends": [
+      "schedule:automergeDaily"
+    ]
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "extends": [
+      "schedule:daily"
+    ]
+  },
+  "rebaseWhen": "behind-base-branch",
+  "updateNotScheduled": true
 }
