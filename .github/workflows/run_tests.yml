@@ -37,6 +37,23 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Create TABLE_NAME variable
+        run: |
+          TABLE_NAME="conditions_ci_${{ matrix.python-version }}"
+          TABLE_NAME=${TABLE_NAME//./_}
+          echo "Table name is $TABLE_NAME"
+          echo "TABLE_NAME=$TABLE_NAME" >> $GITHUB_ENV
+
+      - name: Execute DB setup script
+        continue-on-error: false # stop the workflow if this step fails
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          TABLE_NAME: ${{ env.TABLE_NAME }}
+        run: |
+          set -e  # stop the shell script if any command fails
+          psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB -f db/create_table_and_roles.sql  -v table_name=$TABLE_NAME
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -65,19 +82,6 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-      - name: Create TABLE_NAME variable
-        run: |
-          TABLE_NAME=conditions_ci_${{ matrix.python-version }} && TABLE_NAME=\${TABLE_NAME//./_}
-          echo "Table name is $TABLE_NAME"
-          echo "TABLE_NAME=$TABLE_NAME" >> $GITHUB_ENV
-
-      - name: Execute DB setup script
-        env:
-          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
-          TABLE_NAME: ${{ env.TABLE_NAME }}
-        run: |
-          psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB -f db/create_table_and_roles.sql  -v table_name=$TABLE_NAME
 
       - name: Test with pytest
         env:
