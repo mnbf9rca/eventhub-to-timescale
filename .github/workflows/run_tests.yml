@@ -73,12 +73,18 @@ jobs:
           echo "TABLE_NAME=$TABLE_NAME" >> $GITHUB_ENV
 
       - name: Execute DB setup script
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          TABLE_NAME: ${{ env.TABLE_NAME }}
         run: |
           psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB -f db/create_table_and_roles.sql  -v table_name=$TABLE_NAME
 
       - name: Test with pytest
         env:
           DOTENV_KEY: ${{ secrets.DOTENV_KEY }}
+          TABLE_NAME: ${{ env.TABLE_NAME }}
+          POSTGRES_USER: ${{ format('{0}_writer_user', env.TABLE_NAME) }}
+          POSTGRES_PASSWORD: ${{ format('{0}_writer_pass', env.TABLE_NAME) }}
         run: |
           . venv/bin/activate
           pytest --cov-report=xml
