@@ -21,23 +21,20 @@ def get_connection_string() -> str:
     # if we have a connection string in the environment, use that
     # otherwise, look for the individual components
     # which are POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, TABLE_NAME
-    if connection_string := os.environ.get("TIMESCALE_CONNECTION_STRING"):
-        return connection_string
-    else:
-        required_env_vars = [
-            "POSTGRES_DB",
-            "POSTGRES_USER",
-            "POSTGRES_PASSWORD",
-            "POSTGRES_HOST",
-            "POSTGRES_PORT",
-        ]
-        if missing_env_vars := [
-            env_var for env_var in required_env_vars if env_var not in os.environ
-        ]:
-            raise ValueError(
-                f"Missing required environment variables: {missing_env_vars}"
-            )
-        return f"dbname={os.environ['POSTGRES_DB']} user={os.environ['POSTGRES_USER']} password={os.environ['POSTGRES_PASSWORD']} host={os.environ['POSTGRES_HOST']} port={os.environ['POSTGRES_PORT']}"  # noqa: E501
+    required_env_vars = [
+        "POSTGRES_DB",
+        "POSTGRES_USER",
+        "POSTGRES_PASSWORD",
+        "POSTGRES_HOST",
+        "POSTGRES_PORT",
+    ]
+    if missing_env_vars := [
+        env_var for env_var in required_env_vars if env_var not in os.environ
+    ]:
+        raise ValueError(
+            f"Missing required environment variables: {missing_env_vars}"
+        )
+    return f"dbname={os.environ['POSTGRES_DB']} user={os.environ['POSTGRES_USER']} password={os.environ['POSTGRES_PASSWORD']} host={os.environ['POSTGRES_HOST']} port={os.environ['POSTGRES_PORT']}"  # noqa: E501
 
 
 def get_table_name() -> str:

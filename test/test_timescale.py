@@ -2,9 +2,10 @@ import datetime
 from unittest.mock import MagicMock, patch
 from typing import Any, Tuple
 from dateutil import parser
+from dotenv import load_dotenv
+
 import os
 import sys
-import importlib
 import uuid
 import psycopg
 import pytest_mock
@@ -34,8 +35,6 @@ from shared_code import (  # noqa E402
 )
 
 # when developing locally, use .env file to set environment variables
-# TODO will move this to dotenv-vault in future
-from dotenv import load_dotenv
 
 load_dotenv(verbose=True)
 # dotenv_spec = importlib.util.find_spec("dotenv")
@@ -43,11 +42,11 @@ load_dotenv(verbose=True)
 #     print(f"loading dotenv from {os.getcwd()}")
 
 
-
 class db_helpers:
     """Helper functions for the database"""
 
     test_table_name = os.environ["TABLE_NAME"]
+
     @staticmethod
     def get_connection_string_for_test():
         required_env_vars = [
@@ -66,7 +65,6 @@ class db_helpers:
         connstring = f"dbname={os.environ['POSTGRES_DB']} user={os.environ['POSTGRES_USER']} password={os.environ['POSTGRES_PASSWORD']} host={os.environ['POSTGRES_HOST']} port={os.environ['POSTGRES_PORT']}"  # noqa: E501
         print("connstring:", connstring)
         return connstring
-
 
     @staticmethod
     def field_names():
@@ -151,12 +149,6 @@ class Test_get_table_name:
 
 
 class Test_get_connection_string:
-    def test_get_connection_string_from_env(self):
-        with patch.dict(
-            os.environ, {"TIMESCALE_CONNECTION_STRING": "test_conn_string"}
-        ):
-            assert get_connection_string() == "test_conn_string"
-
     def test_get_connection_string_from_components(self):
         mock_env_vars = {
             "POSTGRES_DB": "test_db",
@@ -212,7 +204,9 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "number",
             "measurement_value": "1",
         }
-        create_single_timescale_record(self.conn, sample_record, db_helpers.test_table_name)
+        create_single_timescale_record(
+            self.conn, sample_record, db_helpers.test_table_name
+        )
         # check that the record was created in the DB by searching for correlation_id
         db_helpers.check_single_record_exists(
             self.conn, sample_record, db_helpers.test_table_name
@@ -229,7 +223,9 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "number",
             "measurement_value": "1.1",
         }
-        create_single_timescale_record(self.conn, sample_record, db_helpers.test_table_name)
+        create_single_timescale_record(
+            self.conn, sample_record, db_helpers.test_table_name
+        )
         # check that the record was created in the DB by searching for correlation_id
         db_helpers.check_single_record_exists(
             self.conn, sample_record, db_helpers.test_table_name
@@ -246,7 +242,9 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "string",
             "measurement_value": "test",
         }
-        create_single_timescale_record(self.conn, sample_record, db_helpers.test_table_name)
+        create_single_timescale_record(
+            self.conn, sample_record, db_helpers.test_table_name
+        )
         # check that the record was created in the DB by searching for correlation_id
         db_helpers.check_single_record_exists(
             self.conn, sample_record, db_helpers.test_table_name
@@ -263,7 +261,9 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "boolean",
             "measurement_value": "true",
         }
-        create_single_timescale_record(self.conn, sample_record, db_helpers.test_table_name)
+        create_single_timescale_record(
+            self.conn, sample_record, db_helpers.test_table_name
+        )
         # check that the record was created in the DB by searching for correlation_id
         db_helpers.check_single_record_exists(
             self.conn, sample_record, db_helpers.test_table_name
@@ -280,7 +280,9 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "boolean",
             "measurement_value": "false",
         }
-        create_single_timescale_record(self.conn, sample_record, db_helpers.test_table_name)
+        create_single_timescale_record(
+            self.conn, sample_record, db_helpers.test_table_name
+        )
         # check that the record was created in the DB by searching for correlation_id
         db_helpers.check_single_record_exists(
             self.conn, sample_record, db_helpers.test_table_name
@@ -298,7 +300,9 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_value": "invalid",
         }
         with pytest.raises(ValueError, match=r".*Invalid boolean value.*"):
-            create_single_timescale_record(self.conn, sample_record, db_helpers.test_table_name)
+            create_single_timescale_record(
+                self.conn, sample_record, db_helpers.test_table_name
+            )
 
     def test_of_type_number_with_invalid_value(self):
         this_correlation_id: str = self.generate_correlation_id()
@@ -314,7 +318,9 @@ class Test_create_single_timescale_record_against_actual_database:
         with pytest.raises(
             ValueError, match=r".*could not convert string to float: 'invalid'*"
         ):
-            create_single_timescale_record(self.conn, sample_record, db_helpers.test_table_name)
+            create_single_timescale_record(
+                self.conn, sample_record, db_helpers.test_table_name
+            )
 
 
 class Test_create_single_timescale_record_with_mock:
