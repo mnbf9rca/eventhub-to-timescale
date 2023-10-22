@@ -16,7 +16,11 @@ load_dotenv()
 
 
 def main(events: List[func.EventHubEvent]):
-    conn = psycopg.connect(get_connection_string())
+    conn_string = get_connection_string()
+    table_name = get_table_name()
+    print(f"Connection string: {conn_string}")
+    print(f"Table name: {table_name}")
+    conn = psycopg.connect(conn_string)
     errors: List[Exception] = []
     with conn:  # will close the connection when done
         for event in events:
