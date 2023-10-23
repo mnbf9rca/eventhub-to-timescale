@@ -14,7 +14,7 @@ jobs:
     steps:
     
       - name: Post comment
-        uses: py-cov-action/python-coverage-comment-action@95a386cd05f6dc16fba1932ff0b70ab457f83f56 # v3
+        uses: py-cov-action/python-coverage-comment-action@e5ccefa682f1d93b0ac3f0e85c88f2038787c8bb # v3
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_PR_RUN_ID: ${{ github.event.workflow_run.id }}
