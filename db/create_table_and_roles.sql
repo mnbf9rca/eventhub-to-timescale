@@ -68,6 +68,7 @@ BEGIN
 
     -- Assign privileges on the sequence
     EXECUTE 'GRANT USAGE, SELECT ON SEQUENCE ' || sequence_name || ' TO ' || writer_role_name;
+    EXECUTE 'GRANT SELECT ON SEQUENCE ' || sequence_name || ' TO ' || reader_role_name;
 
     -- check if writer user exists, create if not
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = writer_user_name) THEN
