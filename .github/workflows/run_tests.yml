@@ -38,6 +38,9 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
+      - name: Install PostGIS
+        run: docker exec -it -u root timescaledb /bin/bash -c "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y postgresql-15-postgis-3"
+
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
       - name: Create TABLE_NAME variable
