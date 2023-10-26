@@ -27,10 +27,10 @@ def load_test_data():
     # within whole_object, for each item, replace [properties][body] with json.dumps([properties][body])
     for item in whole_object:
         if (
-            isinstance(whole_object[item], (dict, List, tuple)) and
-            "properties" in whole_object[item] and
-            "body" in whole_object[item]["properties"] and
-            isinstance(whole_object[item]["properties"]["body"]["payload"], dict)
+            isinstance(whole_object[item], (dict, List, tuple))
+            and "properties" in whole_object[item]
+            and "body" in whole_object[item]["properties"]
+            and isinstance(whole_object[item]["properties"]["body"]["payload"], dict)
         ):
             whole_object[item]["properties"]["body"]["payload"] = json.dumps(
                 whole_object[item]["properties"]["body"]["payload"]
@@ -53,12 +53,11 @@ def create_event_hub_event(event_properties: dict) -> EventHubEvent:
     """
 
     body: str | None = event_properties.get("body")
-    if body:
-        body = (
-            body.encode("UTF-8")
-            if type(body) == str
-            else json.dumps(body).encode("UTF-8")
-        )
+    if body is not None:
+        if isinstance(body, str):
+            body = body.encode("UTF-8")
+        else:
+            body = json.dumps(body).encode("UTF-8")
     if "enqueued_time" in event_properties:
         # Convert the enqueued time to a datetime object
         enqueued_time = parser.parse(event_properties["enqueued_time"])

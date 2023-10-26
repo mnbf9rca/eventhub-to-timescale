@@ -26,7 +26,7 @@ jobs:
 
     services:
       postgres:
-        image: timescale/timescaledb:latest-pg15@sha256:6dfd0356c701a5490f417c2f866eabb9d58aad135b0a47024e67198850edf541
+        image: timescale/timescaledb-ha:pg15
         env:
           POSTGRES_DB: ${{ env.POSTGRES_DB }}
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
@@ -35,9 +35,14 @@ jobs:
           POSTGRES_HOST: ${{ env.POSTGRES_HOST }}
         ports:
           - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5 --name=service_postgresql
 
     steps:
+      # - name: Install PostGIS
+      #   run: |
+      #     set -x
+      #     docker exec -u root service_postgresql /bin/sh -c "apk --no-cache add postgis"
+    
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
       - name: Create TABLE_NAME variable
@@ -53,8 +58,12 @@ jobs:
           PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
           TABLE_NAME: ${{ env.TABLE_NAME }}
         run: |
-          set -e  # stop the shell script if any command fails
-          psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB -f db/create_table_and_roles.sql  -v table_name=$TABLE_NAME
+          set -e
+          psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB -f db/create_table_and_roles.sql  -v table_name=$TABLE_NAME --set ON_ERROR_STOP=on
+          if [ $? -ne 0 ]; then
+            echo "psql command failed"
+            exit 1
+          fi
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4

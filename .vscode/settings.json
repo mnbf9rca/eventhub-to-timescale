@@ -14,5 +14,6 @@
   ],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
-  "dotenv.enableAutocloaking": false
+  "dotenv.enableAutocloaking": false,
+  "Prettier-SQL.SQLFlavourOverride": "postgresql"
 }
