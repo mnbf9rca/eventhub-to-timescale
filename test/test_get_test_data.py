@@ -86,7 +86,7 @@ class Test_create_event_hub_event:
             "iothub_metadata": {"d": "4", "e": "5"},
         }
         expected_value = EventHubEvent(
-            body={},
+            body=b'{}',  # binary encoded string
             trigger_metadata=sample_event["trigger_metadata"],
             enqueued_time=datetime.datetime(
                 2020, 1, 1, 0, 0, 0, 0, tzinfo=datetime.timezone.utc
@@ -105,7 +105,8 @@ class Test_create_event_hub_event:
         TestCase().assertDictEqual(
             actual_value.iothub_metadata, expected_value.iothub_metadata
         )
-        TestCase().assertDictEqual(actual_value.get_body(), expected_value.get_body())
+        # TestCase().assertDictEqual(actual_value.get_body(), expected_value.get_body())
+        assert actual_value.get_body() == expected_value.get_body()
 
     def test_with_missing_timestamp(self):
         sample_event = {

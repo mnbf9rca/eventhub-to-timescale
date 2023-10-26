@@ -62,4 +62,3 @@ def extract_topic(messagebody: dict) -> tuple[str, str]:
     except Exception as e:
         logging.error(f"Error extracting topic: {e}")
         raise
-    

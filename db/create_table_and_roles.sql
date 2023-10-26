@@ -1,6 +1,7 @@
 -- Create an instance of the conditions table named after the table_name parameter
 -- pass as table_name parameter e.g.
--- psql -h localhost -U $POSTGRES_USER -d $POSTGRES_DB -f db/create_table_and_roles.sql -v table_name='your_table_name'
+-- psql -h localhost -U $POSTGRES_USER -d $POSTGRES_DB -f db/create_table_and_roles.sql -v table_name='your_table_name' --set ON_ERROR_STOP=on
+-- setting --set ON_ERROR_STOP=on ensures that psql returns an error code if the script fails
 SET session "myapp.table_name" = :table_name;
 
 DO $$
@@ -12,22 +13,35 @@ DECLARE
     writer_user_name text := target_table_name || '_writer_user';
     unique_id_field_name text := 'measurement_unique_id';
     sequence_name text := target_table_name || '_' || unique_id_field_name || '_sequence';
+    ext_name text;  -- Variable for extension name
+    ext_version text;  -- Variable for extension version
 BEGIN
 
+
+    -- install timesdcale
+    CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
+    CREATE EXTENSION IF NOT EXISTS postgis CASCADE;
+
+    -- Loop to print installed extensions and their versions
+    FOR ext_name, ext_version IN (SELECT extname, extversion FROM pg_extension)
+    LOOP
+        RAISE NOTICE 'Extension: %, Version: %', ext_name, ext_version;
+    END LOOP;
 
     -- Create the sequence
     EXECUTE 'CREATE SEQUENCE IF NOT EXISTS ' || sequence_name || ' START 1';
 
     -- Create the table
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || target_table_name || ' (
-        timestamp             timestamp with time zone NOT NULL,
-        measurement_subject   text NOT NULL,
-        measurement_number    double precision,
-        measurement_of        text NOT NULL,
-        measurement_string    text,
-        correlation_id        text,
-        measurement_bool      boolean,
-        measurement_publisher text,
+        "timestamp"             timestamp with time zone NOT NULL,
+        "measurement_subject"   text NOT NULL,
+        "measurement_number"    double precision,
+        "measurement_of"        text NOT NULL,
+        "measurement_string"    text,
+        "correlation_id"        text,
+        "measurement_bool"      boolean,
+        "measurement_publisher" text,
+        "measurement_location"  geography(Point,4326),
         ' || unique_id_field_name || ' bigint NOT NULL DEFAULT nextval(''' || sequence_name || ''')
     )';
 
@@ -36,13 +50,10 @@ BEGIN
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_bool_idx ON ' || target_table_name || ' (measurement_bool)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_number_idx ON ' || target_table_name || ' (measurement_number)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_of_idx ON ' || target_table_name || ' USING hash (measurement_of)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_publisher_idx ON ' || target_table_name || ' (measurement_publisher)';
+    EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_publisher_idx ON ' || target_table_name || ' USING hash (measurement_publisher)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_string_idx ON ' || target_table_name || ' (measurement_string)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_subject_idx ON ' || target_table_name || ' (measurement_subject)';
+    EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_subject_idx ON ' || target_table_name || ' USING hash (measurement_subject)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_timestamp_idx ON ' || target_table_name || ' ("timestamp" DESC)';
-
-    -- install timesdcale
-    CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 
     -- convert the table to a hypertable
     PERFORM create_hypertable(target_table_name, 'timestamp');
@@ -57,8 +68,6 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = writer_role_name) THEN
         EXECUTE 'CREATE ROLE ' || writer_role_name;
     END IF;
-
-
 
     -- Grant SELECT privilege to the reader role
     EXECUTE 'GRANT SELECT ON TABLE ' || target_table_name || ' TO ' || reader_role_name;

@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, Union
 import logging
 from dotenv_vault import load_dotenv
 
@@ -31,9 +31,7 @@ def get_connection_string() -> str:
     if missing_env_vars := [
         env_var for env_var in required_env_vars if env_var not in os.environ
     ]:
-        raise ValueError(
-            f"Missing required environment variables: {missing_env_vars}"
-        )
+        raise ValueError(f"Missing required environment variables: {missing_env_vars}")
     return f"dbname={os.environ['POSTGRES_DB']} user={os.environ['POSTGRES_USER']} password={os.environ['POSTGRES_PASSWORD']} host={os.environ['POSTGRES_HOST']} port={os.environ['POSTGRES_PORT']}"  # noqa: E501
 
 
@@ -129,30 +127,88 @@ def identify_data_column(measurement_type: str) -> str:
     @param measurement_type: the measurement type
     @return: the column name for the data
     """
-    if measurement_type == "boolean":
+
+    # if measurement_type is None:
+    #     raise ValueError("Measurement type cannot be None")
+
+    if not isinstance(measurement_type, str):
+        raise ValueError("Measurement type must be a string")
+
+    if measurement_type.lower() == "boolean":
         return "measurement_bool"
-    elif measurement_type == "number":
+    elif measurement_type.lower() == "number":
         return "measurement_number"
-    elif measurement_type == "string":
+    elif measurement_type.lower() == "string":
         return "measurement_string"
+    elif measurement_type.lower() == "geography":
+        return "measurement_location"
     else:
         raise ValueError(f"Unknown measurement type: {measurement_type}")
 
 
-def parse_measurement_value(measurement_type: str, measurement_value: str) -> Any:
-    """Parse the measurement value
-    @param measurement_type: the measurement type
-    @param measurement_value: the measurement value
-    @return: the parsed measurement value
+def parse_measurement_value(
+    measurement_type: str, measurement_value: str
+) -> Union[bool, float, str]:
     """
+    Parse a measurement value based on its type.
+
+    Parameters:
+        measurement_type (str): The type of the measurement. Expected values are "boolean", "number", or "string".
+        measurement_value (str): The measurement value to be parsed.
+
+    Returns:
+        depends on: The parsed measurement value. The type of the returned value depends on `measurement_type`:
+            - "boolean": returns a Python boolean (True or False)
+            - "number": returns a float
+            - "string": returns a string
+
+    Raises:
+        ValueError: If `measurement_type` is not one of the expected types ("boolean", "number", "string").
+        ValueError: If `measurement_type` is "boolean" but `measurement_value` is not "true" or "false" (case-insensitive).
+
+    Examples:
+        >>> parse_measurement_value("boolean", "true")
+        True
+        >>> parse_measurement_value("number", "42.0")
+        42.0
+        >>> parse_measurement_value("string", "hello")
+        'hello'
+    """  # noqa: E501
     if measurement_type == "boolean":
         if measurement_value.lower() in {"true", "false"}:
             return measurement_value.lower() == "true"
         else:
             raise ValueError(f"Invalid boolean value: {measurement_value}")
     elif measurement_type == "number":
-        return float(measurement_value)
+        try:
+            return float(measurement_value)
+        except ValueError:
+            raise ValueError(f"Invalid number value: {measurement_value}")
     elif measurement_type == "string":
         return measurement_value
+    elif measurement_type == "geography":
+        return parse_string_to_geopoint(measurement_value)
     else:
         raise ValueError(f"Unknown measurement type: {measurement_type}")
+
+
+def parse_string_to_geopoint(measurement_value):
+    latlon_values = measurement_value.split(',')
+    if len(latlon_values) != 2:
+        raise ValueError(f"Invalid geography value: {measurement_value}")
+    try:
+        latitude, longitude = map(float, latlon_values)
+    except ValueError:
+        raise ValueError(f"Invalid geography value: {measurement_value}")
+
+    if not (-90 <= latitude <= 90):
+        raise ValueError(f"Invalid latitude value: {latitude}")
+    if not (-180 <= longitude <= 180):
+        raise ValueError(f"Invalid longitude value: {longitude}")
+
+    # POINT is well known type for geography
+    # SRID=4326 is the spatial reference system for WGS84
+    # https://postgis.net/docs/using_postgis_dbmanagement.html#PostGIS_GeographyVSGeometry
+    # https://postgis.net/docs/using_postgis_dbmanagement.html#EWKB_EWKT
+    # why long, lat? because it's x,y, and longitude is clearly x https://www.drupal.org/project/geo/issues/511370
+    return f"SRID=4326;POINT({longitude} {latitude})"

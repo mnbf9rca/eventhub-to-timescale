@@ -32,6 +32,7 @@ from shared_code import (  # noqa E402
     validate_all_fields_in_record,
     get_table_name,
     get_connection_string,
+    parse_string_to_geopoint,
 )
 
 # when developing locally, use .env file to set environment variables
@@ -78,7 +79,8 @@ class db_helpers:
             + "correlation_id, "
             + "measurement_bool, "
             + "measurement_publisher, "
-            + "measurement_unique_id"
+            + "measurement_unique_id, "
+            + "ST_AsText(measurement_location) as measurement_location"
         )
 
     @staticmethod
@@ -96,6 +98,9 @@ class db_helpers:
         elif expected_record["measurement_data_type"] == "boolean":
             assert record[6] is (expected_record["measurement_value"].lower() == "true")
             none_fields = [2, 4]
+        elif expected_record["measurement_data_type"] == "geography":
+            assert record[9] == expected_record["measurement_value"]
+            none_fields = [4, 6]
         else:
             raise ValueError("invalid measurement_data_type")
 
@@ -212,6 +217,34 @@ class Test_create_single_timescale_record_against_actual_database:
             self.conn, sample_record, db_helpers.test_table_name
         )
 
+    def test_of_type_geography_with_latlon(self):
+        this_correlation_id: str = self.generate_correlation_id()
+        sample_record = {
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "measurement_subject": "testsubject",
+            "correlation_id": this_correlation_id,
+            "measurement_publisher": "testpublisher",
+            "measurement_of": "testname",
+            "measurement_data_type": "geography",
+            "measurement_value": "40.7128,-74.0060",
+        }
+        latlon_values = sample_record["measurement_value"].split(',')
+        latitude, longitude = map(float, latlon_values)
+
+        expected_record = {
+            **sample_record,
+            "measurement_value": f"POINT({longitude} {latitude})",
+        }
+
+        create_single_timescale_record(
+            self.conn, sample_record, db_helpers.test_table_name
+        )
+
+        # check that the record was created in the DB by searching for correlation_id
+        db_helpers.check_single_record_exists(
+            self.conn, expected_record, db_helpers.test_table_name
+        )
+
     def test_of_type_number_with_float(self):
         this_correlation_id: str = self.generate_correlation_id()
         sample_record = {
@@ -315,9 +348,7 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "number",
             "measurement_value": "invalid",
         }
-        with pytest.raises(
-            ValueError, match=r".*could not convert string to float: 'invalid'*"
-        ):
+        with pytest.raises(ValueError, match=r".*Invalid number value: invalid*"):
             create_single_timescale_record(
                 self.conn, sample_record, db_helpers.test_table_name
             )
@@ -468,9 +499,7 @@ class Test_parse_measurement_value:
     def test_with_number_and_string(self):
         test_data_type = "number"
         test_value = "test"
-        with pytest.raises(
-            ValueError, match=r".*could not convert string to float: 'test'.*"
-        ):
+        with pytest.raises(ValueError, match=r".*Invalid number value: test.*"):
             parse_measurement_value(test_data_type, test_value)
 
     def test_with_number_and_number(self):
@@ -526,6 +555,39 @@ class Test_parse_measurement_value:
             parse_measurement_value(test_data_type, test_value)
 
 
+class Test_parse_string_to_geopoint:
+    def test_valid_latlon(self):
+        assert parse_string_to_geopoint("40.7128,-74.0062") == "SRID=4326;POINT(-74.0062 40.7128)"
+
+    def test_invalid_lat(self):
+        with pytest.raises(ValueError, match="Invalid latitude value:"):
+            parse_string_to_geopoint("100.0,-74.0060")
+
+    def test_invalid_lon(self):
+        with pytest.raises(ValueError, match="Invalid longitude value:"):
+            parse_string_to_geopoint("40.7128,-200.0")
+
+    def test_invalid_latlon(self):
+        with pytest.raises(ValueError, match="Invalid latitude value:"):
+            parse_string_to_geopoint("100.0,-200.0")
+
+    def test_non_numeric_values(self):
+        with pytest.raises(ValueError, match="Invalid geography value:"):
+            parse_string_to_geopoint("latitude,longitude")
+
+    def test_incorrect_number_of_values(self):
+        with pytest.raises(ValueError, match="Invalid geography value:"):
+            parse_string_to_geopoint("40.7128,-74.0060,100")
+
+    def test_empty_string(self):
+        with pytest.raises(ValueError, match="Invalid geography value:"):
+            parse_string_to_geopoint("")
+
+    def test_string_with_only_comma(self):
+        with pytest.raises(ValueError, match="Invalid geography value:"):
+            parse_string_to_geopoint(",")
+
+
 class Test_identify_data_column:
     def test_with_number(self):
         test_data_type = "number"
@@ -545,6 +607,12 @@ class Test_identify_data_column:
         actual_column = identify_data_column(test_data_type)
         assert actual_column == expected_column
 
+    def test_with_geography(self):
+        test_data_type = "geography"
+        expected_column = "measurement_location"
+        actual_column = identify_data_column(test_data_type)
+        assert actual_column == expected_column
+
     def test_with_invalid_data_type(self):
         test_data_type = "invalid"
         with pytest.raises(ValueError, match=r".*Unknown measurement type: invalid.*"):
@@ -552,7 +620,7 @@ class Test_identify_data_column:
 
     def test_passing_none(self):
         test_data_type = None
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: None.*"):
+        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
             identify_data_column(test_data_type)
 
     def test_passing_empty_string(self):
@@ -562,17 +630,17 @@ class Test_identify_data_column:
 
     def test_passing_int(self):
         test_data_type = 1
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: 1.*"):
+        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
             identify_data_column(test_data_type)
 
     def test_passing_float(self):
         test_data_type = 1.1
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: 1.1.*"):
+        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
             identify_data_column(test_data_type)
 
     def test_passing_boolean(self):
         test_data_type = True
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: True.*"):
+        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
             identify_data_column(test_data_type)
 
 
