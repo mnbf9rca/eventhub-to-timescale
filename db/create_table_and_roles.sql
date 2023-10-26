@@ -1,6 +1,7 @@
 -- Create an instance of the conditions table named after the table_name parameter
 -- pass as table_name parameter e.g.
--- psql -h localhost -U $POSTGRES_USER -d $POSTGRES_DB -f db/create_table_and_roles.sql -v table_name='your_table_name'
+-- psql -h localhost -U $POSTGRES_USER -d $POSTGRES_DB -f db/create_table_and_roles.sql -v table_name='your_table_name' --set ON_ERROR_STOP=on
+-- setting --set ON_ERROR_STOP=on ensures that psql returns an error code if the script fails
 SET session "myapp.table_name" = :table_name;
 
 DO $$
@@ -17,7 +18,8 @@ BEGIN
 
     -- install timesdcale
     CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
-    create EXTENSION IF NOT EXISTS postgis CASCADE;
+    CREATE EXTENSION IF NOT EXISTS postgis CASCADE;
+    RAISE NOTICE 'Extensions: %', (SELECT * FROM pg_extension);
 
     -- Create the sequence
     EXECUTE 'CREATE SEQUENCE IF NOT EXISTS ' || sequence_name || ' START 1';
@@ -34,7 +36,7 @@ BEGIN
         "measurement_publisher" text,
         "measurement_location" geography(Point,4326),
         ' || unique_id_field_name || ' bigint NOT NULL DEFAULT nextval(''' || sequence_name || '''),
-        PRIAMRY KEY (' || unique_id_field_name || ')
+        PRIMARY KEY (' || unique_id_field_name || ')
     )';
 
     -- Create indexes
