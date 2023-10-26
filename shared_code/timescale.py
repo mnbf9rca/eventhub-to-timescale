@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, Union
 import logging
 from dotenv_vault import load_dotenv
 
@@ -129,21 +129,50 @@ def identify_data_column(measurement_type: str) -> str:
     @param measurement_type: the measurement type
     @return: the column name for the data
     """
-    if measurement_type == "boolean":
+
+    # if measurement_type is None:
+    #     raise ValueError("Measurement type cannot be None")
+    
+    if not isinstance(measurement_type, str):
+        raise ValueError("Measurement type must be a string")
+        
+    if measurement_type.lower() == "boolean":
         return "measurement_bool"
-    elif measurement_type == "number":
+    elif measurement_type.lower() == "number":
         return "measurement_number"
-    elif measurement_type == "string":
+    elif measurement_type.lower() == "string":
         return "measurement_string"
+    elif measurement_type.lower() == "geography":
+        return "measurement_location"
     else:
         raise ValueError(f"Unknown measurement type: {measurement_type}")
 
 
-def parse_measurement_value(measurement_type: str, measurement_value: str) -> Any:
-    """Parse the measurement value
-    @param measurement_type: the measurement type
-    @param measurement_value: the measurement value
-    @return: the parsed measurement value
+def parse_measurement_value(measurement_type: str, measurement_value: str) -> Union[bool, float, str]:
+    """
+    Parse a measurement value based on its type.
+
+    Parameters:
+        measurement_type (str): The type of the measurement. Expected values are "boolean", "number", or "string".
+        measurement_value (str): The measurement value to be parsed.
+
+    Returns:
+        depends on: The parsed measurement value. The type of the returned value depends on `measurement_type`:
+             - "boolean": returns a Python boolean (True or False)
+             - "number": returns a float
+             - "string": returns a string
+
+    Raises:
+        ValueError: If `measurement_type` is not one of the expected types ("boolean", "number", "string").
+        ValueError: If `measurement_type` is "boolean" but `measurement_value` is not "true" or "false" (case-insensitive).
+
+    Examples:
+        >>> parse_measurement_value("boolean", "true")
+        True
+        >>> parse_measurement_value("number", "42.0")
+        42.0
+        >>> parse_measurement_value("string", "hello")
+        'hello'
     """
     if measurement_type == "boolean":
         if measurement_value.lower() in {"true", "false"}:

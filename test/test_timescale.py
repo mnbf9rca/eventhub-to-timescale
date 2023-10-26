@@ -545,6 +545,12 @@ class Test_identify_data_column:
         actual_column = identify_data_column(test_data_type)
         assert actual_column == expected_column
 
+    def test_with_geography(self):
+        test_data_type = "geography"
+        expected_column = "measurement_location"
+        actual_column = identify_data_column(test_data_type)
+        assert actual_column == expected_column        
+
     def test_with_invalid_data_type(self):
         test_data_type = "invalid"
         with pytest.raises(ValueError, match=r".*Unknown measurement type: invalid.*"):
@@ -552,7 +558,7 @@ class Test_identify_data_column:
 
     def test_passing_none(self):
         test_data_type = None
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: None.*"):
+        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
             identify_data_column(test_data_type)
 
     def test_passing_empty_string(self):
@@ -562,17 +568,17 @@ class Test_identify_data_column:
 
     def test_passing_int(self):
         test_data_type = 1
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: 1.*"):
+        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
             identify_data_column(test_data_type)
 
     def test_passing_float(self):
         test_data_type = 1.1
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: 1.1.*"):
+        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
             identify_data_column(test_data_type)
 
     def test_passing_boolean(self):
         test_data_type = True
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: True.*"):
+        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
             identify_data_column(test_data_type)
 
 
