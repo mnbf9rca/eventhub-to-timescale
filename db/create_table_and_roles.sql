@@ -50,9 +50,9 @@ BEGIN
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_bool_idx ON ' || target_table_name || ' (measurement_bool)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_number_idx ON ' || target_table_name || ' (measurement_number)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_of_idx ON ' || target_table_name || ' USING hash (measurement_of)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_publisher_idx ON ' || target_table_name || 'USING hash (measurement_publisher)';
+    EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_publisher_idx ON ' || target_table_name || ' USING hash (measurement_publisher)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_string_idx ON ' || target_table_name || ' (measurement_string)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_subject_idx ON ' || target_table_name || 'USING hash (measurement_subject)';
+    EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_subject_idx ON ' || target_table_name || ' USING hash (measurement_subject)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_timestamp_idx ON ' || target_table_name || ' ("timestamp" DESC)';
 
     -- convert the table to a hypertable
