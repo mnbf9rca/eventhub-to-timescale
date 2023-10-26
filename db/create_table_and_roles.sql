@@ -19,7 +19,12 @@ BEGIN
     -- install timesdcale
     CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
     CREATE EXTENSION IF NOT EXISTS postgis CASCADE;
-    RAISE NOTICE 'Extensions: %', (SELECT * FROM pg_extension);
+    
+    -- Loop to print installed extensions and their versions
+    FOR rec IN (SELECT extname, extversion FROM pg_extension)
+    LOOP
+        RAISE NOTICE 'Extension: %, Version: %', rec.extname, rec.extversion;
+    END LOOP;
 
     -- Create the sequence
     EXECUTE 'CREATE SEQUENCE IF NOT EXISTS ' || sequence_name || ' START 1';
