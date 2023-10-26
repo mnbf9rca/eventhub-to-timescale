@@ -212,6 +212,25 @@ class Test_create_single_timescale_record_against_actual_database:
             self.conn, sample_record, db_helpers.test_table_name
         )
 
+    def test_of_type_number_with_geography(self):
+        this_correlation_id: str = self.generate_correlation_id()
+        sample_record = {
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "measurement_subject": "testsubject",
+            "correlation_id": this_correlation_id,
+            "measurement_publisher": "testpublisher",
+            "measurement_of": "testname",
+            "measurement_data_type": "number",
+            "measurement_value": "1",
+        }
+        create_single_timescale_record(
+            self.conn, sample_record, db_helpers.test_table_name
+        )
+        # check that the record was created in the DB by searching for correlation_id
+        db_helpers.check_single_record_exists(
+            self.conn, sample_record, db_helpers.test_table_name
+        )
+
     def test_of_type_number_with_float(self):
         this_correlation_id: str = self.generate_correlation_id()
         sample_record = {
@@ -316,7 +335,7 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_value": "invalid",
         }
         with pytest.raises(
-            ValueError, match=r".*could not convert string to float: 'invalid'*"
+            ValueError, match=r".*Invalid number value: invalid*"
         ):
             create_single_timescale_record(
                 self.conn, sample_record, db_helpers.test_table_name
@@ -469,7 +488,7 @@ class Test_parse_measurement_value:
         test_data_type = "number"
         test_value = "test"
         with pytest.raises(
-            ValueError, match=r".*could not convert string to float: 'test'.*"
+            ValueError, match=r".*Invalid number value: test.*"
         ):
             parse_measurement_value(test_data_type, test_value)
 

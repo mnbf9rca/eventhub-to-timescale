@@ -180,8 +180,30 @@ def parse_measurement_value(
         else:
             raise ValueError(f"Invalid boolean value: {measurement_value}")
     elif measurement_type == "number":
-        return float(measurement_value)
+        try:
+            return float(measurement_value)
+        except ValueError:
+            raise ValueError(f"Invalid number value: {measurement_value}")
     elif measurement_type == "string":
         return measurement_value
+    elif measurement_type == "geography":
+        return parse_string_to_geopoint(measurement_value)
     else:
         raise ValueError(f"Unknown measurement type: {measurement_type}")
+
+
+def parse_string_to_geopoint(measurement_value):
+    latlon_values = measurement_value.split(',')
+    if len(latlon_values) != 2:
+        raise ValueError(f"Invalid geography value: {measurement_value}")
+    try:
+        latitude, longitude = map(float, latlon_values)
+    except ValueError:
+        raise ValueError(f"Invalid geography value: {measurement_value}")
+
+    if not (-90 <= latitude <= 90):
+        raise ValueError(f"Invalid latitude value: {latitude}")
+    if not (-180 <= longitude <= 180):
+        raise ValueError(f"Invalid longitude value: {longitude}")
+
+    return f"SRID=4326;POINT({longitude} {latitude})"
