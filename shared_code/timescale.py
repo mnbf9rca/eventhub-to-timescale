@@ -31,9 +31,7 @@ def get_connection_string() -> str:
     if missing_env_vars := [
         env_var for env_var in required_env_vars if env_var not in os.environ
     ]:
-        raise ValueError(
-            f"Missing required environment variables: {missing_env_vars}"
-        )
+        raise ValueError(f"Missing required environment variables: {missing_env_vars}")
     return f"dbname={os.environ['POSTGRES_DB']} user={os.environ['POSTGRES_USER']} password={os.environ['POSTGRES_PASSWORD']} host={os.environ['POSTGRES_HOST']} port={os.environ['POSTGRES_PORT']}"  # noqa: E501
 
 
@@ -132,10 +130,10 @@ def identify_data_column(measurement_type: str) -> str:
 
     # if measurement_type is None:
     #     raise ValueError("Measurement type cannot be None")
-    
+
     if not isinstance(measurement_type, str):
         raise ValueError("Measurement type must be a string")
-        
+
     if measurement_type.lower() == "boolean":
         return "measurement_bool"
     elif measurement_type.lower() == "number":
@@ -148,7 +146,9 @@ def identify_data_column(measurement_type: str) -> str:
         raise ValueError(f"Unknown measurement type: {measurement_type}")
 
 
-def parse_measurement_value(measurement_type: str, measurement_value: str) -> Union[bool, float, str]:
+def parse_measurement_value(
+    measurement_type: str, measurement_value: str
+) -> Union[bool, float, str]:
     """
     Parse a measurement value based on its type.
 
@@ -158,9 +158,9 @@ def parse_measurement_value(measurement_type: str, measurement_value: str) -> Un
 
     Returns:
         depends on: The parsed measurement value. The type of the returned value depends on `measurement_type`:
-             - "boolean": returns a Python boolean (True or False)
-             - "number": returns a float
-             - "string": returns a string
+            - "boolean": returns a Python boolean (True or False)
+            - "number": returns a float
+            - "string": returns a string
 
     Raises:
         ValueError: If `measurement_type` is not one of the expected types ("boolean", "number", "string").
@@ -173,7 +173,7 @@ def parse_measurement_value(measurement_type: str, measurement_value: str) -> Un
         42.0
         >>> parse_measurement_value("string", "hello")
         'hello'
-    """
+    """  # noqa: E501
     if measurement_type == "boolean":
         if measurement_value.lower() in {"true", "false"}:
             return measurement_value.lower() == "true"

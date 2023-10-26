@@ -549,7 +549,7 @@ class Test_identify_data_column:
         test_data_type = "geography"
         expected_column = "measurement_location"
         actual_column = identify_data_column(test_data_type)
-        assert actual_column == expected_column        
+        assert actual_column == expected_column
 
     def test_with_invalid_data_type(self):
         test_data_type = "invalid"
