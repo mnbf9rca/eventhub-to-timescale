@@ -42,10 +42,9 @@ BEGIN
         "measurement_bool"        boolean,
         "measurement_publisher" text,
         "measurement_location" geography(Point,4326),
-        ' || unique_id_field_name || ' bigint NOT NULL DEFAULT nextval(''' || sequence_name || '''),
-        PRIMARY KEY (' || unique_id_field_name || ')
+        ' || unique_id_field_name || ' bigint NOT NULL DEFAULT nextval(''' || sequence_name || ''')
     )';
-
+ --     PRIMARY KEY (' || unique_id_field_name || ')
     -- Create indexes
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_correlation_id_idx ON ' || target_table_name || ' (correlation_id)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_bool_idx ON ' || target_table_name || ' (measurement_bool)';
