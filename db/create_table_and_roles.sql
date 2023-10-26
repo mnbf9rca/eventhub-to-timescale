@@ -15,20 +15,26 @@ DECLARE
 BEGIN
 
 
+    -- install timesdcale
+    CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
+    create EXTENSION IF NOT EXISTS postgis CASCADE;
+
     -- Create the sequence
     EXECUTE 'CREATE SEQUENCE IF NOT EXISTS ' || sequence_name || ' START 1';
 
     -- Create the table
     EXECUTE 'CREATE TABLE IF NOT EXISTS ' || target_table_name || ' (
-        timestamp             timestamp with time zone NOT NULL,
-        measurement_subject   text NOT NULL,
-        measurement_number    double precision,
-        measurement_of        text NOT NULL,
-        measurement_string    text,
-        correlation_id        text,
-        measurement_bool      boolean,
-        measurement_publisher text,
-        ' || unique_id_field_name || ' bigint NOT NULL DEFAULT nextval(''' || sequence_name || ''')
+        "timestamp"             timestamp with time zone NOT NULL,
+        "measurement_subject"   text NOT NULL,
+        "measurement_number"    double precision,
+        "measurement_of"        text NOT NULL,
+        "measurement_string"    text,
+        "correlation_id"        text,
+        "measurement_bool"        boolean,
+        "measurement_publisher" text,
+        "measurement_location" geography(Point,4326),
+        ' || unique_id_field_name || ' bigint NOT NULL DEFAULT nextval(''' || sequence_name || '''),
+        PRIAMRY KEY (' || unique_id_field_name || ')
     )';
 
     -- Create indexes
@@ -40,9 +46,6 @@ BEGIN
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_string_idx ON ' || target_table_name || ' (measurement_string)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_subject_idx ON ' || target_table_name || ' (measurement_subject)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_timestamp_idx ON ' || target_table_name || ' ("timestamp" DESC)';
-
-    -- install timesdcale
-    CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 
     -- convert the table to a hypertable
     PERFORM create_hypertable(target_table_name, 'timestamp');
