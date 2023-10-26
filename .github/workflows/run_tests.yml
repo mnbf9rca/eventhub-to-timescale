@@ -16,14 +16,8 @@ env:
   POSTGRES_HOST: localhost
 
 jobs:
-  build:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.ref != 'main')
+  setup_postgres:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11"]
-
-
     services:
       postgres:
         image: timescale/timescaledb-ha:pg15
@@ -36,6 +30,14 @@ jobs:
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5 --name=service_postgresql
+
+  build:
+    needs: setup_postgres
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.ref != 'main')
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
 
     steps:
       # - name: Install PostGIS
