@@ -26,7 +26,7 @@ jobs:
 
     services:
       postgres:
-        image: timescale/timescaledb-ha
+        image: timescale/timescaledb-ha:pg15
         env:
           POSTGRES_DB: ${{ env.POSTGRES_DB }}
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
