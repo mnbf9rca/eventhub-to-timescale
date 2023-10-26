@@ -53,8 +53,12 @@ jobs:
           PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
           TABLE_NAME: ${{ env.TABLE_NAME }}
         run: |
-          set -e  # stop the shell script if any command fails
+          set -e
           psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB -f db/create_table_and_roles.sql  -v table_name=$TABLE_NAME
+          if [ $? -ne 0 ]; then
+            echo "psql command failed"
+            exit 1
+          fi
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236 # v4
