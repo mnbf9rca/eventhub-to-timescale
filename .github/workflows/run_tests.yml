@@ -54,7 +54,7 @@ jobs:
           TABLE_NAME: ${{ env.TABLE_NAME }}
         run: |
           set -e
-          psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB -f db/create_table_and_roles.sql  -v table_name=$TABLE_NAME
+          psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB -f db/create_table_and_roles.sql  -v table_name=$TABLE_NAME --set ON_ERROR_STOP=on
           if [ $? -ne 0 ]; then
             echo "psql command failed"
             exit 1
