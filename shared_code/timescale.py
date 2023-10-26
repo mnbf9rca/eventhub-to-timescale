@@ -206,4 +206,9 @@ def parse_string_to_geopoint(measurement_value):
     if not (-180 <= longitude <= 180):
         raise ValueError(f"Invalid longitude value: {longitude}")
 
+    # POINT is well known type for geography
+    # SRID=4326 is the spatial reference system for WGS84
+    # https://postgis.net/docs/using_postgis_dbmanagement.html#PostGIS_GeographyVSGeometry
+    # https://postgis.net/docs/using_postgis_dbmanagement.html#EWKB_EWKT
+    # why long, lat? because it's x,y, and longitude is clearly x https://www.drupal.org/project/geo/issues/511370
     return f"SRID=4326;POINT({longitude} {latitude})"
