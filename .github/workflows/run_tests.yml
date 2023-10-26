@@ -26,7 +26,7 @@ jobs:
 
     services:
       postgres:
-        image: timescale/timescaledb:latest-pg15@sha256:6dfd0356c701a5490f417c2f866eabb9d58aad135b0a47024e67198850edf541
+        image: timescale/timescaledb-ha
         env:
           POSTGRES_DB: ${{ env.POSTGRES_DB }}
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
@@ -38,10 +38,10 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5 --name=service_postgresql
 
     steps:
-      - name: Install PostGIS
-        run: |
-          set -x
-          docker exec -u root service_postgresql /bin/sh -c "apk --no-cache add postgis"
+      # - name: Install PostGIS
+      #   run: |
+      #     set -x
+      #     docker exec -u root service_postgresql /bin/sh -c "apk --no-cache add postgis"
     
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
