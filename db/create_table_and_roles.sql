@@ -13,6 +13,8 @@ DECLARE
     writer_user_name text := target_table_name || '_writer_user';
     unique_id_field_name text := 'measurement_unique_id';
     sequence_name text := target_table_name || '_' || unique_id_field_name || '_sequence';
+    ext_name text;  -- Variable for extension name
+    ext_version text;  -- Variable for extension version
 BEGIN
 
 
