@@ -39,20 +39,20 @@ BEGIN
         "measurement_of"        text NOT NULL,
         "measurement_string"    text,
         "correlation_id"        text,
-        "measurement_bool"        boolean,
+        "measurement_bool"      boolean,
         "measurement_publisher" text,
-        "measurement_location" geography(Point,4326),
+        "measurement_location"  geography(Point,4326),
         ' || unique_id_field_name || ' bigint NOT NULL DEFAULT nextval(''' || sequence_name || ''')
     )';
- --     PRIMARY KEY (' || unique_id_field_name || ')
+
     -- Create indexes
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_correlation_id_idx ON ' || target_table_name || ' (correlation_id)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_bool_idx ON ' || target_table_name || ' (measurement_bool)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_number_idx ON ' || target_table_name || ' (measurement_number)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_of_idx ON ' || target_table_name || ' USING hash (measurement_of)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_publisher_idx ON ' || target_table_name || ' (measurement_publisher)';
+    EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_publisher_idx ON ' || target_table_name || 'USING hash (measurement_publisher)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_string_idx ON ' || target_table_name || ' (measurement_string)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_subject_idx ON ' || target_table_name || ' (measurement_subject)';
+    EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_measurement_subject_idx ON ' || target_table_name || 'USING hash (measurement_subject)';
     EXECUTE 'CREATE INDEX IF NOT EXISTS ' || target_table_name || '_timestamp_idx ON ' || target_table_name || ' ("timestamp" DESC)';
 
     -- convert the table to a hypertable
@@ -68,8 +68,6 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = writer_role_name) THEN
         EXECUTE 'CREATE ROLE ' || writer_role_name;
     END IF;
-
-
 
     -- Grant SELECT privilege to the reader role
     EXECUTE 'GRANT SELECT ON TABLE ' || target_table_name || ' TO ' || reader_role_name;
