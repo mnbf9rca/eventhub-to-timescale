@@ -9,9 +9,7 @@ import psycopg as psycopg
 from jsonschema import validate, ValidationError
 import json
 
-if not load_dotenv():
-    logging.error("Failed to load dotenv")
-    raise Exception("Failed to load dotenv")
+load_dotenv()
 
 
 def get_connection_string() -> str:
