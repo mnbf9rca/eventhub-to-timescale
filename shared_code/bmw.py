@@ -88,8 +88,8 @@ def get_my_cars():
     return my_cars
 
 
-def serialise_car_data(car: MyBMWVehicle) -> str:
-    return json.dumps(car.data, cls=MyBMWJSONEncoder)
+def serialise_car_data(cars: List[MyBMWVehicle]) -> List[str]:
+    return [json.dumps(car.data, cls=MyBMWJSONEncoder) for car in cars]
 
 
 def get_and_serialise_car_data():
@@ -108,4 +108,4 @@ def get_and_serialise_car_data():
         Exception: If no cars are found matching the VINs specified in the BMW_VINS environment variable.
     """  # noqa: E501
     cars = get_my_cars()
-    return [serialise_car_data(car) for car in cars]
+    return serialise_car_data(cars)

@@ -3,7 +3,7 @@ import os
 import sys
 import pytest
 import asyncio
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, Mock, call
 
 from bimmer_connected.api.regions import Regions
 from bimmer_connected.account import MyBMWAccount
@@ -18,7 +18,8 @@ from shared_code.bmw import (
     get_bmw_region_from_string,
     get_bmw_account,
     get_my_cars,
-    serialise_car_data
+    serialise_car_data,
+    get_and_serialise_car_data,
 )
 
 
@@ -111,9 +112,7 @@ class TestGetBMWAccount:
 
     def test_get_bmw_account(self, mock_environ, mock_MyBMWAccount):
         expected_account = MagicMock()
-        mock_MyBMWAccount.return_value = (
-            expected_account
-        )
+        mock_MyBMWAccount.return_value = expected_account
 
         actual_account = get_bmw_account()
 
@@ -126,10 +125,9 @@ class TestGetBMWAccount:
 
 
 class TestGetMyCars:
-
     @pytest.fixture
     def mock_environ(self):
-        with patch.dict(os.environ, {'BMW_VINS': '123,456'}):
+        with patch.dict(os.environ, {"BMW_VINS": "123,456"}):
             yield
 
     @pytest.fixture
@@ -141,41 +139,66 @@ class TestGetMyCars:
         return [MagicMock(spec=MyBMWVehicle), MagicMock(spec=MyBMWVehicle)]
 
     def test_get_my_cars_success(self, mock_environ, mock_account, mock_cars):
-        with patch('shared_code.bmw.get_bmw_account', return_value=mock_account), \
-             patch('shared_code.bmw.get_vehicle_by_vin', return_value=mock_cars):
-            
+        with patch("shared_code.bmw.get_bmw_account", return_value=mock_account), patch(
+            "shared_code.bmw.get_vehicle_by_vin", return_value=mock_cars
+        ):
             result = get_my_cars()
 
         assert result == mock_cars
 
     def test_get_my_cars_no_cars_found(self, mock_environ, mock_account):
-        with patch('shared_code.bmw.get_bmw_account', return_value=mock_account), \
-             patch('shared_code.bmw.get_vehicle_by_vin', return_value=None):
-            
+        with patch("shared_code.bmw.get_bmw_account", return_value=mock_account), patch(
+            "shared_code.bmw.get_vehicle_by_vin", return_value=None
+        ):
             with pytest.raises(Exception) as e:
                 get_my_cars()
 
-        assert str(e.value) == 'No cars found'
+        assert str(e.value) == "No cars found"
 
 
 class TestSerialiseCarData:
-
     def setup_method(self):
-        self.mock_car = MagicMock(spec=MyBMWVehicle)
-        self.mock_car.data = {
-            'attribute': 'value',
+        self.mock_car1 = MagicMock(spec=MyBMWVehicle)
+        self.mock_car1.data = {
+            "attribute1": "value1",
+        }
+        self.mock_car2 = MagicMock(spec=MyBMWVehicle)
+        self.mock_car2.data = {
+            "attribute2": "value2",
         }
 
     def test_serialise_car_data(self):
-        expected_data = {'attribute': 'value'}
-        self.mock_car.data = expected_data
-        with patch('json.dumps') as mock_json_dumps:
+        with patch("json.dumps") as mock_json_dumps:
+            mock_cars = [self.mock_car1, self.mock_car2]
+            expected_json = ['{"attribute1": "value1"}', '{"attribute2": "value2"}']
+            
+            # Use side_effect to return different values on different calls
+            mock_json_dumps.side_effect = expected_json
 
-            expected_json = '{"attribute": "value"}' 
-            mock_json_dumps.return_value = expected_json
+            result = serialise_car_data(mock_cars)
 
-            result = serialise_car_data(self.mock_car)
+        mock_json_dumps.assert_has_calls([
+                call(self.mock_car1.data, cls=MyBMWJSONEncoder),
+                call(self.mock_car2.data, cls=MyBMWJSONEncoder),
+            ])
+        assert mock_json_dumps.call_count == 2
+        assert result == expected_json 
 
-        mock_json_dumps.assert_called_once_with(expected_data, cls=MyBMWJSONEncoder)
-        assert result == expected_json
+    def test_get_and_serialise_car_data(self):
+        mock_cars = [Mock(), Mock()]
+        mock_serialised_data = ['{"attribute": "value1"}', '{"attribute": "value2"}']
 
+        with patch("shared_code.bmw.get_my_cars") as mock_get_my_cars, patch(
+            "shared_code.bmw.serialise_car_data"
+        ) as mock_serialise_car_data:
+            # Setup mocks
+            mock_get_my_cars.return_value = mock_cars
+            mock_serialise_car_data.return_value = mock_serialised_data
+
+            # Call function under test
+            result = get_and_serialise_car_data()
+
+            # Verify interactions and result
+            mock_get_my_cars.assert_called_once()
+            mock_serialise_car_data.assert_called_once_with(mock_cars)
+            assert result == mock_serialised_data
