@@ -2,7 +2,9 @@ from typing import List
 from bimmer_connected.account import MyBMWAccount
 from bimmer_connected.vehicle import MyBMWVehicle
 from bimmer_connected.api.regions import Regions
+from bimmer_connected.utils import MyBMWJSONEncoder
 import asyncio
+import json
 
 
 # from azure.eventhub import EventHubProducerClient, EventData
@@ -83,4 +85,12 @@ def get_my_cars():
     return my_cars
 
 
-get_my_cars()
+def serialise_car_data(car: MyBMWVehicle) -> str:
+    return json.dumps(car.data, cls=MyBMWJSONEncoder)
+
+
+def get_and_serialise_car_data():
+    cars = get_my_cars()
+    return [serialise_car_data(car) for car in cars]
+
+print(get_and_serialise_car_data())

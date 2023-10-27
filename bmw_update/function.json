@@ -6,6 +6,13 @@
       "type": "timerTrigger",
       "direction": "in",
       "schedule": "0 */5 * * * *"
-    }
+    },
+    {
+      "type": "eventHub",
+      "name": "$return",
+      "eventHubName": "bmw",
+      "connection": "bmw_eventhubwriter_EVENTHUB",
+      "direction": "out"
+  }
   ]
 }
