@@ -9,7 +9,7 @@
     },
     {
       "type": "eventHub",
-      "name": "outputEventHubMessage",
+      "name": "$return",
       "eventHubName": "bmw",
       "connection": "bmw_eventhubwriter_EVENTHUB",
       "direction": "out"
