@@ -157,6 +157,7 @@ class TestGetMyCars:
 
         assert str(e.value) == 'No cars found'
 
+
 class TestSerialiseCarData:
 
     def setup_method(self):
@@ -168,20 +169,13 @@ class TestSerialiseCarData:
     def test_serialise_car_data(self):
         expected_data = {'attribute': 'value'}
         self.mock_car.data = expected_data
-        with patch('json.dumps') as mock_json_dumps, \
-             patch('shared_code.bmw.MyBMWJSONEncoder') as mock_encoder:
+        with patch('json.dumps') as mock_json_dumps:
 
             expected_json = '{"attribute": "value"}' 
             mock_json_dumps.return_value = expected_json
-            mock_encoder.return_value = MagicMock()
 
             result = serialise_car_data(self.mock_car)
 
-        # called_args, called_kwargs = mock_json_dumps.call_args
-        # assert isinstance(called_kwargs.get('cls'), MagicMock)
-        # assert called_kwargs.get('cls') == mock_encoder.return_value
-        
-        mock_json_dumps.assert_called_once_with(expected_data, cls=mock_encoder)
-        mock_encoder.assert_called_once()  # Check if encoder is initialized~
+        mock_json_dumps.assert_called_once_with(expected_data, cls=MyBMWJSONEncoder)
         assert result == expected_json
 
