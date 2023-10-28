@@ -210,10 +210,10 @@ def parse_to_geopoint(measurement_value: Union[str, List[Union[str, float]]]):
       values are out of valid ranges.
 
     Examples:
-    >>> parse_string_to_geopoint("40.7128,-74.0062")
+    >>> parse_to_geopoint("40.7128,-74.0062")
     "SRID=4326;POINT(-74.0062 40.7128)"
 
-    >>> parse_string_to_geopoint([40.7128, -74.0062])
+    >>> parse_to_geopoint([40.7128, -74.0062])
     "SRID=4326;POINT(-74.0062 40.7128)"
     """    
     # Handle string input and split it

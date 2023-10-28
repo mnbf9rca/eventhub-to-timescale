@@ -555,7 +555,7 @@ class Test_parse_measurement_value:
             parse_measurement_value(test_data_type, test_value)
 
 
-class Test_parse_string_to_geopoint:
+class Test_pparse_to_geopointt:
     def test_valid_latlon_string(self):
         assert (
             parse_to_geopoint("40.7128,-74.0062")
