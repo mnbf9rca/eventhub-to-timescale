@@ -32,7 +32,7 @@ from shared_code import (  # noqa E402
     validate_all_fields_in_record,
     get_table_name,
     get_connection_string,
-    parse_string_to_geopoint,
+    parse_to_geopoint,
 )
 
 # when developing locally, use .env file to set environment variables
@@ -228,7 +228,7 @@ class Test_create_single_timescale_record_against_actual_database:
             "measurement_data_type": "geography",
             "measurement_value": "40.7128,-74.0060",
         }
-        latlon_values = sample_record["measurement_value"].split(',')
+        latlon_values = sample_record["measurement_value"].split(",")
         latitude, longitude = map(float, latlon_values)
 
         expected_record = {
@@ -556,36 +556,59 @@ class Test_parse_measurement_value:
 
 
 class Test_parse_string_to_geopoint:
-    def test_valid_latlon(self):
-        assert parse_string_to_geopoint("40.7128,-74.0062") == "SRID=4326;POINT(-74.0062 40.7128)"
+    def test_valid_latlon_string(self):
+        assert (
+            parse_to_geopoint("40.7128,-74.0062")
+            == "SRID=4326;POINT(-74.0062 40.7128)"
+        )
+
+    def test_valid_latlon_float_array(self):
+        assert (
+            parse_to_geopoint([40.7128, -74.0062])
+            == "SRID=4326;POINT(-74.0062 40.7128)"
+        )
+
+    def test_valid_latlon_string_array(self):
+        assert (
+            parse_to_geopoint(["40.7128", "-74.0062"])
+            == "SRID=4326;POINT(-74.0062 40.7128)"
+        )
+
+    def test_invalid_input_type(self):
+        with pytest.raises(ValueError, match="Invalid input type or format:"):
+            parse_to_geopoint({"lat": 40.7128, "lon": -74.0062})
 
     def test_invalid_lat(self):
         with pytest.raises(ValueError, match="Invalid latitude value:"):
-            parse_string_to_geopoint("100.0,-74.0060")
+            parse_to_geopoint("100.0,-74.0060")
 
     def test_invalid_lon(self):
         with pytest.raises(ValueError, match="Invalid longitude value:"):
-            parse_string_to_geopoint("40.7128,-200.0")
+            parse_to_geopoint("40.7128,-200.0")
 
     def test_invalid_latlon(self):
         with pytest.raises(ValueError, match="Invalid latitude value:"):
-            parse_string_to_geopoint("100.0,-200.0")
+            parse_to_geopoint("100.0,-200.0")
 
     def test_non_numeric_values(self):
         with pytest.raises(ValueError, match="Invalid geography value:"):
-            parse_string_to_geopoint("latitude,longitude")
+            parse_to_geopoint("latitude,longitude")
 
     def test_incorrect_number_of_values(self):
         with pytest.raises(ValueError, match="Invalid geography value:"):
-            parse_string_to_geopoint("40.7128,-74.0060,100")
+            parse_to_geopoint("40.7128,-74.0060,100")
+
+    def test_incorrect_number_of_values_array(self):
+        with pytest.raises(ValueError, match="Invalid input type or format:"):
+            parse_to_geopoint([40.7128, -74.0060, 100])
 
     def test_empty_string(self):
         with pytest.raises(ValueError, match="Invalid geography value:"):
-            parse_string_to_geopoint("")
+            parse_to_geopoint("")
 
     def test_string_with_only_comma(self):
         with pytest.raises(ValueError, match="Invalid geography value:"):
-            parse_string_to_geopoint(",")
+            parse_to_geopoint(",")
 
 
 class Test_identify_data_column:

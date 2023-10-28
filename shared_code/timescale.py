@@ -1,5 +1,5 @@
 import os
-from typing import Any, Union
+from typing import Any, Union, List
 import logging
 from dotenv_vault import load_dotenv
 
@@ -185,15 +185,47 @@ def parse_measurement_value(
     elif measurement_type == "string":
         return measurement_value
     elif measurement_type == "geography":
-        return parse_string_to_geopoint(measurement_value)
+        return parse_to_geopoint(measurement_value)
     else:
         raise ValueError(f"Unknown measurement type: {measurement_type}")
 
 
-def parse_string_to_geopoint(measurement_value):
-    latlon_values = measurement_value.split(',')
-    if len(latlon_values) != 2:
-        raise ValueError(f"Invalid geography value: {measurement_value}")
+def parse_to_geopoint(measurement_value: Union[str, List[Union[str, float]]]):
+    """
+    Parse a geographical point (latitude, longitude) from a given measurement_value.
+
+    The function accepts either a string in the format "latitude,longitude"
+    or a list containing two elements [latitude, longitude].
+    Latitude and longitude can be either string or float.
+
+    Parameters:
+    - measurement_value (Union[str, List[Union[str, float]]]): The geographical point
+      to be parsed, either as a string "latitude,longitude" or as a list [latitude, longitude].
+
+    Returns:
+    - str: A string in Well-Known Text (WKT) format representing the geographical point.
+
+    Raises:
+    - ValueError: If the input is of an invalid type or format, or if latitude or longitude
+      values are out of valid ranges.
+
+    Examples:
+    >>> parse_string_to_geopoint("40.7128,-74.0062")
+    "SRID=4326;POINT(-74.0062 40.7128)"
+
+    >>> parse_string_to_geopoint([40.7128, -74.0062])
+    "SRID=4326;POINT(-74.0062 40.7128)"
+    """    
+    # Handle string input and split it
+    if isinstance(measurement_value, str):
+        latlon_values = measurement_value.split(',')
+    # Handle list input
+    elif isinstance(measurement_value, list) and len(measurement_value) == 2:
+        latlon_values = measurement_value
+    else:
+        raise ValueError(f"Invalid input type or format: {measurement_value}")
+
+    # Convert to float and validate
     try:
         latitude, longitude = map(float, latlon_values)
     except ValueError:
