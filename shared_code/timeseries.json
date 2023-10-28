@@ -1,6 +1,7 @@
 {
   "$id": "https://cynexia.com/schemas/timeseries.json",
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "version": "1.0.0",
   "type": "array",
   "items": [
     {
@@ -9,7 +10,7 @@
         "timestamp": {
           "type": "string",
           "format": "date-time",
-          "description": "The time at which the measurement was taken. For example, 2018-01-01T12:00:00Z."
+          "description": "The time at which the measurement was taken in UTC or with timezone. For example, 2018-01-01T12:00:00Z."
         },
         "measurement_publisher": {
           "type": "string",
@@ -24,15 +25,42 @@
           "description": "The thing which was measured. For example, a measure-temperature or state."
         },
         "measurement_value": {
-          "type": ["string", "number", "boolean"],
-          "description": "The value of the measurement. For example, 23.5 or Home."
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "array",
+              "items": [
+                {
+                  "type": "number",
+                  "description": "Latitude"
+                },
+                {
+                  "type": "number",
+                  "description": "Longitude"
+                }
+              ],
+              "minItems": 2,
+              "maxItems": 2,
+              "description": "The coordinates [latitude, longitude] when measurement_data_type is 'geography'."
+            }
+          ],
+          "description": "The value of the measurement."
         },
         "measurement_data_type": {
           "type": "string",
           "enum": [
             "string",
             "number",
-            "boolean"
+            "boolean",
+            "geography"
           ],
           "description": "The data type of the measurement value. Must be one of: string, number, or boolean."
         },
