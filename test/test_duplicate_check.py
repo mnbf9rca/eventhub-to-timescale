@@ -1,4 +1,5 @@
 import pytest
+import uuid
 from unittest.mock import Mock, patch
 from azure.core.exceptions import ResourceExistsError, ResourceNotFoundError
 from azure.data.tables import TableEntity
@@ -14,7 +15,7 @@ class TestEnsureTableExists:
     def test_ensure_table_exists_creates_table(self, MockTableServiceClient):
         mock_instance = MockTableServiceClient.return_value
         ensure_table_exists("some_table", mock_instance)
-        
+
         # Assert create_table was called once with "some_table"
         mock_instance.create_table.assert_called_once_with("some_table")
 
@@ -22,7 +23,7 @@ class TestEnsureTableExists:
     def test_ensure_table_exists_table_already_exists(self, MockTableServiceClient):
         mock_instance = MockTableServiceClient.return_value
         mock_instance.create_table.side_effect = ResourceExistsError("Table exists")
-        
+
         # Should not raise any exception
         ensure_table_exists("some_table", mock_instance)
 
@@ -148,3 +149,13 @@ class TestGetTableServiceClient:
 
         MockTableServiceClient.from_connection_string.assert_called_once_with('mock_connection_string')
         assert result is MockTableServiceClient.return_value
+
+class TestWithRealTableServiceCall:
+
+    def test_end_to_end(self):
+        tsc = get_table_service_client()
+        context = "testdonotuseordelete"
+        id = str(uuid.uuid4())
+        assert check_duplicate(id, context, tsc) is False
+        assert store_id(id, context, tsc) is True
+        assert check_duplicate(id, context, tsc) is True
