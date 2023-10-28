@@ -98,27 +98,6 @@ def construct_location_message(
         measurement_value=[location["lat"], location["lon"]],
     )
 
-
-def get_value_and_type(
-    field: str, all_fields: Dict[str, Any], current_mileage: Dict[str, Any]
-) -> Optional[Tuple[Any, str]]:
-    """
-    Get the value and the payload type for a specific field.
-
-    Returns:
-    - Tuple: A tuple containing the value and payload type, or None if the field doesn't exist.
-    """
-
-    if field in all_fields:
-        value = all_fields[field]
-        if field == "is_charger_connected":
-            value = bool(value)
-        return value, payload_type_map[field]
-    elif field in current_mileage:
-        return current_mileage[field], payload_type_map[field]
-    return None
-
-
 def construct_messages(
     vin: str, last_updated_at: str, event_object: Dict[str, Any]
 ) -> List[str]:
