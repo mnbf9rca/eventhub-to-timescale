@@ -344,11 +344,11 @@ class TestGetCurrentMileageFromMessage:
 
     def test_missing_mileage_field(self):
         message = {"state": {}}
-        assert get_current_mileage_from_message(message) == None
+        assert get_current_mileage_from_message(message) is None
 
     def test_missing_state_field(self):
         message = {}
-        assert get_current_mileage_from_message(message) == None
+        assert get_current_mileage_from_message(message) is None
 
     def test_mileage_not_integer(self):
         message = {"state": {"currentMileage": "1000"}}
@@ -359,7 +359,7 @@ class TestGetCurrentMileageFromMessage:
 
     def test_none_value(self):
         message = {"state": {"currentMileage": None}}
-        assert get_current_mileage_from_message(message) == None
+        assert get_current_mileage_from_message(message) is None
 
     def test_invalid_message_structure(self):
         message = "Invalid"
