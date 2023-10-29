@@ -57,10 +57,10 @@ class TestConstructMessages:
     ):
         # Setup
         mock_get_electric_charging_state_from_message.return_value = {
-            "charging_level_percent": 80,
+            "chargingLevelPercent": 80,
             "range": 200,
-            "is_charger_connected": True,
-            "charging_status": "Charging",
+            "isChargerConnected": True,
+            "chargingStatus": "Charging",
         }
         mock_get_current_mileage_from_message.return_value = {"current_mileage": 120}
         mock_construct_location_message.return_value = "location_message"
@@ -72,10 +72,10 @@ class TestConstructMessages:
 
         # Fields and types as they are in the function
         fields_to_record = {
-            "charging_level_percent": PayloadType.NUMBER,
+            "chargingLevelPercent": PayloadType.NUMBER,
             "range": PayloadType.NUMBER,
-            "is_charger_connected": PayloadType.BOOLEAN,
-            "charging_status": PayloadType.STRING,
+            "isChargerConnected": PayloadType.BOOLEAN,
+            "chargingStatus": PayloadType.STRING,
             "current_mileage": PayloadType.NUMBER,
         }
 
@@ -137,9 +137,9 @@ class TestConstructMessages:
     ):
         # Setup
         mock_get_electric_charging_state_from_message.return_value = {
-            "charging_level_percent": 80,
+            "chargingLevelPercent": 80,
             "range": 200,
-            "is_charger_connected": True,
+            "isChargerConnected": True,
         }
         mock_get_current_mileage_from_message.return_value = {"current_mileage": 120}
         mock_construct_location_message.return_value = "location_message"
@@ -151,10 +151,10 @@ class TestConstructMessages:
 
         # Fields and types as they are in the function
         fields_to_record = {
-            "charging_level_percent": PayloadType.NUMBER,
+            "chargingLevelPercent": PayloadType.NUMBER,
             "range": PayloadType.NUMBER,
-            "is_charger_connected": PayloadType.BOOLEAN,
-            "charging_status": PayloadType.STRING,
+            "isChargerConnected": PayloadType.BOOLEAN,
+            "chargingStatus": PayloadType.STRING,
             "current_mileage": PayloadType.NUMBER,
         }
 
@@ -215,9 +215,9 @@ class TestConstructMessages:
     ):
         # Setup
         mock_get_electric_charging_state_from_message.return_value = {
-            "charging_level_percent": 80,
+            "chargingLevelPercent": 80,
             "range": 200,
-            "is_charger_connected": True,
+            "isChargerConnected": True,
             "some_new_field": "some_new_value",
         }
         mock_get_current_mileage_from_message.return_value = {"current_mileage": 120}
@@ -230,10 +230,10 @@ class TestConstructMessages:
 
         # Fields and types as they are in the function
         fields_to_record = {
-            "charging_level_percent": PayloadType.NUMBER,
+            "chargingLevelPercent": PayloadType.NUMBER,
             "range": PayloadType.NUMBER,
-            "is_charger_connected": PayloadType.BOOLEAN,
-            "charging_status": PayloadType.STRING,
+            "isChargerConnected": PayloadType.BOOLEAN,
+            "chargingStatus": PayloadType.STRING,
             "current_mileage": PayloadType.NUMBER,
         }
 
@@ -295,10 +295,10 @@ class TestGetElectricChargingStateFromMessage:
             }
         }
         expected = {
-            "charging_level_percent": 80,
+            "chargingLevelPercent": 80,
             "range": 120,
-            "is_charger_connected": 1,
-            "charging_status": "Charging",
+            "isChargerConnected": 1,
+            "chargingStatus": "Charging",
         }
         assert get_electric_charging_state_from_message(message) == expected
 
@@ -308,7 +308,7 @@ class TestGetElectricChargingStateFromMessage:
                 "electricChargingState": {"chargingLevelPercent": 80, "range": 120}
             }
         }
-        expected = {"charging_level_percent": 80, "range": 120}
+        expected = {"chargingLevelPercent": 80, "range": 120}
         assert get_electric_charging_state_from_message(message) == expected
 
     def test_all_fields_missing(self):

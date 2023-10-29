@@ -122,10 +122,10 @@ def construct_messages(
     all_fields = {**electric_charging_state, **current_mileage}
 
     fields_to_record = {
-        "charging_level_percent": sc.PayloadType.NUMBER,
+        "chargingLevelPercent": sc.PayloadType.NUMBER,
         "range": sc.PayloadType.NUMBER,
-        "is_charger_connected": sc.PayloadType.BOOLEAN,
-        "charging_status": sc.PayloadType.STRING,
+        "isChargerConnected": sc.PayloadType.BOOLEAN,
+        "chargingStatus": sc.PayloadType.STRING,
         "current_mileage": sc.PayloadType.NUMBER,
     }
 
@@ -265,7 +265,7 @@ def get_electric_charging_state_from_message(
         return electric_charging_state
 
     if "chargingLevelPercent" in charging_state:
-        electric_charging_state["charging_level_percent"] = charging_state[
+        electric_charging_state["chargingLevelPercent"] = charging_state[
             "chargingLevelPercent"
         ]
 
@@ -273,11 +273,11 @@ def get_electric_charging_state_from_message(
         electric_charging_state["range"] = charging_state["range"]
 
     if "isChargerConnected" in charging_state:
-        electric_charging_state["is_charger_connected"] = charging_state[
+        electric_charging_state["isChargerConnected"] = charging_state[
             "isChargerConnected"
         ]
 
     if "chargingStatus" in charging_state:
-        electric_charging_state["charging_status"] = charging_state["chargingStatus"]
+        electric_charging_state["chargingStatus"] = charging_state["chargingStatus"]
 
     return electric_charging_state
