@@ -198,14 +198,17 @@ class Test_create_single_timescale_record_against_actual_database:
                         f"DELETE FROM {db_helpers.test_table_name} WHERE correlation_id = '{correlation_id}'"
                     )
 
-    @pytest.mark.parametrize("measurement_value, data_type", [
-        ("1", "number"),
-        ("1.1", "number"),
-        ("test", "string"),
-        ("true", "boolean"),
-        ("false", "boolean"),
-        ("40.7128,-74.0060", "geography")
-    ])
+    @pytest.mark.parametrize(
+        "measurement_value, data_type",
+        [
+            ("1", "number"),
+            ("1.1", "number"),
+            ("test", "string"),
+            ("true", "boolean"),
+            ("false", "boolean"),
+            ("40.7128,-74.0060", "geography"),
+        ],
+    )
     def test_create_single_timescale_record(self, measurement_value, data_type):
         this_correlation_id: str = self.generate_correlation_id()
         sample_record = {
@@ -232,18 +235,22 @@ class Test_create_single_timescale_record_against_actual_database:
         }
 
         create_single_timescale_record(
-            self.conn, sample_record, db_helpers.test_table_name
+            self.conn, json.dumps(sample_record), db_helpers.test_table_name
         )
         db_helpers.check_single_record_exists(
             self.conn, expected_record, db_helpers.test_table_name
         )
 
-
-    @pytest.mark.parametrize("measurement_value, data_type, expected_error, expected_message", [
-        ("invalid", "boolean", ValueError, r".*Invalid boolean value.*"),
-        ("invalid", "number", ValueError, r".*Invalid number value: invalid.*")
-    ])
-    def test_create_single_timescale_record_with_invalid_value(self, measurement_value, data_type, expected_error, expected_message):
+    @pytest.mark.parametrize(
+        "measurement_value, data_type, expected_error, expected_message",
+        [
+            ("invalid", "boolean", ValueError, r".*Invalid boolean value.*"),
+            ("invalid", "number", ValueError, r".*Invalid number value: invalid.*"),
+        ],
+    )
+    def test_create_single_timescale_record_with_invalid_value(
+        self, measurement_value, data_type, expected_error, expected_message
+    ):
         this_correlation_id: str = self.generate_correlation_id()
         sample_record = {
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -256,7 +263,7 @@ class Test_create_single_timescale_record_against_actual_database:
         }
         with pytest.raises(expected_error, match=expected_message):
             create_single_timescale_record(
-                self.conn, sample_record, db_helpers.test_table_name
+                self.conn, json.dumps(sample_record), db_helpers.test_table_name
             )
 
 
@@ -278,7 +285,7 @@ class Test_create_single_timescale_record_with_mock:
         mock_execute.execute.side_effect = Exception("test exception")
         with pytest.raises(Exception, match=r".*test exception*"):
             create_single_timescale_record(
-                mock_conn, self.sample_record, db_helpers.test_table_name
+                mock_conn, json.dumps(self.sample_record), db_helpers.test_table_name
             )
 
     def test_where_no_records_returned(self, mocker):
@@ -288,7 +295,7 @@ class Test_create_single_timescale_record_with_mock:
             mock_result.rowcount = 0
         with pytest.raises(ValueError, match=r".*Failed to insert record*"):
             create_single_timescale_record(
-                mock_conn, self.sample_record, db_helpers.test_table_name
+                mock_conn, json.dumps(self.sample_record), db_helpers.test_table_name
             )
 
     def test_where_more_than_one_records_returned(self, mocker):
@@ -298,7 +305,7 @@ class Test_create_single_timescale_record_with_mock:
             mock_result.rowcount = 3
         with pytest.raises(ValueError, match=r".*Inserted too many records.*"):
             create_single_timescale_record(
-                mock_conn, self.sample_record, db_helpers.test_table_name
+                mock_conn, json.dumps(self.sample_record), db_helpers.test_table_name
             )
 
 
@@ -436,55 +443,77 @@ def get_mock_conn_cursor(
 
 
 class Test_parse_measurement_value:
-# Tests for valid measurement types and values
-    @pytest.mark.parametrize("test_data_type, test_value, expected_value, expected_type", [
-        ("string", "test", "test", str),
-        ("string", "1", "1", str),
-        ("number", "1", 1, float),
-        ("boolean", "true", True, bool),
-        ("boolean", "false", False, bool),
-        ("number", "1.1", 1.1, float),
-        ("number", "-1.1", -1.1, float),
-    ])
-    def test_with_valid_measurement_types(self, test_data_type, test_value, expected_value, expected_type):
+    # Tests for valid measurement types and values
+    @pytest.mark.parametrize(
+        "test_data_type, test_value, expected_value, expected_type",
+        [
+            ("string", "test", "test", str),
+            ("string", "1", "1", str),
+            ("number", "1", 1, float),
+            ("boolean", "true", True, bool),
+            ("boolean", "false", False, bool),
+            ("number", "1.1", 1.1, float),
+            ("number", "-1.1", -1.1, float),
+        ],
+    )
+    def test_with_valid_measurement_types(
+        self, test_data_type, test_value, expected_value, expected_type
+    ):
         actual_value = parse_measurement_value(test_data_type, test_value)
         assert actual_value == expected_value
         assert isinstance(actual_value, expected_type)
 
     # Tests for invalid measurement types and values
-    @pytest.mark.parametrize("test_data_type, test_value, expected_error, expected_message", [
-        ("invalid", "test", ValueError, r".*Unknown measurement type: invalid*"),
-        ("number", "test", ValueError, r".*Invalid number value: test.*"),
-        ("boolean", "test", ValueError, r".*Invalid boolean value: test.*"),
-    ])
-    def test_with_invalid_measurement_types(self, test_data_type, test_value, expected_error, expected_message):
+    @pytest.mark.parametrize(
+        "test_data_type, test_value, expected_error, expected_message",
+        [
+            ("invalid", "test", ValueError, r".*Unknown measurement type: invalid*"),
+            ("number", "test", ValueError, r".*Invalid number value: test.*"),
+            ("boolean", "test", ValueError, r".*Invalid boolean value: test.*"),
+        ],
+    )
+    def test_with_invalid_measurement_types(
+        self, test_data_type, test_value, expected_error, expected_message
+    ):
         with pytest.raises(expected_error, match=expected_message):
             parse_measurement_value(test_data_type, test_value)
 
 
 class Test_parse_to_geopointt:
     # Tests for valid geography values
-    @pytest.mark.parametrize("input_value, expected_output", [
-        ("40.7128,-74.0062", "SRID=4326;POINT(-74.0062 40.7128)"),
-        ([40.7128, -74.0062], "SRID=4326;POINT(-74.0062 40.7128)"),
-        (["40.7128", "-74.0062"], "SRID=4326;POINT(-74.0062 40.7128)")
-    ])
+    @pytest.mark.parametrize(
+        "input_value, expected_output",
+        [
+            ("40.7128,-74.0062", "SRID=4326;POINT(-74.0062 40.7128)"),
+            ([40.7128, -74.0062], "SRID=4326;POINT(-74.0062 40.7128)"),
+            (["40.7128", "-74.0062"], "SRID=4326;POINT(-74.0062 40.7128)"),
+        ],
+    )
     def test_valid_geography_values(self, input_value, expected_output):
         assert parse_to_geopoint(input_value) == expected_output
 
     # Tests for invalid geography values
-    @pytest.mark.parametrize("input_value, expected_error, expected_message", [
-        ({"lat": 40.7128, "lon": -74.0062}, ValueError, "Invalid input type or format:"),
-        ("100.0,-74.0060", ValueError, "Invalid latitude value:"),
-        ("-74.0060,190.0", ValueError, "Invalid longitude value:"),
-        ("100.0,-200.0", ValueError, "Invalid latitude value:"),
-        ("latitude,longitude", ValueError, "Invalid geography value:"),
-        ("40.7128,-74.0060,100", ValueError, "Invalid geography value:"),
-        ([40.7128, -74.0060, 100], ValueError, "Invalid input type or format:"),
-        ("", ValueError, "Invalid geography value:"),
-        (",", ValueError, "Invalid geography value:")
-    ])
-    def test_invalid_geography_values(self, input_value, expected_error, expected_message):
+    @pytest.mark.parametrize(
+        "input_value, expected_error, expected_message",
+        [
+            (
+                {"lat": 40.7128, "lon": -74.0062},
+                ValueError,
+                "Invalid input type or format:",
+            ),
+            ("100.0,-74.0060", ValueError, "Invalid latitude value:"),
+            ("-74.0060,190.0", ValueError, "Invalid longitude value:"),
+            ("100.0,-200.0", ValueError, "Invalid latitude value:"),
+            ("latitude,longitude", ValueError, "Invalid geography value:"),
+            ("40.7128,-74.0060,100", ValueError, "Invalid geography value:"),
+            ([40.7128, -74.0060, 100], ValueError, "Invalid input type or format:"),
+            ("", ValueError, "Invalid geography value:"),
+            (",", ValueError, "Invalid geography value:"),
+        ],
+    )
+    def test_invalid_geography_values(
+        self, input_value, expected_error, expected_message
+    ):
         with pytest.raises(expected_error, match=expected_message):
             parse_to_geopoint(input_value)
 
@@ -497,7 +526,7 @@ class Test_identify_data_column:
             ("string", "measurement_string"),
             ("boolean", "measurement_bool"),
             ("geography", "measurement_location"),
-        ]
+        ],
     )
     def test_identify_data_column_valid(self, input_value, expected_column):
         actual_column = identify_data_column(input_value)
@@ -514,7 +543,9 @@ class Test_identify_data_column:
             (True, ValueError, r".*Measurement type must be a string.*"),
         ],
     )
-    def test_identify_data_column_invalid(self, input_data_type, expected_error, expected_message):
+    def test_identify_data_column_invalid(
+        self, input_data_type, expected_error, expected_message
+    ):
         with pytest.raises(expected_error, match=expected_message):
             identify_data_column(input_data_type)
 

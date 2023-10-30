@@ -76,13 +76,13 @@ with open(schema_path) as f:
 
 
 def create_single_timescale_record(
-    conn: psycopg.Connection, record: dict[str, Any], table_name: str
+    conn: psycopg.Connection, string_record: str, table_name: str
 ) -> None:
     """Create a single timescale record
     @param record: the record to create
     """
-    unwrapped_records = json.loads(record)
-    validate(instance=unwrapped_records, schema=schema)
+    record = json.loads(string_record)
+    validate(instance=record, schema=schema)
 
     with conn.cursor() as cur:
         result = cur.execute(
