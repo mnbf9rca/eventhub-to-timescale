@@ -136,7 +136,7 @@ class TestConstructMessages:
             "isChargerConnected": 1,
             "chargingStatus": "Charging",
         }
-        mock_get_current_mileage_from_message.return_value = {"current_mileage": 120}
+        mock_get_current_mileage_from_message.return_value = {"currentMileage": 120}
         mock_get_coordinates_from_message.return_value = {
             "coordinates": {"latitude": 12.3456, "longitude": 0.1234}
         }
@@ -174,9 +174,9 @@ class TestConstructMessages:
                 all_fields["chargingStatus"],
             ),
             (
-                "current_mileage",
+                "currentMileage",
                 PayloadType.NUMBER,
-                all_fields["current_mileage"],
+                all_fields["currentMileage"],
             ),
             (
                 "coordinates",
