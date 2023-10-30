@@ -1,3 +1,8 @@
 coverage:
   ignore:
+    - "test/*"
     - "tests/*"
+    - ".venv/*"
+    - ".tox/*"
+    - ".eggs/*"
+    - ".vscode-remote/*"
