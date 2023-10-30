@@ -25,15 +25,18 @@ from shared_code.duplicate_check import check_duplicate, store_id
 
 
 def generate_alpha_uuid():
-    raw_uuid = str(uuid.uuid4()).replace('-', '')  # Remove hyphens
+    raw_uuid = str(uuid.uuid4()).replace("-", "")  # Remove hyphens
     if raw_uuid[0].isdigit():
         # Replace the first character with a letter if it's a digit
-        return 'a' + raw_uuid[1:]
+        return "a" + raw_uuid[1:]
     return raw_uuid
+
 
 class TestConvertBmwToTimescaleEndToEnd:
     @patch("shared_code.bmw_to_timescale.get_vin_from_message")
-    def test_convert_bmw_to_timescale_with_real_data(self, mock_get_vin_from_message, mocker):
+    def test_convert_bmw_to_timescale_with_real_data(
+        self, mock_get_vin_from_message, mocker
+    ):
         # Mock get_vin_from_message to return a GUID
         mock_get_vin_from_message.return_value = generate_alpha_uuid()
 
@@ -55,12 +58,8 @@ class TestConvertBmwToTimescaleEndToEnd:
         spy_get_last_updated_at_from_message = mocker.spy(
             btc, "get_last_updated_at_from_message"
         )
-        spy_check_duplicate = mocker.spy(
-            sc, "check_duplicate"
-        )
-        spy_construct_messages = mocker.spy(
-            btc, "construct_messages"
-        )
+        spy_check_duplicate = mocker.spy(sc, "check_duplicate")
+        spy_construct_messages = mocker.spy(btc, "construct_messages")
         spy_store_id = mocker.spy(sc, "store_id")
 
         # Call the function
@@ -75,13 +74,12 @@ class TestConvertBmwToTimescaleEndToEnd:
         assert spy_store_id.call_count == 2  # One duplicate, one not
 
         # Validate that outputEventHubMessage.set was called the expected number of times
-        expected_published_messages = spy_construct_messages.call_count * 6  # 6 records per message
+        expected_published_messages = (
+            spy_construct_messages.call_count * 6
+        )  # 6 records per message
         # chargingLevelPercent, range, isChargerConnected, chargingStatus, currentMileage, coordinates
 
-        assert (
-            mock_outputEventHubMessage.set.call_count == expected_published_messages
-        )
-        
+        assert mock_outputEventHubMessage.set.call_count == expected_published_messages
 
 
 class TestConvertBmwToTimescale:
@@ -149,6 +147,44 @@ class TestConvertBmwToTimescale:
         # Call function and assert that it raises an exception
         with pytest.raises(Exception):
             convert_bmw_to_timescale([MagicMock()], MagicMock())
+
+    @patch("shared_code.bmw_to_timescale.construct_messages")
+    @patch("shared_code.bmw_to_timescale.sc.store_id")
+    @patch("shared_code.bmw_to_timescale.sc.check_duplicate")
+    @patch("shared_code.bmw_to_timescale.get_last_updated_at_from_message")
+    @patch("shared_code.bmw_to_timescale.get_vin_from_message")
+    @patch("shared_code.bmw_to_timescale.get_event_body")
+    @patch("shared_code.bmw_to_timescale.sc.get_table_service_client")
+    def test_convert_bmw_to_timescale_outputEventHubMessage_exception(
+        self,
+        mock_get_table_service_client,
+        mock_get_event_body,
+        mock_get_vin_from_message,
+        mock_get_last_updated_at_from_message,
+        mock_check_duplicate,
+        mock_store_id,
+        mock_construct_messages,
+    ):
+        # Mock external functions
+        mock_get_table_service_client.return_value = MagicMock()
+        mock_get_event_body.return_value = {}
+        mock_get_vin_from_message.return_value = "VIN123"
+        mock_get_last_updated_at_from_message.return_value = "timestamp123"
+        mock_check_duplicate.return_value = False
+        mock_construct_messages.return_value = [[{"some_messages": "some_value"}]]
+
+        # Mock outputEventHubMessage to raise an exception
+        mock_outputEventHubMessage = MagicMock()
+        mock_outputEventHubMessage.set.side_effect = Exception(
+            "An error occurred while sending message"
+        )
+
+        # Call function and assert that it raises the expected exception
+        with pytest.raises(Exception) as excinfo:
+            convert_bmw_to_timescale([MagicMock()], mock_outputEventHubMessage)
+
+        # Assert the exception message
+        assert str(excinfo.value) == "An error occurred while sending message"
 
 
 class TestGetEventBody:
