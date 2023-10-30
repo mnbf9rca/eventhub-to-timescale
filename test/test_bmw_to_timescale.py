@@ -440,8 +440,18 @@ class TestGetElectricChargingStateFromMessage:
         expected = {}
         assert get_electric_charging_state_from_message(message) == expected
 
+    def test_none_value_2(self):
+        message = {"state": {"electricChargingState": None}}
+        expected = {}
+        assert get_electric_charging_state_from_message(message) == expected
+
     def test_no_electricChargingState(self):
         message = {"state": {}}
+        expected = {}
+        assert get_electric_charging_state_from_message(message) == expected
+
+    def test_no_electricChargingStateButOtherItems(self):
+        message = {"state": {"other_item": "some_value"}}
         expected = {}
         assert get_electric_charging_state_from_message(message) == expected
 
