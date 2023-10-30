@@ -57,8 +57,7 @@ def get_event_body(event: EventHubEvent) -> Dict[str, Any]:
     - UnicodeDecodeError: If the event body cannot be decoded using UTF-8.
     """
     event_body = event.get_body().decode("utf-8")
-    event_object = json.loads(event_body)
-    return event_object
+    return json.loads(event_body)
 
 
 def construct_messages(

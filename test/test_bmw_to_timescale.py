@@ -634,9 +634,9 @@ class TestValidateLatLong:
         assert validate_lat_long(lat, lng) == [float(lat), float(lng)]
 
     def test_valid_lat_lon_with_ints(self):
-        lat = int(12)
-        lng = int(1)
-        assert validate_lat_long(lat, lng) == [float(lat), float(lng)]
+        lat = 12
+        lng = 1
+        assert validate_lat_long(int(lat), int(lng)) == [float(lat), float(lng)]
 
     def test_invalid_latitude_type(self):
         lat = "invalid"
