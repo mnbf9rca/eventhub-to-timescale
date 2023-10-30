@@ -198,7 +198,15 @@ class Test_create_single_timescale_record_against_actual_database:
                         f"DELETE FROM {db_helpers.test_table_name} WHERE correlation_id = '{correlation_id}'"
                     )
 
-    def test_of_type_number_with_int(self):
+    @pytest.mark.parametrize("measurement_value, data_type", [
+        ("1", "number"),
+        ("1.1", "number"),
+        ("test", "string"),
+        ("true", "boolean"),
+        ("false", "boolean"),
+        ("40.7128,-74.0060", "geography")
+    ])
+    def test_create_single_timescale_record(self, measurement_value, data_type):
         this_correlation_id: str = self.generate_correlation_id()
         sample_record = {
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -206,84 +214,36 @@ class Test_create_single_timescale_record_against_actual_database:
             "correlation_id": this_correlation_id,
             "measurement_publisher": "testpublisher",
             "measurement_of": "testname",
-            "measurement_data_type": "number",
-            "measurement_value": "1",
+            "measurement_data_type": data_type,
+            "measurement_value": measurement_value,
         }
-        create_single_timescale_record(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-        # check that the record was created in the DB by searching for correlation_id
-        db_helpers.check_single_record_exists(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
 
-    def test_of_type_geography_with_latlon(self):
-        this_correlation_id: str = self.generate_correlation_id()
-        sample_record = {
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "measurement_subject": "testsubject",
-            "correlation_id": this_correlation_id,
-            "measurement_publisher": "testpublisher",
-            "measurement_of": "testname",
-            "measurement_data_type": "geography",
-            "measurement_value": "40.7128,-74.0060",
-        }
-        latlon_values = sample_record["measurement_value"].split(",")
-        latitude, longitude = map(float, latlon_values)
+        # Convert latitude and longitude to POINT format for geography data type
+        if data_type == "geography":
+            latlon_values = measurement_value.split(",")
+            latitude, longitude = map(float, latlon_values)
+            expected_value = f"POINT({longitude} {latitude})"
+        else:
+            expected_value = measurement_value
 
         expected_record = {
             **sample_record,
-            "measurement_value": f"POINT({longitude} {latitude})",
+            "measurement_value": expected_value,
         }
 
         create_single_timescale_record(
             self.conn, sample_record, db_helpers.test_table_name
         )
-
-        # check that the record was created in the DB by searching for correlation_id
         db_helpers.check_single_record_exists(
             self.conn, expected_record, db_helpers.test_table_name
         )
 
-    def test_of_type_number_with_float(self):
-        this_correlation_id: str = self.generate_correlation_id()
-        sample_record = {
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "measurement_subject": "testsubject",
-            "correlation_id": this_correlation_id,
-            "measurement_publisher": "testpublisher",
-            "measurement_of": "testname",
-            "measurement_data_type": "number",
-            "measurement_value": "1.1",
-        }
-        create_single_timescale_record(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-        # check that the record was created in the DB by searching for correlation_id
-        db_helpers.check_single_record_exists(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
 
-    def test_of_type_string(self):
-        this_correlation_id: str = self.generate_correlation_id()
-        sample_record = {
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "measurement_subject": "testsubject",
-            "correlation_id": this_correlation_id,
-            "measurement_of": "testname",
-            "measurement_publisher": "testpublisher",
-            "measurement_data_type": "string",
-            "measurement_value": "test",
-        }
-        create_single_timescale_record(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-        # check that the record was created in the DB by searching for correlation_id
-        db_helpers.check_single_record_exists(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-
-    def test_of_type_boolean(self):
+    @pytest.mark.parametrize("measurement_value, data_type, expected_error, expected_message", [
+        ("invalid", "boolean", ValueError, r".*Invalid boolean value.*"),
+        ("invalid", "number", ValueError, r".*Invalid number value: invalid.*")
+    ])
+    def test_create_single_timescale_record_with_invalid_value(self, measurement_value, data_type, expected_error, expected_message):
         this_correlation_id: str = self.generate_correlation_id()
         sample_record = {
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -291,67 +251,169 @@ class Test_create_single_timescale_record_against_actual_database:
             "correlation_id": this_correlation_id,
             "measurement_publisher": "testpublisher",
             "measurement_of": "testname",
-            "measurement_data_type": "boolean",
-            "measurement_value": "true",
+            "measurement_data_type": data_type,
+            "measurement_value": measurement_value,
         }
-        create_single_timescale_record(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-        # check that the record was created in the DB by searching for correlation_id
-        db_helpers.check_single_record_exists(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-
-    def test_of_type_boolean_with_false(self):
-        this_correlation_id: str = self.generate_correlation_id()
-        sample_record = {
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "measurement_subject": "testsubject",
-            "correlation_id": this_correlation_id,
-            "measurement_publisher": "testpublisher",
-            "measurement_of": "testname",
-            "measurement_data_type": "boolean",
-            "measurement_value": "false",
-        }
-        create_single_timescale_record(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-        # check that the record was created in the DB by searching for correlation_id
-        db_helpers.check_single_record_exists(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-
-    def test_of_type_boolean_with_invalid_value(self):
-        this_correlation_id: str = self.generate_correlation_id()
-        sample_record = {
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "measurement_subject": "testsubject",
-            "correlation_id": this_correlation_id,
-            "measurement_of": "testname",
-            "measurement_publisher": "testpublisher",
-            "measurement_data_type": "boolean",
-            "measurement_value": "invalid",
-        }
-        with pytest.raises(ValueError, match=r".*Invalid boolean value.*"):
+        with pytest.raises(expected_error, match=expected_message):
             create_single_timescale_record(
                 self.conn, sample_record, db_helpers.test_table_name
             )
 
-    def test_of_type_number_with_invalid_value(self):
-        this_correlation_id: str = self.generate_correlation_id()
-        sample_record = {
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "measurement_subject": "testsubject",
-            "correlation_id": this_correlation_id,
-            "measurement_of": "testname",
-            "measurement_publisher": "testpublisher",
-            "measurement_data_type": "number",
-            "measurement_value": "invalid",
-        }
-        with pytest.raises(ValueError, match=r".*Invalid number value: invalid*"):
-            create_single_timescale_record(
-                self.conn, sample_record, db_helpers.test_table_name
-            )
+
+    # def test_of_type_number_with_int(self):
+    #     this_correlation_id: str = self.generate_correlation_id()
+    #     sample_record = {
+    #         "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+    #         "measurement_subject": "testsubject",
+    #         "correlation_id": this_correlation_id,
+    #         "measurement_publisher": "testpublisher",
+    #         "measurement_of": "testname",
+    #         "measurement_data_type": "number",
+    #         "measurement_value": "1",
+    #     }
+    #     create_single_timescale_record(
+    #         self.conn, sample_record, db_helpers.test_table_name
+    #     )
+    #     # check that the record was created in the DB by searching for correlation_id
+    #     db_helpers.check_single_record_exists(
+    #         self.conn, sample_record, db_helpers.test_table_name
+    #     )
+
+    # def test_of_type_geography_with_latlon(self):
+    #     this_correlation_id: str = self.generate_correlation_id()
+    #     sample_record = {
+    #         "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+    #         "measurement_subject": "testsubject",
+    #         "correlation_id": this_correlation_id,
+    #         "measurement_publisher": "testpublisher",
+    #         "measurement_of": "testname",
+    #         "measurement_data_type": "geography",
+    #         "measurement_value": "40.7128,-74.0060",
+    #     }
+    #     latlon_values = sample_record["measurement_value"].split(",")
+    #     latitude, longitude = map(float, latlon_values)
+
+    #     expected_record = {
+    #         **sample_record,
+    #         "measurement_value": f"POINT({longitude} {latitude})",
+    #     }
+
+    #     create_single_timescale_record(
+    #         self.conn, sample_record, db_helpers.test_table_name
+    #     )
+
+    #     # check that the record was created in the DB by searching for correlation_id
+    #     db_helpers.check_single_record_exists(
+    #         self.conn, expected_record, db_helpers.test_table_name
+    #     )
+
+    # def test_of_type_number_with_float(self):
+    #     this_correlation_id: str = self.generate_correlation_id()
+    #     sample_record = {
+    #         "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+    #         "measurement_subject": "testsubject",
+    #         "correlation_id": this_correlation_id,
+    #         "measurement_publisher": "testpublisher",
+    #         "measurement_of": "testname",
+    #         "measurement_data_type": "number",
+    #         "measurement_value": "1.1",
+    #     }
+    #     create_single_timescale_record(
+    #         self.conn, sample_record, db_helpers.test_table_name
+    #     )
+    #     # check that the record was created in the DB by searching for correlation_id
+    #     db_helpers.check_single_record_exists(
+    #         self.conn, sample_record, db_helpers.test_table_name
+    #     )
+
+    # def test_of_type_string(self):
+    #     this_correlation_id: str = self.generate_correlation_id()
+    #     sample_record = {
+    #         "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+    #         "measurement_subject": "testsubject",
+    #         "correlation_id": this_correlation_id,
+    #         "measurement_of": "testname",
+    #         "measurement_publisher": "testpublisher",
+    #         "measurement_data_type": "string",
+    #         "measurement_value": "test",
+    #     }
+    #     create_single_timescale_record(
+    #         self.conn, sample_record, db_helpers.test_table_name
+    #     )
+    #     # check that the record was created in the DB by searching for correlation_id
+    #     db_helpers.check_single_record_exists(
+    #         self.conn, sample_record, db_helpers.test_table_name
+    #     )
+
+    # def test_of_type_boolean(self):
+    #     this_correlation_id: str = self.generate_correlation_id()
+    #     sample_record = {
+    #         "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+    #         "measurement_subject": "testsubject",
+    #         "correlation_id": this_correlation_id,
+    #         "measurement_publisher": "testpublisher",
+    #         "measurement_of": "testname",
+    #         "measurement_data_type": "boolean",
+    #         "measurement_value": "true",
+    #     }
+    #     create_single_timescale_record(
+    #         self.conn, sample_record, db_helpers.test_table_name
+    #     )
+    #     # check that the record was created in the DB by searching for correlation_id
+    #     db_helpers.check_single_record_exists(
+    #         self.conn, sample_record, db_helpers.test_table_name
+    #     )
+
+    # def test_of_type_boolean_with_false(self):
+    #     this_correlation_id: str = self.generate_correlation_id()
+    #     sample_record = {
+    #         "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+    #         "measurement_subject": "testsubject",
+    #         "correlation_id": this_correlation_id,
+    #         "measurement_publisher": "testpublisher",
+    #         "measurement_of": "testname",
+    #         "measurement_data_type": "boolean",
+    #         "measurement_value": "false",
+    #     }
+    #     create_single_timescale_record(
+    #         self.conn, sample_record, db_helpers.test_table_name
+    #     )
+    #     # check that the record was created in the DB by searching for correlation_id
+    #     db_helpers.check_single_record_exists(
+    #         self.conn, sample_record, db_helpers.test_table_name
+    #     )
+
+    # def test_of_type_boolean_with_invalid_value(self):
+    #     this_correlation_id: str = self.generate_correlation_id()
+    #     sample_record = {
+    #         "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+    #         "measurement_subject": "testsubject",
+    #         "correlation_id": this_correlation_id,
+    #         "measurement_of": "testname",
+    #         "measurement_publisher": "testpublisher",
+    #         "measurement_data_type": "boolean",
+    #         "measurement_value": "invalid",
+    #     }
+    #     with pytest.raises(ValueError, match=r".*Invalid boolean value.*"):
+    #         create_single_timescale_record(
+    #             self.conn, sample_record, db_helpers.test_table_name
+    #         )
+
+    # def test_of_type_number_with_invalid_value(self):
+    #     this_correlation_id: str = self.generate_correlation_id()
+    #     sample_record = {
+    #         "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+    #         "measurement_subject": "testsubject",
+    #         "correlation_id": this_correlation_id,
+    #         "measurement_of": "testname",
+    #         "measurement_publisher": "testpublisher",
+    #         "measurement_data_type": "number",
+    #         "measurement_value": "invalid",
+    #     }
+    #     with pytest.raises(ValueError, match=r".*Invalid number value: invalid*"):
+    #         create_single_timescale_record(
+    #             self.conn, sample_record, db_helpers.test_table_name
+    #         )
 
 
 class Test_create_single_timescale_record_with_mock:
