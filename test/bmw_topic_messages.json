@@ -1,0 +1,1499 @@
+[
+    {
+      "vin": "WBY0FINGERPRINT01",
+      "mappingInfo": {
+        "isAssociated": 1,
+        "isLmmEnabled": 1,
+        "mappingStatus": "CONFIRMED",
+        "isPrimaryUser": 1
+      },
+      "appVehicleType": "CONNECTED",
+      "attributes": {
+        "lastFetched": "2023-10-27T22:30:00.8640000Z",
+        "model": "iX1 xDrive30",
+        "year": 2023,
+        "color": 4284703587,
+        "brand": "BMW",
+        "driveTrain": "ELECTRIC",
+        "headUnitType": "MGU",
+        "headUnitRaw": "HU_MGU",
+        "hmiVersion": "ID8",
+        "softwareVersionCurrent": {
+          "puStep": {
+            "month": 7,
+            "year": 23
+          },
+          "iStep": 553,
+          "seriesCluster": "U006"
+        },
+        "softwareVersionExFactory": {
+          "puStep": {
+            "month": 3,
+            "year": 23
+          },
+          "iStep": 553,
+          "seriesCluster": "U006"
+        },
+        "telematicsUnit": "WAVE01",
+        "bodyType": "U11",
+        "countryOfOrigin": "GB",
+        "driverGuideInfo": {
+          "androidAppScheme": "com.bmwgroup.driversguide.row",
+          "iosAppScheme": "bmwdriversguide:///open",
+          "androidStoreUrl": "https://play.google.com/store/apps/details?id=com.bmwgroup.driversguide.row",
+          "iosStoreUrl": "https://apps.apple.com/de/app/id714042749?mt=8"
+        }
+      },
+      "charging_settings": {
+        "chargeAndClimateSettings": {
+          "chargeAndClimateTimer": {
+            "chargingMode": "Charge immediately",
+            "preconditionForDeparture": "On",
+            "departureTimer": [
+              "16:45 Mon-Fri",
+              "7:30 Mon-Fri",
+              "7:50 Sun, Sat"
+            ],
+            "showDepartureTimers": 1,
+            "departureTimerSemantics": "16:45 From Monday to Friday 7:30 From Monday to Friday 7:50 Sunday Saturday",
+            "chargingModeSemantics": "Charge immediately"
+          },
+          "chargingSettings": {
+            "chargingTargetLabel": "80%",
+            "acCurrentLimitLabel": "Unlimited",
+            "unlockCableAutomaticallyLabel": "Off",
+            "dcLoudnessLabel": "Automatic",
+            "acCurrentLimitLabelSemantics": "Unlimited"
+          },
+          "chargingFlap": {
+            "permanentlyUnlockLabel": "Off"
+          }
+        },
+        "chargeAndClimateTimerDetail": {
+          "chargingMode": {
+            "type": "CHARGING_IMMEDIATELY",
+            "startTimeSlot": "0001-01-01T00:00:00.0000000",
+            "endTimeSlot": "0001-01-01T00:00:00.0000000",
+            "chargingPreference": "NO_PRESELECTION"
+          },
+          "isPreconditionForDepartureActive": 1,
+          "departureTimer": {
+            "type": "WEEKLY_DEPARTURE_TIMER",
+            "weeklyTimers": [
+              {
+                "id": 1,
+                "time": "0001-01-01T16:45:00.0000000",
+                "daysOfTheWeek": [
+                  "MONDAY",
+                  "TUESDAY",
+                  "WEDNESDAY",
+                  "THURSDAY",
+                  "FRIDAY"
+                ],
+                "timerAction": "ACTIVATE"
+              },
+              {
+                "id": 2,
+                "time": "0001-01-01T07:30:00.0000000",
+                "daysOfTheWeek": [
+                  "MONDAY",
+                  "TUESDAY",
+                  "WEDNESDAY",
+                  "THURSDAY",
+                  "FRIDAY"
+                ],
+                "timerAction": "ACTIVATE"
+              },
+              {
+                "id": 3,
+                "time": "0001-01-01T07:50:00.0000000",
+                "daysOfTheWeek": [
+                  "SATURDAY",
+                  "SUNDAY"
+                ],
+                "timerAction": "ACTIVATE"
+              },
+              {
+                "id": 4,
+                "time": "0001-01-01T13:30:00.0000000",
+                "daysOfTheWeek": [],
+                "timerAction": "DEACTIVATE"
+              }
+            ]
+          }
+        },
+        "chargingSettingsDetail": {
+          "chargingTarget": 80,
+          "minChargingTargetToWarning": 0,
+          "acLimit": {
+            "current": {
+              "value": 16,
+              "unit": "A"
+            },
+            "min": 6,
+            "max": 32,
+            "values": [
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              20,
+              32
+            ],
+            "isUnlimited": 1
+          },
+          "isUnlockCableActive": 0,
+          "dcLoudness": "AUTOMATIC_INTELLIGENT"
+        },
+        "chargingFlapDetail": {
+          "isPermanentlyUnlock": 0
+        },
+        "servicePack": "WAVE_01"
+      },
+      "is_metric": 1,
+      "fetched_at": "2023-10-27T22:30:00.0155460",
+      "state": {
+        "isLeftSteering": 0,
+        "lastFetched": "2023-10-27T22:30:01.3750000Z",
+        "lastUpdatedAt": "2023-10-27T21:55:00.0000000Z",
+        "isLscSupported": 1,
+        "range": 214,
+        "doorsState": {
+          "combinedSecurityState": "SECURED",
+          "leftFront": "CLOSED",
+          "leftRear": "CLOSED",
+          "rightFront": "CLOSED",
+          "rightRear": "CLOSED",
+          "combinedState": "CLOSED",
+          "hood": "CLOSED",
+          "trunk": "CLOSED"
+        },
+        "windowsState": {
+          "leftFront": "CLOSED",
+          "leftRear": "CLOSED",
+          "rightFront": "CLOSED",
+          "rightRear": "CLOSED",
+          "combinedState": "CLOSED"
+        },
+        "tireState": {
+          "frontLeft": {
+            "details": {
+              "dimension": "245/40 R20 99Y XL",
+              "treadDesign": "EcoContact 6 Q",
+              "manufacturer": "Continental",
+              "manufacturingWeek": 5299,
+              "isOptimizedForOemBmw": 1,
+              "partNumber": "5A8C830",
+              "speedClassification": {
+                "speedRating": 300,
+                "atLeast": 0
+              },
+              "mountingDate": "2023-08-29T00:00:00.0000000Z",
+              "season": 2,
+              "identificationInProgress": 0
+            },
+            "status": {
+              "currentPressure": 250,
+              "targetPressure": 250
+            }
+          },
+          "frontRight": {
+            "details": {
+              "dimension": "245/40 R20 99Y XL",
+              "treadDesign": "EcoContact 6 Q",
+              "manufacturer": "Continental",
+              "manufacturingWeek": 5299,
+              "isOptimizedForOemBmw": 1,
+              "partNumber": "5A8C830",
+              "speedClassification": {
+                "speedRating": 300,
+                "atLeast": 0
+              },
+              "mountingDate": "2023-09-12T00:00:00.0000000Z",
+              "season": 2,
+              "identificationInProgress": 0
+            },
+            "status": {
+              "currentPressure": 240,
+              "targetPressure": 250
+            }
+          },
+          "rearLeft": {
+            "details": {
+              "dimension": "245/40 R20 99Y XL",
+              "treadDesign": "EcoContact 6 Q",
+              "manufacturer": "Continental",
+              "manufacturingWeek": 5299,
+              "isOptimizedForOemBmw": 1,
+              "partNumber": "5A8C830",
+              "speedClassification": {
+                "speedRating": 300,
+                "atLeast": 0
+              },
+              "mountingDate": "2023-08-29T00:00:00.0000000Z",
+              "season": 2,
+              "identificationInProgress": 0
+            },
+            "status": {
+              "currentPressure": 240,
+              "targetPressure": 250
+            }
+          },
+          "rearRight": {
+            "details": {
+              "dimension": "245/40 R20 99Y XL",
+              "treadDesign": "EcoContact 6 Q",
+              "manufacturer": "Continental",
+              "manufacturingWeek": 5299,
+              "isOptimizedForOemBmw": 1,
+              "partNumber": "5A8C830",
+              "speedClassification": {
+                "speedRating": 300,
+                "atLeast": 0
+              },
+              "mountingDate": "2023-09-12T00:00:00.0000000Z",
+              "season": 2,
+              "identificationInProgress": 0
+            },
+            "status": {
+              "currentPressure": 250,
+              "targetPressure": 250
+            }
+          }
+        },
+        "location": {
+            "address": {
+                "formatted": "some_formatted_address"
+            },
+            "coordinates": {
+                "latitude": 12.34567890123456,
+                "longitude": 34.56789012345678
+            },
+            "heading": 123
+        },
+        "currentMileage": 2085,
+        "climateControlState": {
+          "activity": "INACTIVE"
+        },
+        "requiredServices": [
+          {
+            "dateTime": "2025-07-01T00:00:00.0000000Z",
+            "type": "BRAKE_FLUID",
+            "status": "OK",
+            "description": "Next service due by the specified date."
+          },
+          {
+            "dateTime": "2025-07-01T00:00:00.0000000Z",
+            "type": "VEHICLE_CHECK",
+            "status": "OK",
+            "description": "Next visual inspection due by specified date or, if shown, when stated distance has been reached."
+          }
+        ],
+        "checkControlMessages": [
+          {
+            "type": "TIRE_PRESSURE",
+            "severity": "LOW"
+          }
+        ],
+        "chargingProfile": {
+          "chargingControlType": "WEEKLY_PLANNER",
+          "reductionOfChargeCurrent": {
+            "start": {
+              "hour": 0,
+              "minute": 0
+            },
+            "end": {
+              "hour": 0,
+              "minute": 0
+            }
+          },
+          "chargingMode": "IMMEDIATE_CHARGING",
+          "chargingPreference": "NO_PRESELECTION",
+          "departureTimes": [
+            {
+              "id": 1,
+              "timeStamp": {
+                "hour": 16,
+                "minute": 45
+              },
+              "action": "ACTIVATE",
+              "timerWeekDays": [
+                "MONDAY",
+                "TUESDAY",
+                "WEDNESDAY",
+                "THURSDAY",
+                "FRIDAY"
+              ]
+            },
+            {
+              "id": 2,
+              "timeStamp": {
+                "hour": 7,
+                "minute": 30
+              },
+              "action": "ACTIVATE",
+              "timerWeekDays": [
+                "MONDAY",
+                "TUESDAY",
+                "WEDNESDAY",
+                "THURSDAY",
+                "FRIDAY"
+              ]
+            },
+            {
+              "id": 3,
+              "timeStamp": {
+                "hour": 7,
+                "minute": 50
+              },
+              "action": "ACTIVATE",
+              "timerWeekDays": [
+                "SATURDAY",
+                "SUNDAY"
+              ]
+            },
+            {
+              "id": 4,
+              "timeStamp": {
+                "hour": 13,
+                "minute": 30
+              },
+              "action": "DEACTIVATE",
+              "timerWeekDays": []
+            }
+          ],
+          "climatisationOn": 1,
+          "chargingSettings": {
+            "targetSoc": 80,
+            "acCurrentLimit": 16,
+            "idcc": "AUTOMATIC_INTELLIGENT",
+            "hospitality": "HOSP_INACTIVE",
+            "isAcCurrentLimitActive": 0
+          }
+        },
+        "electricChargingState": {
+          "chargingLevelPercent": 67,
+          "range": 214,
+          "isChargerConnected": 0,
+          "chargingStatus": "INVALID",
+          "chargingTarget": 80
+        },
+        "combustionFuelLevel": {
+          "range": 214
+        },
+        "driverPreferences": {
+          "lscPrivacyMode": "OFF"
+        },
+        "isDeepSleepModeActive": 0,
+        "climateTimers": [
+          {
+            "isWeeklyTimer": 0,
+            "timerAction": "DEACTIVATE",
+            "timerWeekDays": [],
+            "departureTime": {
+              "hour": 7,
+              "minute": 0
+            }
+          },
+          {
+            "isWeeklyTimer": 1,
+            "timerAction": "DEACTIVATE",
+            "timerWeekDays": [
+              "MONDAY"
+            ],
+            "departureTime": {
+              "hour": 7,
+              "minute": 0
+            }
+          },
+          {
+            "isWeeklyTimer": 1,
+            "timerAction": "DEACTIVATE",
+            "timerWeekDays": [
+              "MONDAY"
+            ],
+            "departureTime": {
+              "hour": 7,
+              "minute": 0
+            }
+          }
+        ],
+        "securityOverviewMode": "ARMED"
+      },
+      "capabilities": {
+        "a4aType": "NOT_SUPPORTED",
+        "climateNow": 1,
+        "climateFunction": "AIR_CONDITIONING",
+        "isBmwChargingSupported": 1,
+        "isCarSharingSupported": 0,
+        "isChargeNowForBusinessSupported": 0,
+        "isChargingHistorySupported": 1,
+        "isChargingHospitalityEnabled": 1,
+        "isChargingLoudnessEnabled": 1,
+        "isChargingPlanSupported": 1,
+        "isChargingPowerLimitEnabled": 1,
+        "isChargingSettingsEnabled": 1,
+        "isChargingTargetSocEnabled": 1,
+        "isCustomerEsimSupported": 0,
+        "isDataPrivacyEnabled": 0,
+        "isDCSContractManagementSupported": 1,
+        "isEasyChargeEnabled": 0,
+        "isMiniChargingSupported": 0,
+        "isEvGoChargingSupported": 0,
+        "isRemoteHistoryDeletionSupported": 0,
+        "isRemoteEngineStartSupported": 0,
+        "isRemoteServicesActivationRequired": 0,
+        "isRemoteServicesBookingRequired": 0,
+        "isScanAndChargeSupported": 0,
+        "lastStateCallState": "ACTIVATED",
+        "lights": 1,
+        "lock": 1,
+        "remoteSoftwareUpgrade": 1,
+        "sendPoi": 1,
+        "speechThirdPartyAlexa": 1,
+        "speechThirdPartyAlexaSDK": 0,
+        "unlock": 1,
+        "vehicleFinder": 1,
+        "vehicleStateSource": "LAST_STATE_CALL",
+        "isRemoteHistorySupported": 1,
+        "isWifiHotspotServiceSupported": 0,
+        "isNonLscFeatureEnabled": 0,
+        "isSustainabilitySupported": 1,
+        "isSustainabilityAccumulatedViewEnabled": 1,
+        "specialThemeSupport": [],
+        "isRemoteParkingSupported": 0,
+        "remoteChargingCommands": {
+          "chargingControl": [
+            "START",
+            "STOP"
+          ],
+          "plugControl": [
+            "UNLOCK_PLUG"
+          ],
+          "flapControl": [
+            "COUPLE_FLAP",
+            "DECOUPLE_FLAP"
+          ]
+        },
+        "isClimateTimerWeeklyActive": 0,
+        "digitalKey": {
+          "state": "ACTIVATED",
+          "bookedServicePackage": "SMACC_2_UWB",
+          "readerGraphics": "000200000000",
+          "vehicleSoftwareUpgradeRequired": 0,
+          "isDigitalKeyFirstSupported": 0
+        },
+        "isPersonalPictureUploadSupported": 0,
+        "isPlugAndChargeSupported": 0,
+        "isOptimizedChargingSupported": 0
+      },
+      "EventProcessedUtcTime": "2023-10-27T22:33:51.0698778Z",
+      "PartitionId": 0,
+      "EventEnqueuedUtcTime": "2023-10-27T22:30:02.7690000Z"
+    },
+    {
+      "vin": "WBY0FINGERPRINT01",
+      "mappingInfo": {
+        "isAssociated": 1,
+        "isLmmEnabled": 1,
+        "mappingStatus": "CONFIRMED",
+        "isPrimaryUser": 1
+      },
+      "appVehicleType": "CONNECTED",
+      "attributes": {
+        "lastFetched": "2023-10-27T22:30:00.8640000Z",
+        "model": "iX1 xDrive30",
+        "year": 2023,
+        "color": 4284703587,
+        "brand": "BMW",
+        "driveTrain": "ELECTRIC",
+        "headUnitType": "MGU",
+        "headUnitRaw": "HU_MGU",
+        "hmiVersion": "ID8",
+        "softwareVersionCurrent": {
+          "puStep": {
+            "month": 7,
+            "year": 23
+          },
+          "iStep": 553,
+          "seriesCluster": "U006"
+        },
+        "softwareVersionExFactory": {
+          "puStep": {
+            "month": 3,
+            "year": 23
+          },
+          "iStep": 553,
+          "seriesCluster": "U006"
+        },
+        "telematicsUnit": "WAVE01",
+        "bodyType": "U11",
+        "countryOfOrigin": "GB",
+        "driverGuideInfo": {
+          "androidAppScheme": "com.bmwgroup.driversguide.row",
+          "iosAppScheme": "bmwdriversguide:///open",
+          "androidStoreUrl": "https://play.google.com/store/apps/details?id=com.bmwgroup.driversguide.row",
+          "iosStoreUrl": "https://apps.apple.com/de/app/id714042749?mt=8"
+        }
+      },
+      "charging_settings": {
+        "chargeAndClimateSettings": {
+          "chargeAndClimateTimer": {
+            "chargingMode": "Charge immediately",
+            "preconditionForDeparture": "On",
+            "departureTimer": [
+              "16:45 Mon-Fri",
+              "7:30 Mon-Fri",
+              "7:50 Sun, Sat"
+            ],
+            "showDepartureTimers": 1,
+            "departureTimerSemantics": "16:45 From Monday to Friday 7:30 From Monday to Friday 7:50 Sunday Saturday",
+            "chargingModeSemantics": "Charge immediately"
+          },
+          "chargingSettings": {
+            "chargingTargetLabel": "80%",
+            "acCurrentLimitLabel": "Unlimited",
+            "unlockCableAutomaticallyLabel": "Off",
+            "dcLoudnessLabel": "Automatic",
+            "acCurrentLimitLabelSemantics": "Unlimited"
+          },
+          "chargingFlap": {
+            "permanentlyUnlockLabel": "Off"
+          }
+        },
+        "chargeAndClimateTimerDetail": {
+          "chargingMode": {
+            "type": "CHARGING_IMMEDIATELY",
+            "startTimeSlot": "0001-01-01T00:00:00.0000000",
+            "endTimeSlot": "0001-01-01T00:00:00.0000000",
+            "chargingPreference": "NO_PRESELECTION"
+          },
+          "isPreconditionForDepartureActive": 1,
+          "departureTimer": {
+            "type": "WEEKLY_DEPARTURE_TIMER",
+            "weeklyTimers": [
+              {
+                "id": 1,
+                "time": "0001-01-01T16:45:00.0000000",
+                "daysOfTheWeek": [
+                  "MONDAY",
+                  "TUESDAY",
+                  "WEDNESDAY",
+                  "THURSDAY",
+                  "FRIDAY"
+                ],
+                "timerAction": "ACTIVATE"
+              },
+              {
+                "id": 2,
+                "time": "0001-01-01T07:30:00.0000000",
+                "daysOfTheWeek": [
+                  "MONDAY",
+                  "TUESDAY",
+                  "WEDNESDAY",
+                  "THURSDAY",
+                  "FRIDAY"
+                ],
+                "timerAction": "ACTIVATE"
+              },
+              {
+                "id": 3,
+                "time": "0001-01-01T07:50:00.0000000",
+                "daysOfTheWeek": [
+                  "SATURDAY",
+                  "SUNDAY"
+                ],
+                "timerAction": "ACTIVATE"
+              },
+              {
+                "id": 4,
+                "time": "0001-01-01T13:30:00.0000000",
+                "daysOfTheWeek": [],
+                "timerAction": "DEACTIVATE"
+              }
+            ]
+          }
+        },
+        "chargingSettingsDetail": {
+          "chargingTarget": 80,
+          "minChargingTargetToWarning": 0,
+          "acLimit": {
+            "current": {
+              "value": 16,
+              "unit": "A"
+            },
+            "min": 6,
+            "max": 32,
+            "values": [
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              20,
+              32
+            ],
+            "isUnlimited": 1
+          },
+          "isUnlockCableActive": 0,
+          "dcLoudness": "AUTOMATIC_INTELLIGENT"
+        },
+        "chargingFlapDetail": {
+          "isPermanentlyUnlock": 0
+        },
+        "servicePack": "WAVE_01"
+      },
+      "is_metric": 1,
+      "fetched_at": "2023-10-27T22:30:00.0155460",
+      "state": {
+        "isLeftSteering": 0,
+        "lastFetched": "2023-10-27T22:30:01.3750000Z",
+        "lastUpdatedAt": "2023-10-27T21:55:00.0000000Z",
+        "isLscSupported": 1,
+        "range": 214,
+        "doorsState": {
+          "combinedSecurityState": "SECURED",
+          "leftFront": "CLOSED",
+          "leftRear": "CLOSED",
+          "rightFront": "CLOSED",
+          "rightRear": "CLOSED",
+          "combinedState": "CLOSED",
+          "hood": "CLOSED",
+          "trunk": "CLOSED"
+        },
+        "windowsState": {
+          "leftFront": "CLOSED",
+          "leftRear": "CLOSED",
+          "rightFront": "CLOSED",
+          "rightRear": "CLOSED",
+          "combinedState": "CLOSED"
+        },
+        "tireState": {
+          "frontLeft": {
+            "details": {
+              "dimension": "245/40 R20 99Y XL",
+              "treadDesign": "EcoContact 6 Q",
+              "manufacturer": "Continental",
+              "manufacturingWeek": 5299,
+              "isOptimizedForOemBmw": 1,
+              "partNumber": "5A8C830",
+              "speedClassification": {
+                "speedRating": 300,
+                "atLeast": 0
+              },
+              "mountingDate": "2023-08-29T00:00:00.0000000Z",
+              "season": 2,
+              "identificationInProgress": 0
+            },
+            "status": {
+              "currentPressure": 250,
+              "targetPressure": 250
+            }
+          },
+          "frontRight": {
+            "details": {
+              "dimension": "245/40 R20 99Y XL",
+              "treadDesign": "EcoContact 6 Q",
+              "manufacturer": "Continental",
+              "manufacturingWeek": 5299,
+              "isOptimizedForOemBmw": 1,
+              "partNumber": "5A8C830",
+              "speedClassification": {
+                "speedRating": 300,
+                "atLeast": 0
+              },
+              "mountingDate": "2023-09-12T00:00:00.0000000Z",
+              "season": 2,
+              "identificationInProgress": 0
+            },
+            "status": {
+              "currentPressure": 240,
+              "targetPressure": 250
+            }
+          },
+          "rearLeft": {
+            "details": {
+              "dimension": "245/40 R20 99Y XL",
+              "treadDesign": "EcoContact 6 Q",
+              "manufacturer": "Continental",
+              "manufacturingWeek": 5299,
+              "isOptimizedForOemBmw": 1,
+              "partNumber": "5A8C830",
+              "speedClassification": {
+                "speedRating": 300,
+                "atLeast": 0
+              },
+              "mountingDate": "2023-08-29T00:00:00.0000000Z",
+              "season": 2,
+              "identificationInProgress": 0
+            },
+            "status": {
+              "currentPressure": 240,
+              "targetPressure": 250
+            }
+          },
+          "rearRight": {
+            "details": {
+              "dimension": "245/40 R20 99Y XL",
+              "treadDesign": "EcoContact 6 Q",
+              "manufacturer": "Continental",
+              "manufacturingWeek": 5299,
+              "isOptimizedForOemBmw": 1,
+              "partNumber": "5A8C830",
+              "speedClassification": {
+                "speedRating": 300,
+                "atLeast": 0
+              },
+              "mountingDate": "2023-09-12T00:00:00.0000000Z",
+              "season": 2,
+              "identificationInProgress": 0
+            },
+            "status": {
+              "currentPressure": 250,
+              "targetPressure": 250
+            }
+          }
+        },
+        "location": {
+            "address": {
+                "formatted": "some_formatted_address"
+            },
+            "coordinates": {
+                "latitude": 12.34567890123456,
+                "longitude": 34.56789012345678
+            },
+            "heading": 123
+        },
+        "currentMileage": 2085,
+        "climateControlState": {
+          "activity": "INACTIVE"
+        },
+        "requiredServices": [
+          {
+            "dateTime": "2025-07-01T00:00:00.0000000Z",
+            "type": "BRAKE_FLUID",
+            "status": "OK",
+            "description": "Next service due by the specified date."
+          },
+          {
+            "dateTime": "2025-07-01T00:00:00.0000000Z",
+            "type": "VEHICLE_CHECK",
+            "status": "OK",
+            "description": "Next visual inspection due by specified date or, if shown, when stated distance has been reached."
+          }
+        ],
+        "checkControlMessages": [
+          {
+            "type": "TIRE_PRESSURE",
+            "severity": "LOW"
+          }
+        ],
+        "chargingProfile": {
+          "chargingControlType": "WEEKLY_PLANNER",
+          "reductionOfChargeCurrent": {
+            "start": {
+              "hour": 0,
+              "minute": 0
+            },
+            "end": {
+              "hour": 0,
+              "minute": 0
+            }
+          },
+          "chargingMode": "IMMEDIATE_CHARGING",
+          "chargingPreference": "NO_PRESELECTION",
+          "departureTimes": [
+            {
+              "id": 1,
+              "timeStamp": {
+                "hour": 16,
+                "minute": 45
+              },
+              "action": "ACTIVATE",
+              "timerWeekDays": [
+                "MONDAY",
+                "TUESDAY",
+                "WEDNESDAY",
+                "THURSDAY",
+                "FRIDAY"
+              ]
+            },
+            {
+              "id": 2,
+              "timeStamp": {
+                "hour": 7,
+                "minute": 30
+              },
+              "action": "ACTIVATE",
+              "timerWeekDays": [
+                "MONDAY",
+                "TUESDAY",
+                "WEDNESDAY",
+                "THURSDAY",
+                "FRIDAY"
+              ]
+            },
+            {
+              "id": 3,
+              "timeStamp": {
+                "hour": 7,
+                "minute": 50
+              },
+              "action": "ACTIVATE",
+              "timerWeekDays": [
+                "SATURDAY",
+                "SUNDAY"
+              ]
+            },
+            {
+              "id": 4,
+              "timeStamp": {
+                "hour": 13,
+                "minute": 30
+              },
+              "action": "DEACTIVATE",
+              "timerWeekDays": []
+            }
+          ],
+          "climatisationOn": 1,
+          "chargingSettings": {
+            "targetSoc": 80,
+            "acCurrentLimit": 16,
+            "idcc": "AUTOMATIC_INTELLIGENT",
+            "hospitality": "HOSP_INACTIVE",
+            "isAcCurrentLimitActive": 0
+          }
+        },
+        "electricChargingState": {
+          "chargingLevelPercent": 67,
+          "range": 214,
+          "isChargerConnected": 0,
+          "chargingStatus": "INVALID",
+          "chargingTarget": 80
+        },
+        "combustionFuelLevel": {
+          "range": 214
+        },
+        "driverPreferences": {
+          "lscPrivacyMode": "OFF"
+        },
+        "isDeepSleepModeActive": 0,
+        "climateTimers": [
+          {
+            "isWeeklyTimer": 0,
+            "timerAction": "DEACTIVATE",
+            "timerWeekDays": [],
+            "departureTime": {
+              "hour": 7,
+              "minute": 0
+            }
+          },
+          {
+            "isWeeklyTimer": 1,
+            "timerAction": "DEACTIVATE",
+            "timerWeekDays": [
+              "MONDAY"
+            ],
+            "departureTime": {
+              "hour": 7,
+              "minute": 0
+            }
+          },
+          {
+            "isWeeklyTimer": 1,
+            "timerAction": "DEACTIVATE",
+            "timerWeekDays": [
+              "MONDAY"
+            ],
+            "departureTime": {
+              "hour": 7,
+              "minute": 0
+            }
+          }
+        ],
+        "securityOverviewMode": "ARMED"
+      },
+      "capabilities": {
+        "a4aType": "NOT_SUPPORTED",
+        "climateNow": 1,
+        "climateFunction": "AIR_CONDITIONING",
+        "isBmwChargingSupported": 1,
+        "isCarSharingSupported": 0,
+        "isChargeNowForBusinessSupported": 0,
+        "isChargingHistorySupported": 1,
+        "isChargingHospitalityEnabled": 1,
+        "isChargingLoudnessEnabled": 1,
+        "isChargingPlanSupported": 1,
+        "isChargingPowerLimitEnabled": 1,
+        "isChargingSettingsEnabled": 1,
+        "isChargingTargetSocEnabled": 1,
+        "isCustomerEsimSupported": 0,
+        "isDataPrivacyEnabled": 0,
+        "isDCSContractManagementSupported": 1,
+        "isEasyChargeEnabled": 0,
+        "isMiniChargingSupported": 0,
+        "isEvGoChargingSupported": 0,
+        "isRemoteHistoryDeletionSupported": 0,
+        "isRemoteEngineStartSupported": 0,
+        "isRemoteServicesActivationRequired": 0,
+        "isRemoteServicesBookingRequired": 0,
+        "isScanAndChargeSupported": 0,
+        "lastStateCallState": "ACTIVATED",
+        "lights": 1,
+        "lock": 1,
+        "remoteSoftwareUpgrade": 1,
+        "sendPoi": 1,
+        "speechThirdPartyAlexa": 1,
+        "speechThirdPartyAlexaSDK": 0,
+        "unlock": 1,
+        "vehicleFinder": 1,
+        "vehicleStateSource": "LAST_STATE_CALL",
+        "isRemoteHistorySupported": 1,
+        "isWifiHotspotServiceSupported": 0,
+        "isNonLscFeatureEnabled": 0,
+        "isSustainabilitySupported": 1,
+        "isSustainabilityAccumulatedViewEnabled": 1,
+        "specialThemeSupport": [],
+        "isRemoteParkingSupported": 0,
+        "remoteChargingCommands": {
+          "chargingControl": [
+            "START",
+            "STOP"
+          ],
+          "plugControl": [
+            "UNLOCK_PLUG"
+          ],
+          "flapControl": [
+            "COUPLE_FLAP",
+            "DECOUPLE_FLAP"
+          ]
+        },
+        "isClimateTimerWeeklyActive": 0,
+        "digitalKey": {
+          "state": "ACTIVATED",
+          "bookedServicePackage": "SMACC_2_UWB",
+          "readerGraphics": "000200000000",
+          "vehicleSoftwareUpgradeRequired": 0,
+          "isDigitalKeyFirstSupported": 0
+        },
+        "isPersonalPictureUploadSupported": 0,
+        "isPlugAndChargeSupported": 0,
+        "isOptimizedChargingSupported": 0
+      },
+      "EventProcessedUtcTime": "2023-10-27T22:33:51.0698778Z",
+      "PartitionId": 0,
+      "EventEnqueuedUtcTime": "2023-10-27T22:30:02.7690000Z"
+    },
+    {
+      "vin": "WBY0FINGERPRINT01",
+      "mappingInfo": {
+        "isAssociated": 1,
+        "isLmmEnabled": 1,
+        "mappingStatus": "CONFIRMED",
+        "isPrimaryUser": 1
+      },
+      "appVehicleType": "CONNECTED",
+      "attributes": {
+        "lastFetched": "2023-10-27T22:30:00.8640000Z",
+        "model": "iX1 xDrive30",
+        "year": 2023,
+        "color": 4284703587,
+        "brand": "BMW",
+        "driveTrain": "ELECTRIC",
+        "headUnitType": "MGU",
+        "headUnitRaw": "HU_MGU",
+        "hmiVersion": "ID8",
+        "softwareVersionCurrent": {
+          "puStep": {
+            "month": 7,
+            "year": 23
+          },
+          "iStep": 553,
+          "seriesCluster": "U006"
+        },
+        "softwareVersionExFactory": {
+          "puStep": {
+            "month": 3,
+            "year": 23
+          },
+          "iStep": 553,
+          "seriesCluster": "U006"
+        },
+        "telematicsUnit": "WAVE01",
+        "bodyType": "U11",
+        "countryOfOrigin": "GB",
+        "driverGuideInfo": {
+          "androidAppScheme": "com.bmwgroup.driversguide.row",
+          "iosAppScheme": "bmwdriversguide:///open",
+          "androidStoreUrl": "https://play.google.com/store/apps/details?id=com.bmwgroup.driversguide.row",
+          "iosStoreUrl": "https://apps.apple.com/de/app/id714042749?mt=8"
+        }
+      },
+      "charging_settings": {
+        "chargeAndClimateSettings": {
+          "chargeAndClimateTimer": {
+            "chargingMode": "Charge immediately",
+            "preconditionForDeparture": "On",
+            "departureTimer": [
+              "16:45 Mon-Fri",
+              "7:30 Mon-Fri",
+              "7:50 Sun, Sat"
+            ],
+            "showDepartureTimers": 1,
+            "departureTimerSemantics": "16:45 From Monday to Friday 7:30 From Monday to Friday 7:50 Sunday Saturday",
+            "chargingModeSemantics": "Charge immediately"
+          },
+          "chargingSettings": {
+            "chargingTargetLabel": "80%",
+            "acCurrentLimitLabel": "Unlimited",
+            "unlockCableAutomaticallyLabel": "Off",
+            "dcLoudnessLabel": "Automatic",
+            "acCurrentLimitLabelSemantics": "Unlimited"
+          },
+          "chargingFlap": {
+            "permanentlyUnlockLabel": "Off"
+          }
+        },
+        "chargeAndClimateTimerDetail": {
+          "chargingMode": {
+            "type": "CHARGING_IMMEDIATELY",
+            "startTimeSlot": "0001-01-01T00:00:00.0000000",
+            "endTimeSlot": "0001-01-01T00:00:00.0000000",
+            "chargingPreference": "NO_PRESELECTION"
+          },
+          "isPreconditionForDepartureActive": 1,
+          "departureTimer": {
+            "type": "WEEKLY_DEPARTURE_TIMER",
+            "weeklyTimers": [
+              {
+                "id": 1,
+                "time": "0001-01-01T16:45:00.0000000",
+                "daysOfTheWeek": [
+                  "MONDAY",
+                  "TUESDAY",
+                  "WEDNESDAY",
+                  "THURSDAY",
+                  "FRIDAY"
+                ],
+                "timerAction": "ACTIVATE"
+              },
+              {
+                "id": 2,
+                "time": "0001-01-01T07:30:00.0000000",
+                "daysOfTheWeek": [
+                  "MONDAY",
+                  "TUESDAY",
+                  "WEDNESDAY",
+                  "THURSDAY",
+                  "FRIDAY"
+                ],
+                "timerAction": "ACTIVATE"
+              },
+              {
+                "id": 3,
+                "time": "0001-01-01T07:50:00.0000000",
+                "daysOfTheWeek": [
+                  "SATURDAY",
+                  "SUNDAY"
+                ],
+                "timerAction": "ACTIVATE"
+              },
+              {
+                "id": 4,
+                "time": "0001-01-01T13:30:00.0000000",
+                "daysOfTheWeek": [],
+                "timerAction": "DEACTIVATE"
+              }
+            ]
+          }
+        },
+        "chargingSettingsDetail": {
+          "chargingTarget": 80,
+          "minChargingTargetToWarning": 0,
+          "acLimit": {
+            "current": {
+              "value": 16,
+              "unit": "A"
+            },
+            "min": 6,
+            "max": 32,
+            "values": [
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              20,
+              32
+            ],
+            "isUnlimited": 1
+          },
+          "isUnlockCableActive": 0,
+          "dcLoudness": "AUTOMATIC_INTELLIGENT"
+        },
+        "chargingFlapDetail": {
+          "isPermanentlyUnlock": 0
+        },
+        "servicePack": "WAVE_01"
+      },
+      "is_metric": 1,
+      "fetched_at": "2023-10-27T22:30:00.0155460",
+      "state": {
+        "isLeftSteering": 0,
+        "lastFetched": "2023-10-27T22:30:01.3750000Z",
+        "lastUpdatedAt": "2023-10-27T21:56:00.0000000Z",
+        "isLscSupported": 1,
+        "range": 214,
+        "doorsState": {
+          "combinedSecurityState": "SECURED",
+          "leftFront": "CLOSED",
+          "leftRear": "CLOSED",
+          "rightFront": "CLOSED",
+          "rightRear": "CLOSED",
+          "combinedState": "CLOSED",
+          "hood": "CLOSED",
+          "trunk": "CLOSED"
+        },
+        "windowsState": {
+          "leftFront": "CLOSED",
+          "leftRear": "CLOSED",
+          "rightFront": "CLOSED",
+          "rightRear": "CLOSED",
+          "combinedState": "CLOSED"
+        },
+        "tireState": {
+          "frontLeft": {
+            "details": {
+              "dimension": "245/40 R20 99Y XL",
+              "treadDesign": "EcoContact 6 Q",
+              "manufacturer": "Continental",
+              "manufacturingWeek": 5299,
+              "isOptimizedForOemBmw": 1,
+              "partNumber": "5A8C830",
+              "speedClassification": {
+                "speedRating": 300,
+                "atLeast": 0
+              },
+              "mountingDate": "2023-08-29T00:00:00.0000000Z",
+              "season": 2,
+              "identificationInProgress": 0
+            },
+            "status": {
+              "currentPressure": 250,
+              "targetPressure": 250
+            }
+          },
+          "frontRight": {
+            "details": {
+              "dimension": "245/40 R20 99Y XL",
+              "treadDesign": "EcoContact 6 Q",
+              "manufacturer": "Continental",
+              "manufacturingWeek": 5299,
+              "isOptimizedForOemBmw": 1,
+              "partNumber": "5A8C830",
+              "speedClassification": {
+                "speedRating": 300,
+                "atLeast": 0
+              },
+              "mountingDate": "2023-09-12T00:00:00.0000000Z",
+              "season": 2,
+              "identificationInProgress": 0
+            },
+            "status": {
+              "currentPressure": 240,
+              "targetPressure": 250
+            }
+          },
+          "rearLeft": {
+            "details": {
+              "dimension": "245/40 R20 99Y XL",
+              "treadDesign": "EcoContact 6 Q",
+              "manufacturer": "Continental",
+              "manufacturingWeek": 5299,
+              "isOptimizedForOemBmw": 1,
+              "partNumber": "5A8C830",
+              "speedClassification": {
+                "speedRating": 300,
+                "atLeast": 0
+              },
+              "mountingDate": "2023-08-29T00:00:00.0000000Z",
+              "season": 2,
+              "identificationInProgress": 0
+            },
+            "status": {
+              "currentPressure": 240,
+              "targetPressure": 250
+            }
+          },
+          "rearRight": {
+            "details": {
+              "dimension": "245/40 R20 99Y XL",
+              "treadDesign": "EcoContact 6 Q",
+              "manufacturer": "Continental",
+              "manufacturingWeek": 5299,
+              "isOptimizedForOemBmw": 1,
+              "partNumber": "5A8C830",
+              "speedClassification": {
+                "speedRating": 300,
+                "atLeast": 0
+              },
+              "mountingDate": "2023-09-12T00:00:00.0000000Z",
+              "season": 2,
+              "identificationInProgress": 0
+            },
+            "status": {
+              "currentPressure": 250,
+              "targetPressure": 250
+            }
+          }
+        },
+        "location": {
+            "address": {
+                "formatted": "some_formatted_address"
+            },
+            "coordinates": {
+                "latitude": 12.34567890123456,
+                "longitude": 34.56789012345678
+            },
+            "heading": 123
+        },
+        "currentMileage": 2085,
+        "climateControlState": {
+          "activity": "INACTIVE"
+        },
+        "requiredServices": [
+          {
+            "dateTime": "2025-07-01T00:00:00.0000000Z",
+            "type": "BRAKE_FLUID",
+            "status": "OK",
+            "description": "Next service due by the specified date."
+          },
+          {
+            "dateTime": "2025-07-01T00:00:00.0000000Z",
+            "type": "VEHICLE_CHECK",
+            "status": "OK",
+            "description": "Next visual inspection due by specified date or, if shown, when stated distance has been reached."
+          }
+        ],
+        "checkControlMessages": [
+          {
+            "type": "TIRE_PRESSURE",
+            "severity": "LOW"
+          }
+        ],
+        "chargingProfile": {
+          "chargingControlType": "WEEKLY_PLANNER",
+          "reductionOfChargeCurrent": {
+            "start": {
+              "hour": 0,
+              "minute": 0
+            },
+            "end": {
+              "hour": 0,
+              "minute": 0
+            }
+          },
+          "chargingMode": "IMMEDIATE_CHARGING",
+          "chargingPreference": "NO_PRESELECTION",
+          "departureTimes": [
+            {
+              "id": 1,
+              "timeStamp": {
+                "hour": 16,
+                "minute": 45
+              },
+              "action": "ACTIVATE",
+              "timerWeekDays": [
+                "MONDAY",
+                "TUESDAY",
+                "WEDNESDAY",
+                "THURSDAY",
+                "FRIDAY"
+              ]
+            },
+            {
+              "id": 2,
+              "timeStamp": {
+                "hour": 7,
+                "minute": 30
+              },
+              "action": "ACTIVATE",
+              "timerWeekDays": [
+                "MONDAY",
+                "TUESDAY",
+                "WEDNESDAY",
+                "THURSDAY",
+                "FRIDAY"
+              ]
+            },
+            {
+              "id": 3,
+              "timeStamp": {
+                "hour": 7,
+                "minute": 50
+              },
+              "action": "ACTIVATE",
+              "timerWeekDays": [
+                "SATURDAY",
+                "SUNDAY"
+              ]
+            },
+            {
+              "id": 4,
+              "timeStamp": {
+                "hour": 13,
+                "minute": 30
+              },
+              "action": "DEACTIVATE",
+              "timerWeekDays": []
+            }
+          ],
+          "climatisationOn": 1,
+          "chargingSettings": {
+            "targetSoc": 80,
+            "acCurrentLimit": 16,
+            "idcc": "AUTOMATIC_INTELLIGENT",
+            "hospitality": "HOSP_INACTIVE",
+            "isAcCurrentLimitActive": 0
+          }
+        },
+        "electricChargingState": {
+          "chargingLevelPercent": 67,
+          "range": 214,
+          "isChargerConnected": 0,
+          "chargingStatus": "INVALID",
+          "chargingTarget": 80
+        },
+        "combustionFuelLevel": {
+          "range": 214
+        },
+        "driverPreferences": {
+          "lscPrivacyMode": "OFF"
+        },
+        "isDeepSleepModeActive": 0,
+        "climateTimers": [
+          {
+            "isWeeklyTimer": 0,
+            "timerAction": "DEACTIVATE",
+            "timerWeekDays": [],
+            "departureTime": {
+              "hour": 7,
+              "minute": 0
+            }
+          },
+          {
+            "isWeeklyTimer": 1,
+            "timerAction": "DEACTIVATE",
+            "timerWeekDays": [
+              "MONDAY"
+            ],
+            "departureTime": {
+              "hour": 7,
+              "minute": 0
+            }
+          },
+          {
+            "isWeeklyTimer": 1,
+            "timerAction": "DEACTIVATE",
+            "timerWeekDays": [
+              "MONDAY"
+            ],
+            "departureTime": {
+              "hour": 7,
+              "minute": 0
+            }
+          }
+        ],
+        "securityOverviewMode": "ARMED"
+      },
+      "capabilities": {
+        "a4aType": "NOT_SUPPORTED",
+        "climateNow": 1,
+        "climateFunction": "AIR_CONDITIONING",
+        "isBmwChargingSupported": 1,
+        "isCarSharingSupported": 0,
+        "isChargeNowForBusinessSupported": 0,
+        "isChargingHistorySupported": 1,
+        "isChargingHospitalityEnabled": 1,
+        "isChargingLoudnessEnabled": 1,
+        "isChargingPlanSupported": 1,
+        "isChargingPowerLimitEnabled": 1,
+        "isChargingSettingsEnabled": 1,
+        "isChargingTargetSocEnabled": 1,
+        "isCustomerEsimSupported": 0,
+        "isDataPrivacyEnabled": 0,
+        "isDCSContractManagementSupported": 1,
+        "isEasyChargeEnabled": 0,
+        "isMiniChargingSupported": 0,
+        "isEvGoChargingSupported": 0,
+        "isRemoteHistoryDeletionSupported": 0,
+        "isRemoteEngineStartSupported": 0,
+        "isRemoteServicesActivationRequired": 0,
+        "isRemoteServicesBookingRequired": 0,
+        "isScanAndChargeSupported": 0,
+        "lastStateCallState": "ACTIVATED",
+        "lights": 1,
+        "lock": 1,
+        "remoteSoftwareUpgrade": 1,
+        "sendPoi": 1,
+        "speechThirdPartyAlexa": 1,
+        "speechThirdPartyAlexaSDK": 0,
+        "unlock": 1,
+        "vehicleFinder": 1,
+        "vehicleStateSource": "LAST_STATE_CALL",
+        "isRemoteHistorySupported": 1,
+        "isWifiHotspotServiceSupported": 0,
+        "isNonLscFeatureEnabled": 0,
+        "isSustainabilitySupported": 1,
+        "isSustainabilityAccumulatedViewEnabled": 1,
+        "specialThemeSupport": [],
+        "isRemoteParkingSupported": 0,
+        "remoteChargingCommands": {
+          "chargingControl": [
+            "START",
+            "STOP"
+          ],
+          "plugControl": [
+            "UNLOCK_PLUG"
+          ],
+          "flapControl": [
+            "COUPLE_FLAP",
+            "DECOUPLE_FLAP"
+          ]
+        },
+        "isClimateTimerWeeklyActive": 0,
+        "digitalKey": {
+          "state": "ACTIVATED",
+          "bookedServicePackage": "SMACC_2_UWB",
+          "readerGraphics": "000200000000",
+          "vehicleSoftwareUpgradeRequired": 0,
+          "isDigitalKeyFirstSupported": 0
+        },
+        "isPersonalPictureUploadSupported": 0,
+        "isPlugAndChargeSupported": 0,
+        "isOptimizedChargingSupported": 0
+      },
+      "EventProcessedUtcTime": "2023-10-27T22:33:51.0698778Z",
+      "PartitionId": 0,
+      "EventEnqueuedUtcTime": "2023-10-27T22:30:02.7690000Z"
+    }
+  ]
