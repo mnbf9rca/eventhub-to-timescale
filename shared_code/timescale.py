@@ -58,7 +58,7 @@ def create_timescale_records_from_batch_of_events(
     @param events: the events to create records from
     """
     unraised_errors = []
-    unwrapped_records = list(map(json.loads, json.loads(record_set)))
+    unwrapped_records = json.loads(record_set)
     try:
         validate(instance=unwrapped_records, schema=schema)
     except ValidationError as e:
