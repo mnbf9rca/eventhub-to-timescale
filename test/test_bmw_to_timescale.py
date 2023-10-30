@@ -43,7 +43,7 @@ class TestConvertBmwToTimescale:
         mock_get_vin_from_message.return_value = "VIN123"
         mock_get_last_updated_at_from_message.return_value = "timestamp123"
         mock_check_duplicate.return_value = duplicate_status
-        mock_construct_messages.return_value = [[{"some_messages"}]]
+        mock_construct_messages.return_value = [[{'some_messages': 'some_value'}]]
         mock_outputEventHubMessage = MagicMock()
 
         # Call function
@@ -66,7 +66,7 @@ class TestConvertBmwToTimescale:
                 mock_get_event_body.return_value,
             )
             mock_outputEventHubMessage.set.assert_called_with(
-                mock_construct_messages.return_value[0]
+                json.dumps(mock_construct_messages.return_value[0])
             )
             mock_store_id.assert_called_with(
                 mock_get_last_updated_at_from_message.return_value,
