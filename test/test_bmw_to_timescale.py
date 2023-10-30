@@ -631,12 +631,12 @@ class TestValidateLatLong:
     def test_valid_lat_lon_with_floats(self):
         lat = 12.3456
         lng = 0.12345
-        assert validate_lat_long(lat, lng) == [float(lat), float(lng)]
+        assert validate_lat_long(lat, lng) == [lat, lng]
 
     def test_valid_lat_lon_with_ints(self):
         lat = 12
         lng = 1
-        assert validate_lat_long(int(lat), int(lng)) == [float(lat), float(lng)]
+        assert validate_lat_long(lat, lng) == [float(lat), float(lng)]
 
     def test_invalid_latitude_type(self):
         lat = "invalid"
