@@ -63,7 +63,7 @@ def get_event_body(event: EventHubEvent) -> Dict[str, Any]:
 
 def construct_messages(
     vin: str, last_updated_at: str, event_object: Dict[str, Any]
-) -> List[str]:
+) -> List[Dict[str, Any]]:
     """
     Generate a list of atomic records for electric vehicle charging states and current mileage.
 

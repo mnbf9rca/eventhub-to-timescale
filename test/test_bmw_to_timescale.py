@@ -3,6 +3,7 @@ from copy import copy
 import json
 from unittest.mock import patch, Mock, call, MagicMock
 from shared_code.bmw_to_timescale import (
+    convert_bmw_to_timescale,
     get_event_body,
     construct_messages,
     get_electric_charging_state_from_message,
@@ -14,6 +15,73 @@ from shared_code.bmw_to_timescale import (
     get_last_updated_at_from_message,
 )
 from shared_code import PayloadType
+
+
+class TestConvertBmwToTimescale:
+    @pytest.mark.parametrize("duplicate_status", [True, False])
+    @patch("shared_code.bmw_to_timescale.construct_messages")
+    @patch("shared_code.bmw_to_timescale.sc.store_id")
+    @patch("shared_code.bmw_to_timescale.sc.check_duplicate")
+    @patch("shared_code.bmw_to_timescale.get_last_updated_at_from_message")
+    @patch("shared_code.bmw_to_timescale.get_vin_from_message")
+    @patch("shared_code.bmw_to_timescale.get_event_body")
+    @patch("shared_code.bmw_to_timescale.sc.get_table_service_client")
+    def test_convert_bmw_to_timescale_no_exception(
+        self,
+        mock_get_table_service_client,
+        mock_get_event_body,
+        mock_get_vin_from_message,
+        mock_get_last_updated_at_from_message,
+        mock_check_duplicate,
+        mock_store_id,
+        mock_construct_messages,
+        duplicate_status,
+    ):
+        # Mock external functions
+        mock_get_table_service_client.return_value = MagicMock()
+        mock_get_event_body.return_value = {}
+        mock_get_vin_from_message.return_value = "VIN123"
+        mock_get_last_updated_at_from_message.return_value = "timestamp123"
+        mock_check_duplicate.return_value = duplicate_status
+        mock_construct_messages.return_value = [[{"some_messages"}]]
+        mock_outputEventHubMessage = MagicMock()
+
+        # Call function
+        convert_bmw_to_timescale([MagicMock()], mock_outputEventHubMessage)
+
+        # Assertions
+        mock_check_duplicate.assert_called_once_with(
+            mock_get_last_updated_at_from_message.return_value,
+            mock_get_vin_from_message.return_value,
+            mock_get_table_service_client.return_value,
+        )
+        if duplicate_status:
+            mock_construct_messages.assert_not_called()
+            mock_outputEventHubMessage.set.assert_not_called()
+            mock_store_id.assert_not_called()
+        else:
+            mock_construct_messages.assert_called_with(
+                mock_get_vin_from_message.return_value,
+                mock_get_last_updated_at_from_message.return_value,
+                mock_get_event_body.return_value,
+            )
+            mock_outputEventHubMessage.set.assert_called_with(
+                mock_construct_messages.return_value[0]
+            )
+            mock_store_id.assert_called_with(
+                mock_get_last_updated_at_from_message.return_value,
+                mock_get_vin_from_message.return_value,
+                mock_get_table_service_client.return_value,
+            )
+
+    @patch("shared_code.bmw_to_timescale.get_event_body")
+    def test_convert_bmw_to_timescale_exception(self, mock_get_event_body):
+        # Mock external function to raise exception
+        mock_get_event_body.side_effect = Exception("An error occurred")
+
+        # Call function and assert that it raises an exception
+        with pytest.raises(Exception):
+            convert_bmw_to_timescale([MagicMock()], MagicMock())
 
 
 class TestGetEventBody:
@@ -466,40 +534,46 @@ class TestGetLastUpdatedAtFromMessage:
 
 
 class TestGetElectricChargingStateFromMessage:
-    @pytest.mark.parametrize("message, expected_output", [
-        (
-            {
-                "state": {
-                    "electricChargingState": {
-                        "chargingLevelPercent": 80,
-                        "range": 120,
-                        "isChargerConnected": 1,
-                        "chargingStatus": "Charging",
+    @pytest.mark.parametrize(
+        "message, expected_output",
+        [
+            (
+                {
+                    "state": {
+                        "electricChargingState": {
+                            "chargingLevelPercent": 80,
+                            "range": 120,
+                            "isChargerConnected": 1,
+                            "chargingStatus": "Charging",
+                        }
                     }
-                }
-            },
-            {
-                "chargingLevelPercent": 80,
-                "range": 120,
-                "isChargerConnected": 1,
-                "chargingStatus": "Charging",
-            }
-        ),
-        (
-            {
-                "state": {
-                    "electricChargingState": {"chargingLevelPercent": 80, "range": 120}
-                }
-            },
-            {"chargingLevelPercent": 80, "range": 120}
-        ),
-        ({"state": {"electricChargingState": {}}}, {}),
-        ({"state": {"electricChargingState": None}}, {}),
-        ({"state": {}}, {}),
-        ({"state": {"other_item": "some_value"}}, {}),
-        ({}, {}),
-        ("Invalid", {})
-    ])
+                },
+                {
+                    "chargingLevelPercent": 80,
+                    "range": 120,
+                    "isChargerConnected": 1,
+                    "chargingStatus": "Charging",
+                },
+            ),
+            (
+                {
+                    "state": {
+                        "electricChargingState": {
+                            "chargingLevelPercent": 80,
+                            "range": 120,
+                        }
+                    }
+                },
+                {"chargingLevelPercent": 80, "range": 120},
+            ),
+            ({"state": {"electricChargingState": {}}}, {}),
+            ({"state": {"electricChargingState": None}}, {}),
+            ({"state": {}}, {}),
+            ({"state": {"other_item": "some_value"}}, {}),
+            ({}, {}),
+            ("Invalid", {}),
+        ],
+    )
     def test_get_electric_charging_state_from_message(self, message, expected_output):
         assert get_electric_charging_state_from_message(message) == expected_output
 
