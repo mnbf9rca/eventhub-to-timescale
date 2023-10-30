@@ -105,9 +105,9 @@ def construct_messages(
             all_fields["chargingStatus"],
         ),
         (
-            "current_mileage",
+            "currentMileage",
             sc.PayloadType.NUMBER,
-            all_fields["current_mileage"],
+            all_fields["currentMileage"],
         ),
         (
             "coordinates",
@@ -262,17 +262,17 @@ def get_current_mileage_from_message(
     """
     try:
         state = messagebody.get("state", {})
-        current_mileage = state.get("currentMileage")
+        currentMileage = state.get("currentMileage")
     except AttributeError:
         return None
 
-    if current_mileage is None:
+    if currentMileage is None:
         return None
 
-    if not isinstance(current_mileage, int):
-        raise TypeError(f"Invalid type for currentMileage: {type(current_mileage)}")
+    if not isinstance(currentMileage, int):
+        raise TypeError(f"Invalid type for currentMileage: {type(currentMileage)}")
 
-    return {"current_mileage": current_mileage}
+    return {"currentMileage": currentMileage}
 
 
 def get_electric_charging_state_from_message(

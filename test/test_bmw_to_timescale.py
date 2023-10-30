@@ -10,6 +10,8 @@ from shared_code.bmw_to_timescale import (
     get_coordinates_from_message,
     validate_lat_long,
     create_records_from_fields,
+    get_vin_from_message,
+    get_last_updated_at_from_message,
 )
 from shared_code import PayloadType
 
@@ -401,83 +403,120 @@ class TestCreateRecordsFromFields:
         assert records == []
 
 
+class TestGetVinFromMessage:
+    @pytest.mark.parametrize(
+        "messagebody, expected_vin",
+        [
+            ({"vin": "1234567890"}, "1234567890"),
+            ({"vin": "ABCDE"}, "ABCDE"),
+        ],
+    )
+    def test_valid_messagebody(self, messagebody, expected_vin):
+        # When
+        result = get_vin_from_message(messagebody)
+
+        # Then
+        assert result == expected_vin
+
+    def test_missing_vin_key(self):
+        # Given
+        messagebody = {"not_vin": "1234567890"}
+
+        # When & Then
+        with pytest.raises(KeyError):
+            get_vin_from_message(messagebody)
+
+
+class TestGetLastUpdatedAtFromMessage:
+    @pytest.mark.parametrize(
+        "messagebody, expected_last_updated_at",
+        [
+            (
+                {"state": {"lastUpdatedAt": "2021-01-01T12:34:56Z"}},
+                "2021-01-01T12:34:56Z",
+            ),
+            (
+                {"state": {"lastUpdatedAt": "2022-12-31T23:59:59Z"}},
+                "2022-12-31T23:59:59Z",
+            ),
+        ],
+    )
+    def test_valid_messagebody(self, messagebody, expected_last_updated_at):
+        # When
+        result = get_last_updated_at_from_message(messagebody)
+
+        # Then
+        assert result == expected_last_updated_at
+
+    def test_missing_state_key(self):
+        # Given
+        messagebody = {"not_state": {"lastUpdatedAt": "2021-01-01T12:34:56Z"}}
+
+        # When & Then
+        with pytest.raises(KeyError):
+            get_last_updated_at_from_message(messagebody)
+
+    def test_missing_last_updated_at_key(self):
+        # Given
+        messagebody = {"state": {"not_lastUpdatedAt": "2021-01-01T12:34:56Z"}}
+
+        # When & Then
+        with pytest.raises(KeyError):
+            get_last_updated_at_from_message(messagebody)
+
+
 class TestGetElectricChargingStateFromMessage:
-    def test_all_fields_present(self):
-        message = {
-            "state": {
-                "electricChargingState": {
-                    "chargingLevelPercent": 80,
-                    "range": 120,
-                    "isChargerConnected": 1,
-                    "chargingStatus": "Charging",
+    @pytest.mark.parametrize("message, expected_output", [
+        (
+            {
+                "state": {
+                    "electricChargingState": {
+                        "chargingLevelPercent": 80,
+                        "range": 120,
+                        "isChargerConnected": 1,
+                        "chargingStatus": "Charging",
+                    }
                 }
+            },
+            {
+                "chargingLevelPercent": 80,
+                "range": 120,
+                "isChargerConnected": 1,
+                "chargingStatus": "Charging",
             }
-        }
-        expected = {
-            "chargingLevelPercent": 80,
-            "range": 120,
-            "isChargerConnected": 1,
-            "chargingStatus": "Charging",
-        }
-        assert get_electric_charging_state_from_message(message) == expected
-
-    def test_some_fields_missing(self):
-        message = {
-            "state": {
-                "electricChargingState": {"chargingLevelPercent": 80, "range": 120}
-            }
-        }
-        expected = {"chargingLevelPercent": 80, "range": 120}
-        assert get_electric_charging_state_from_message(message) == expected
-
-    def test_all_fields_missing(self):
-        message = {"state": {"electricChargingState": {}}}
-        expected = {}
-        assert get_electric_charging_state_from_message(message) == expected
-
-    def test_none_value(self):
-        message = {"state": {"electricChargingState"}}
-        expected = {}
-        assert get_electric_charging_state_from_message(message) == expected
-
-    def test_none_value_2(self):
-        message = {"state": {"electricChargingState": None}}
-        expected = {}
-        assert get_electric_charging_state_from_message(message) == expected
-
-    def test_no_electricChargingState(self):
-        message = {"state": {}}
-        expected = {}
-        assert get_electric_charging_state_from_message(message) == expected
-
-    def test_no_electricChargingStateButOtherItems(self):
-        message = {"state": {"other_item": "some_value"}}
-        expected = {}
-        assert get_electric_charging_state_from_message(message) == expected
-
-    def test_no_state(self):
-        message = {}
-        expected = {}
-        assert get_electric_charging_state_from_message(message) == expected
-
-    def test_invalid_message_structure(self):
-        message = "Invalid"
-        expected = {}
-        assert get_electric_charging_state_from_message(message) == expected
+        ),
+        (
+            {
+                "state": {
+                    "electricChargingState": {"chargingLevelPercent": 80, "range": 120}
+                }
+            },
+            {"chargingLevelPercent": 80, "range": 120}
+        ),
+        ({"state": {"electricChargingState": {}}}, {}),
+        ({"state": {"electricChargingState": None}}, {}),
+        ({"state": {}}, {}),
+        ({"state": {"other_item": "some_value"}}, {}),
+        ({}, {}),
+        ("Invalid", {})
+    ])
+    def test_get_electric_charging_state_from_message(self, message, expected_output):
+        assert get_electric_charging_state_from_message(message) == expected_output
 
 
 class TestGetCurrentMileageFromMessage:
-    def test_valid_mileage(self):
-        message = {"state": {"currentMileage": 1000}}
-        assert get_current_mileage_from_message(message) == {"current_mileage": 1000}
-
-    def test_missing_mileage_field(self):
-        message = {"state": {}}
-        assert get_current_mileage_from_message(message) is None
-
-    def test_missing_state_field(self):
-        message = {}
-        assert get_current_mileage_from_message(message) is None
+    @pytest.mark.parametrize(
+        "message, expected_output",
+        [
+            ({"state": {"currentMileage": 1000}}, {"currentMileage": 1000}),
+            ({"state": {}}, None),
+            ({}, None),
+            ({"state": {"currentMileage": None}}, None),
+            ("Invalid", None),
+        ],
+    )
+    def test_get_current_mileage_from_message(self, message, expected_output):
+        assert get_current_mileage_from_message(message) == expected_output
 
     def test_mileage_not_integer(self):
         message = {"state": {"currentMileage": "1000"}}
@@ -485,14 +524,6 @@ class TestGetCurrentMileageFromMessage:
             TypeError, match="Invalid type for currentMileage: <class 'str'>"
         ):
             get_current_mileage_from_message(message)
-
-    def test_none_value(self):
-        message = {"state": {"currentMileage": None}}
-        assert get_current_mileage_from_message(message) is None
-
-    def test_invalid_message_structure(self):
-        message = "Invalid"
-        assert get_current_mileage_from_message(message) is None
 
 
 class TestGetLocationFromMessage:
@@ -502,10 +533,12 @@ class TestGetLocationFromMessage:
                 "location": {"coordinates": {"latitude": 12.3456, "longitude": 0.1234}}
             }
         }
-        assert get_coordinates_from_message(message) == {"coordinates" : {
-            "latitude": 12.3456,
-            "longitude": 0.1234,
-        }}
+        assert get_coordinates_from_message(message) == {
+            "coordinates": {
+                "latitude": 12.3456,
+                "longitude": 0.1234,
+            }
+        }
 
     def test_missing_coordinates(self):
         message = {"state": {"location": {}}}
