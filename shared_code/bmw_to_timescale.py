@@ -38,6 +38,7 @@ def convert_bmw_to_timescale(
             continue
         messages_to_send = construct_messages(vin, last_updated_at, event_object)
         for message in messages_to_send:
+
             outputEventHubMessage.set(json.dumps(message))
         sc.store_id(last_updated_at, vin, tsc)
 
