@@ -175,7 +175,9 @@ class Test_parse_message:
             {"measurement": "test", "tags": {"tag1": "value1"}, "fields": {"field1": 1}}
         ]
         mocked_send_to_converter.return_value = return_value
-        expected_value = [json.dumps(p) for p in return_value]
+        # expected_value = [json.dumps(p) for p in return_value]
+        expected_value = return_value
+
         actual_value = parse_message(test_event)
         assert actual_value == expected_value
         assert mocked_send_to_converter.call_count == 1
@@ -201,7 +203,8 @@ class Test_parse_message:
             },
         ]
         mocked_send_to_converter.return_value = return_value
-        expected_value = [json.dumps(p) for p in return_value]
+        # expected_value = [json.dumps(p) for p in return_value]
+        expected_value = return_value
         actual_value = parse_message(test_event)
         assert actual_value == expected_value
         assert mocked_send_to_converter.call_count == 1
@@ -268,14 +271,22 @@ class Test_main:
             "glow_electricitymeter",
         ]
         test_event_array = [get_test_data(key)[0] for key in test_events]
+        mocked_output_event = mocker.Mock()
+
         mocked_parse_message = mocker.patch(
             "json_to_timeseries.parse_message", autospec=True
         )
         return_value = ["test1", "test2", "test3", "test4", "test5"]
         mocked_parse_message.side_effect = return_value
-        actual_value = main(test_event_array)
+        actual_value = main(test_event_array, mocked_output_event)
+
+        assert mocked_output_event.set.call_count == 5
         assert mocked_parse_message.call_count == 5
-        assert actual_value == return_value
+        assert actual_value is None
+        # Check that mocked_output_event.set was called with each of return_value
+        for i, call in enumerate(mocked_output_event.set.call_args_list):
+            args, kwargs = call
+            assert args[0] == json.dumps(return_value[i])
 
     def test_calls_parse_message_with_one_record(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
@@ -283,14 +294,21 @@ class Test_main:
         caplog.set_level(logging.DEBUG)
         test_events = ["homie_heartbeat"]
         test_event_array = [get_test_data(key)[0] for key in test_events]
+        mocked_output_event = mocker.Mock()
         mocked_parse_message = mocker.patch(
             "json_to_timeseries.parse_message", autospec=True
         )
         return_value = ["test1"]
         mocked_parse_message.side_effect = return_value
-        actual_value = main(test_event_array)
+        actual_value = main(test_event_array, mocked_output_event)
+
+        assert mocked_output_event.set.call_count == 1
         assert mocked_parse_message.call_count == 1
-        assert actual_value == return_value
+        assert actual_value is None
+        # Check that mocked_output_event.set was called with each of return_value
+        for i, call in enumerate(mocked_output_event.set.call_args_list):
+            args, kwargs = call
+            assert args[0] == json.dumps(return_value[i])
 
     def test_calls_parse_message_with_no_records(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
@@ -298,14 +316,17 @@ class Test_main:
         caplog.set_level(logging.DEBUG)
         test_events = []
         test_event_array = [get_test_data(key)[0] for key in test_events]
+        mocked_output_event = mocker.Mock()
         mocked_parse_message = mocker.patch(
             "json_to_timeseries.parse_message", autospec=True
         )
         return_value = None
         mocked_parse_message.return_value = return_value
-        actual_value = main(test_event_array)
+        actual_value = main(test_event_array, mocked_output_event)
+
+        assert mocked_output_event.set.call_count == 0
         assert mocked_parse_message.call_count == 0
-        assert actual_value == []  # initial value
+        assert actual_value is None
 
     def test_calls_parse_message_with_one_record_and_one_error(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
@@ -317,10 +338,17 @@ class Test_main:
             "json_to_timeseries.parse_message", autospec=True
         )
         return_value = ["test1", None]
+        mocked_output_event = mocker.Mock()
         mocked_parse_message.side_effect = return_value
-        actual_value = main(test_event_array)
+        actual_value = main(test_event_array, mocked_output_event)
+
+        assert mocked_output_event.set.call_count == 1
         assert mocked_parse_message.call_count == 2
-        assert actual_value == [return_value[0]]
+        assert actual_value is None
+        # Check that mocked_output_event.set was called with each of return_value
+        for i, call in enumerate(mocked_output_event.set.call_args_list):
+            args, kwargs = call
+            assert args[0] == json.dumps(return_value[i])
 
     def test_calls_parse_message_with_two_errors(
         self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
@@ -332,25 +360,17 @@ class Test_main:
             "json_to_timeseries.parse_message", autospec=True
         )
         return_value = [None, None]
+        mocked_output_event = mocker.Mock()
         mocked_parse_message.side_effect = return_value
-        actual_value = main(test_event_array)
-        assert mocked_parse_message.call_count == 2
-        assert actual_value == []
+        actual_value = main(test_event_array, mocked_output_event)
 
-    def test_calls_parse_message_with_one_record_and_one_error_and_one_record(
-        self, mocker: pytest_mock.MockFixture, caplog: pytest.LogCaptureFixture
-    ):
-        caplog.set_level(logging.DEBUG)
-        test_events = ["homie_heartbeat", "homie_mode", "homie_measure_temperature"]
-        test_event_array = [get_test_data(key)[0] for key in test_events]
-        mocked_parse_message = mocker.patch(
-            "json_to_timeseries.parse_message", autospec=True
-        )
-        return_value = ["test1", None, "test3"]
-        mocked_parse_message.side_effect = return_value
-        actual_value = main(test_event_array)
-        assert mocked_parse_message.call_count == 3
-        assert actual_value == [return_value[0], return_value[2]]
+        assert mocked_output_event.set.call_count == 0
+        assert mocked_parse_message.call_count == 2
+        assert actual_value is None
+        # Check that mocked_output_event.set was called with each of return_value
+        for i, call in enumerate(mocked_output_event.set.call_args_list):
+            args, kwargs = call
+            assert args[0] == json.dumps(return_value[i])
 
 
 class Test_extract_topic:

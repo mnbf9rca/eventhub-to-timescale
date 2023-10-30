@@ -7,14 +7,15 @@ import azure.functions as func
 from shared_code import glow_to_timescale, homie_to_timescale, emon_to_timescale
 
 
-def main(events: List[func.EventHubEvent]):
+def main(events: List[func.EventHubEvent], outputEventHubMessage: func.Out[str]) -> None:
     return_value = []
     for event in events:
         result = parse_message(event)
         if result is not None:
             return_value.append(result)
-    return return_value
-
+    if len(return_value) > 0:
+        for p in return_value:
+            outputEventHubMessage.set(json.dumps(p))
 
 def parse_message(event: func.EventHubEvent):
     try:
@@ -34,7 +35,8 @@ def parse_message(event: func.EventHubEvent):
         raise
 
     logging.debug(f"Parsed payload: {payload}")
-    return [json.dumps(p) for p in payload] if payload else None
+    return payload if payload else None
+    # return [json.dumps(p) for p in payload] if payload else None
 
 
 def send_to_converter(
