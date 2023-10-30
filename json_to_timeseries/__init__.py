@@ -13,7 +13,7 @@ def main(events: List[func.EventHubEvent], outputEventHubMessage: func.Out[str])
         result = parse_message(event)
         if result is not None:
             return_value.append(result)
-    if len(return_value) > 0:
+    if return_value:
         for p in return_value:
             outputEventHubMessage.set(json.dumps(p))
 
