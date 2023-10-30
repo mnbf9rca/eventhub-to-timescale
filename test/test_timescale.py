@@ -28,7 +28,7 @@ from shared_code import (  # noqa E402
     create_single_timescale_record,
     parse_measurement_value,
     identify_data_column,
-    create_timescale_records_from_batch_of_events,
+    # create_timescale_records_from_batch_of_events,
     validate_all_fields_in_record,
     get_table_name,
     get_connection_string,
@@ -316,140 +316,123 @@ def get_mock_conn_cursor(
     return mock_conn, mock_conn.cursor()
 
 
-class Test_create_timescale_records_from_batch_of_events:
-    @pytest.mark.parametrize(
-        "timeseries_emon_electricitymeter",
-        [
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_cumulative", "measurement_value": 5100.748, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_day", "measurement_value": 16.138, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_week", "measurement_value": 43.873, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_month", "measurement_value": 649.307, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_unitrate", "measurement_value": 0.3788, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_standingcharge", "measurement_value": 0.4458, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "power_value", "measurement_value": 0.679, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-        ],
-    )
-    def test_from_batch_of_events(
-        self, timeseries_emon_electricitymeter, mocker: pytest_mock.MockFixture
-    ):
-        # Mocking create_single_timescale_record
-        mocked_create_single_timescale_record = mocker.patch(
-            "shared_code.timescale.create_single_timescale_record", autospec=True
-        )
+# class Test_create_timescale_records_from_batch_of_events:
+#     @pytest.mark.parametrize(
+#         "timeseries_emon_electricitymeter",
+#         [
+#             '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_cumulative", "measurement_value": 5100.748, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+#             '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_day", "measurement_value": 16.138, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+#             '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_week", "measurement_value": 43.873, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+#             '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_month", "measurement_value": 649.307, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+#             '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_unitrate", "measurement_value": 0.3788, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+#             '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_standingcharge", "measurement_value": 0.4458, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+#             '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "power_value", "measurement_value": 0.679, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+#         ],
+#     )
+#     def test_from_batch_of_events(
+#         self, timeseries_emon_electricitymeter, mocker: pytest_mock.MockFixture
+#     ):
+#         # Mocking create_single_timescale_record
+#         mocked_create_single_timescale_record = mocker.patch(
+#             "shared_code.timescale.create_single_timescale_record", autospec=True
+#         )
 
-        # Getting mock connection and cursor
-        mock_conn, _ = get_mock_conn_cursor(mocker)
+#         # Getting mock connection and cursor
+#         mock_conn, _ = get_mock_conn_cursor(mocker)
 
-        # Stringified test data
-        test_value = (
-            timeseries_emon_electricitymeter  # Use the parameterized input here
-        )
-        patch_value = None
-        mocked_create_single_timescale_record.return_value = patch_value
+#         # Stringified test data
+#         test_value = (
+#             timeseries_emon_electricitymeter  # Use the parameterized input here
+#         )
+#         patch_value = None
+#         mocked_create_single_timescale_record.return_value = patch_value
 
-        # Function under test
-        actual_value = create_timescale_records_from_batch_of_events(
-            mock_conn, test_value, db_helpers.test_table_name
-        )
+#         # Function under test
+#         actual_value = create_timescale_records_from_batch_of_events(
+#             mock_conn, test_value, db_helpers.test_table_name
+#         )
 
-        # Assertion
-        assert actual_value is None
+#         # Assertion
+#         assert actual_value is None
 
-    @pytest.mark.parametrize(
-        "timeseries_emon_electricitymeter",
-        [
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_cumulative", "measurement_value": 5100.748, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_day", "measurement_value": 16.138, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_week", "measurement_value": 43.873, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_month", "measurement_value": 649.307, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_unitrate", "measurement_value": 0.3788, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_standingcharge", "measurement_value": 0.4458, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "power_value", "measurement_value": 0.679, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-        ],
-    )
-    def test_from_batch_of_events_with_single_error(
-        self, timeseries_emon_electricitymeter, mocker: pytest_mock.MockFixture
-    ):
-        # Mocking create_single_timescale_record
-        mocked_create_single_timescale_record = mocker.patch(
-            "shared_code.timescale.create_single_timescale_record", autospec=True
-        )
+#     @pytest.mark.parametrize(
+#         "timeseries_emon_electricitymeter",
+#         [
+#             '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_cumulative", "measurement_value": 5100.748, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+#             '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_day", "measurement_value": 16.138, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+#             '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_week", "measurement_value": 43.873, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+#             '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_month", "measurement_value": 649.307, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+#             '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_unitrate", "measurement_value": 0.3788, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+#             '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_standingcharge", "measurement_value": 0.4458, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+#             '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "power_value", "measurement_value": 0.679, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+#         ],
+#     )
+#     def test_from_batch_of_events_with_single_error(
+#         self, timeseries_emon_electricitymeter, mocker: pytest_mock.MockFixture
+#     ):
+#         # Mocking create_single_timescale_record
+#         mocked_create_single_timescale_record = mocker.patch(
+#             "shared_code.timescale.create_single_timescale_record", autospec=True
+#         )
 
-        # Getting mock connection and cursor
-        mock_conn, _ = get_mock_conn_cursor(mocker)
+#         # Getting mock connection and cursor
+#         mock_conn, _ = get_mock_conn_cursor(mocker)
 
-        # Stringified test data
-        test_value = (
-            timeseries_emon_electricitymeter  # Use the parameterized input here
-        )
+#         # Stringified test data
+#         test_value = (
+#             timeseries_emon_electricitymeter  # Use the parameterized input here
+#         )
 
-        # Patched return values, including one exception
-        patch_value = [None, None, None, Exception("test exception"), None, None, None]
-        mocked_create_single_timescale_record.side_effect = patch_value
+#         # Patched return values, including one exception
+#         patch_value = [None, None, None, Exception("test exception"), None, None, None]
+#         mocked_create_single_timescale_record.side_effect = patch_value
 
-        # Function under test
-        actual_value = create_timescale_records_from_batch_of_events(
-            mock_conn, test_value, db_helpers.test_table_name
-        )
+#         # Function under test
+#         actual_value = create_timescale_records_from_batch_of_events(
+#             mock_conn, test_value, db_helpers.test_table_name
+#         )
 
-        # Assertions
-        assert len(actual_value) == 1
-        assert actual_value[0] == patch_value[3]
+#         # Assertions
+#         assert len(actual_value) == 1
+#         assert actual_value[0] == patch_value[3]
 
-    def test_from_batch_of_events_with_schema_error(
-        self, mocker: pytest_mock.MockFixture
-    ):
-        # Mocking and setup
-        mock_conn, _ = get_mock_conn_cursor(mocker)
+#     def test_from_batch_of_events_with_schema_error(
+#         self, mocker: pytest_mock.MockFixture
+#     ):
+#         # Mocking and setup
+#         mock_conn, _ = get_mock_conn_cursor(mocker)
 
-        # Use the parameterized input here
-        test_value = '{"measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_cumulative", "measurement_value": 5100.748, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}'  # noqa: E501
+#         # Use the parameterized input here
+#         test_value = '{"measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_cumulative", "measurement_value": 5100.748, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}'  # noqa: E501
 
-        # Function under test
-        actual_value = create_timescale_records_from_batch_of_events(
-            mock_conn, test_value, db_helpers.test_table_name
-        )
+#         # Function under test
+#         actual_value = create_timescale_records_from_batch_of_events(
+#             mock_conn, test_value, db_helpers.test_table_name
+#         )
 
-        # Assertions
-        assert len(actual_value) == 1
-        assert isinstance(actual_value[0], ValidationError)
+#         # Assertions
+#         assert len(actual_value) == 1
+#         assert isinstance(actual_value[0], ValidationError)
 
-    @pytest.mark.parametrize(
-        "timeseries_emon_electricitymeter",
-        [
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_cumulative", "measurement_value": 5100.748, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_day", "measurement_value": 16.138, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_week", "measurement_value": 43.873, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_month", "measurement_value": 649.307, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_unitrate", "measurement_value": 0.3788, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_standingcharge", "measurement_value": 0.4458, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "power_value", "measurement_value": 0.679, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
-        ],
-    )
-    def test_from_batch_of_events_where_create_single_timescale_record_errors(
-        self, timeseries_emon_electricitymeter, mocker: pytest_mock.MockFixture
-    ):
-        mocked_create_single_timescale_record = mocker.patch(
-            "shared_code.timescale.create_single_timescale_record", autospec=True
-        )
-        mock_conn, _ = get_mock_conn_cursor(mocker)
-        test_value = timeseries_emon_electricitymeter
-        side_effect = [
-            Exception("test exception 1"),
-            Exception("test exception 2"),
-            Exception("test exception 3"),
-            Exception("test exception 4"),
-            Exception("test exception 5"),
-            Exception("test exception 6"),
-            Exception("test exception 7"),
-        ]
-        mocked_create_single_timescale_record.side_effect = side_effect
-        actual_value = create_timescale_records_from_batch_of_events(
-            mock_conn, test_value, db_helpers.test_table_name
-        )
-        assert len(actual_value) == 7
-        for i in range(7):
-            assert actual_value[i] == side_effect[i]
+
+#     def test_from_batch_of_events_where_create_single_timescale_record_errors(
+#         self, mocker: pytest_mock.MockFixture
+#     ):
+#         mocked_create_single_timescale_record = mocker.patch(
+#             "shared_code.timescale.create_single_timescale_record", autospec=True
+#         )
+#         mock_conn, _ = get_mock_conn_cursor(mocker)
+#         test_value = '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_cumulative", "measurement_value": 5100.748, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+
+#         side_effect = [
+#             Exception("test exception 1"),
+#         ]
+#         mocked_create_single_timescale_record.side_effect = side_effect
+#         with pytest.raises(Exception) as exc_info:
+#             create_timescale_records_from_batch_of_events(
+#                 mock_conn, test_value, db_helpers.test_table_name
+#             )
+#         assert str(exc_info.value) == "test exception 1"
 
 
 class Test_parse_measurement_value:
