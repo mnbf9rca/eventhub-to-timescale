@@ -19,7 +19,7 @@ import shared_code as sc
 
 
 def convert_bmw_to_timescale(
-    events: List[EventHubEvent], outputEventHubMessage: Out[str]
+    events: List[EventHubEvent], outputEventHubMessage: Out[str], outputEventHubMessage_monitor: Out[str]
 ) -> None:
     # things we're interested in in the message body
     # vin - this is mapped to the measurement_subject
@@ -46,6 +46,7 @@ def convert_bmw_to_timescale(
             logging.info(f"Sending message: {str_message}")
             try:
                 outputEventHubMessage.set(str_message)
+                outputEventHubMessage_monitor.set(str_message)
             except Exception as e:
                 logging.error(f"Error sending message: {str_message} : {e}")
                 raise

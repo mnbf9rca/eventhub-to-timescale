@@ -51,6 +51,7 @@ class TestConvertBmwToTimescaleEndToEnd:
 
         # Create an outputEventHubMessage mock
         mock_outputEventHubMessage = mocker.MagicMock(spec=Out)
+        mock_outputEventHubMessage_monitor = mocker.MagicMock(spec=Out)
 
         # Spy on other external functions
         spy_get_last_updated_at_from_message = mocker.spy(
@@ -61,7 +62,7 @@ class TestConvertBmwToTimescaleEndToEnd:
         spy_store_id = mocker.spy(sc, "store_id")
 
         # Call the function
-        convert_bmw_to_timescale(events, mock_outputEventHubMessage)
+        convert_bmw_to_timescale(events, mock_outputEventHubMessage, mock_outputEventHubMessage_monitor)
 
         # Validate that the external functions were called the expected number of times
         assert mock_get_vin_from_message.call_count == 3
@@ -108,9 +109,11 @@ class TestConvertBmwToTimescale:
         mock_check_duplicate.return_value = duplicate_status
         mock_construct_messages.return_value = [[{"some_messages": "some_value"}]]
         mock_outputEventHubMessage = MagicMock()
+        mock_outputEventHubMessage_monitor = MagicMock(spec=Out)
+
 
         # Call function
-        convert_bmw_to_timescale([MagicMock()], mock_outputEventHubMessage)
+        convert_bmw_to_timescale([MagicMock()], mock_outputEventHubMessage, mock_outputEventHubMessage_monitor)
 
         # Assertions
         mock_check_duplicate.assert_called_once_with(
@@ -140,11 +143,12 @@ class TestConvertBmwToTimescale:
     @patch("shared_code.bmw_to_timescale.get_event_body")
     def test_convert_bmw_to_timescale_exception(self, mock_get_event_body):
         # Mock external function to raise exception
-        mock_get_event_body.side_effect = Exception("An error occurred")
+        mock_get_event_body.side_effect = Exception("An error occurred in this test")
 
         # Call function and assert that it raises an exception
-        with pytest.raises(Exception):
-            convert_bmw_to_timescale([MagicMock()], MagicMock())
+        with pytest.raises(Exception) as excinfo:
+            convert_bmw_to_timescale([MagicMock()], MagicMock(), MagicMock())
+        assert str(excinfo.value) == "An error occurred in this test"
 
     @patch("shared_code.bmw_to_timescale.construct_messages")
     @patch("shared_code.bmw_to_timescale.sc.store_id")
@@ -173,13 +177,15 @@ class TestConvertBmwToTimescale:
 
         # Mock outputEventHubMessage to raise an exception
         mock_outputEventHubMessage = MagicMock()
+        mock_outputEventHubMessage_monitor = MagicMock(spec=Out)
+
         mock_outputEventHubMessage.set.side_effect = Exception(
             "An error occurred while sending message"
         )
 
         # Call function and assert that it raises the expected exception
         with pytest.raises(Exception) as excinfo:
-            convert_bmw_to_timescale([MagicMock()], mock_outputEventHubMessage)
+            convert_bmw_to_timescale([MagicMock()], mock_outputEventHubMessage, mock_outputEventHubMessage_monitor)
 
         # Assert the exception message
         assert str(excinfo.value) == "An error occurred while sending message"
