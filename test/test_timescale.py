@@ -198,7 +198,15 @@ class Test_create_single_timescale_record_against_actual_database:
                         f"DELETE FROM {db_helpers.test_table_name} WHERE correlation_id = '{correlation_id}'"
                     )
 
-    def test_of_type_number_with_int(self):
+    @pytest.mark.parametrize("measurement_value, data_type", [
+        ("1", "number"),
+        ("1.1", "number"),
+        ("test", "string"),
+        ("true", "boolean"),
+        ("false", "boolean"),
+        ("40.7128,-74.0060", "geography")
+    ])
+    def test_create_single_timescale_record(self, measurement_value, data_type):
         this_correlation_id: str = self.generate_correlation_id()
         sample_record = {
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -206,84 +214,36 @@ class Test_create_single_timescale_record_against_actual_database:
             "correlation_id": this_correlation_id,
             "measurement_publisher": "testpublisher",
             "measurement_of": "testname",
-            "measurement_data_type": "number",
-            "measurement_value": "1",
+            "measurement_data_type": data_type,
+            "measurement_value": measurement_value,
         }
-        create_single_timescale_record(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-        # check that the record was created in the DB by searching for correlation_id
-        db_helpers.check_single_record_exists(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
 
-    def test_of_type_geography_with_latlon(self):
-        this_correlation_id: str = self.generate_correlation_id()
-        sample_record = {
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "measurement_subject": "testsubject",
-            "correlation_id": this_correlation_id,
-            "measurement_publisher": "testpublisher",
-            "measurement_of": "testname",
-            "measurement_data_type": "geography",
-            "measurement_value": "40.7128,-74.0060",
-        }
-        latlon_values = sample_record["measurement_value"].split(",")
-        latitude, longitude = map(float, latlon_values)
+        # Convert latitude and longitude to POINT format for geography data type
+        if data_type == "geography":
+            latlon_values = measurement_value.split(",")
+            latitude, longitude = map(float, latlon_values)
+            expected_value = f"POINT({longitude} {latitude})"
+        else:
+            expected_value = measurement_value
 
         expected_record = {
             **sample_record,
-            "measurement_value": f"POINT({longitude} {latitude})",
+            "measurement_value": expected_value,
         }
 
         create_single_timescale_record(
             self.conn, sample_record, db_helpers.test_table_name
         )
-
-        # check that the record was created in the DB by searching for correlation_id
         db_helpers.check_single_record_exists(
             self.conn, expected_record, db_helpers.test_table_name
         )
 
-    def test_of_type_number_with_float(self):
-        this_correlation_id: str = self.generate_correlation_id()
-        sample_record = {
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "measurement_subject": "testsubject",
-            "correlation_id": this_correlation_id,
-            "measurement_publisher": "testpublisher",
-            "measurement_of": "testname",
-            "measurement_data_type": "number",
-            "measurement_value": "1.1",
-        }
-        create_single_timescale_record(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-        # check that the record was created in the DB by searching for correlation_id
-        db_helpers.check_single_record_exists(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
 
-    def test_of_type_string(self):
-        this_correlation_id: str = self.generate_correlation_id()
-        sample_record = {
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "measurement_subject": "testsubject",
-            "correlation_id": this_correlation_id,
-            "measurement_of": "testname",
-            "measurement_publisher": "testpublisher",
-            "measurement_data_type": "string",
-            "measurement_value": "test",
-        }
-        create_single_timescale_record(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-        # check that the record was created in the DB by searching for correlation_id
-        db_helpers.check_single_record_exists(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-
-    def test_of_type_boolean(self):
+    @pytest.mark.parametrize("measurement_value, data_type, expected_error, expected_message", [
+        ("invalid", "boolean", ValueError, r".*Invalid boolean value.*"),
+        ("invalid", "number", ValueError, r".*Invalid number value: invalid.*")
+    ])
+    def test_create_single_timescale_record_with_invalid_value(self, measurement_value, data_type, expected_error, expected_message):
         this_correlation_id: str = self.generate_correlation_id()
         sample_record = {
             "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -291,64 +251,10 @@ class Test_create_single_timescale_record_against_actual_database:
             "correlation_id": this_correlation_id,
             "measurement_publisher": "testpublisher",
             "measurement_of": "testname",
-            "measurement_data_type": "boolean",
-            "measurement_value": "true",
+            "measurement_data_type": data_type,
+            "measurement_value": measurement_value,
         }
-        create_single_timescale_record(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-        # check that the record was created in the DB by searching for correlation_id
-        db_helpers.check_single_record_exists(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-
-    def test_of_type_boolean_with_false(self):
-        this_correlation_id: str = self.generate_correlation_id()
-        sample_record = {
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "measurement_subject": "testsubject",
-            "correlation_id": this_correlation_id,
-            "measurement_publisher": "testpublisher",
-            "measurement_of": "testname",
-            "measurement_data_type": "boolean",
-            "measurement_value": "false",
-        }
-        create_single_timescale_record(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-        # check that the record was created in the DB by searching for correlation_id
-        db_helpers.check_single_record_exists(
-            self.conn, sample_record, db_helpers.test_table_name
-        )
-
-    def test_of_type_boolean_with_invalid_value(self):
-        this_correlation_id: str = self.generate_correlation_id()
-        sample_record = {
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "measurement_subject": "testsubject",
-            "correlation_id": this_correlation_id,
-            "measurement_of": "testname",
-            "measurement_publisher": "testpublisher",
-            "measurement_data_type": "boolean",
-            "measurement_value": "invalid",
-        }
-        with pytest.raises(ValueError, match=r".*Invalid boolean value.*"):
-            create_single_timescale_record(
-                self.conn, sample_record, db_helpers.test_table_name
-            )
-
-    def test_of_type_number_with_invalid_value(self):
-        this_correlation_id: str = self.generate_correlation_id()
-        sample_record = {
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "measurement_subject": "testsubject",
-            "correlation_id": this_correlation_id,
-            "measurement_of": "testname",
-            "measurement_publisher": "testpublisher",
-            "measurement_data_type": "number",
-            "measurement_value": "invalid",
-        }
-        with pytest.raises(ValueError, match=r".*Invalid number value: invalid*"):
+        with pytest.raises(expected_error, match=expected_message):
             create_single_timescale_record(
                 self.conn, sample_record, db_helpers.test_table_name
             )
@@ -411,56 +317,123 @@ def get_mock_conn_cursor(
 
 
 class Test_create_timescale_records_from_batch_of_events:
-    def test_from_batch_of_events(self, mocker: pytest_mock.MockFixture):
+    @pytest.mark.parametrize(
+        "timeseries_emon_electricitymeter",
+        [
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_cumulative", "measurement_value": 5100.748, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_day", "measurement_value": 16.138, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_week", "measurement_value": 43.873, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_month", "measurement_value": 649.307, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_unitrate", "measurement_value": 0.3788, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_standingcharge", "measurement_value": 0.4458, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "power_value", "measurement_value": 0.679, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+        ],
+    )
+    def test_from_batch_of_events(
+        self, timeseries_emon_electricitymeter, mocker: pytest_mock.MockFixture
+    ):
+        # Mocking create_single_timescale_record
         mocked_create_single_timescale_record = mocker.patch(
             "shared_code.timescale.create_single_timescale_record", autospec=True
         )
+
+        # Getting mock connection and cursor
         mock_conn, _ = get_mock_conn_cursor(mocker)
-        test_value = stringify_test_data("timeseries_emon_electricitymeter")
+
+        # Stringified test data
+        test_value = (
+            timeseries_emon_electricitymeter  # Use the parameterized input here
+        )
         patch_value = None
         mocked_create_single_timescale_record.return_value = patch_value
+
+        # Function under test
         actual_value = create_timescale_records_from_batch_of_events(
             mock_conn, test_value, db_helpers.test_table_name
         )
+
+        # Assertion
         assert actual_value is None
 
+    @pytest.mark.parametrize(
+        "timeseries_emon_electricitymeter",
+        [
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_cumulative", "measurement_value": 5100.748, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_day", "measurement_value": 16.138, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_week", "measurement_value": 43.873, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_month", "measurement_value": 649.307, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_unitrate", "measurement_value": 0.3788, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_standingcharge", "measurement_value": 0.4458, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "power_value", "measurement_value": 0.679, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+        ],
+    )
     def test_from_batch_of_events_with_single_error(
-        self, mocker: pytest_mock.MockFixture
+        self, timeseries_emon_electricitymeter, mocker: pytest_mock.MockFixture
     ):
+        # Mocking create_single_timescale_record
         mocked_create_single_timescale_record = mocker.patch(
             "shared_code.timescale.create_single_timescale_record", autospec=True
         )
+
+        # Getting mock connection and cursor
         mock_conn, _ = get_mock_conn_cursor(mocker)
-        test_value = stringify_test_data("timeseries_emon_electricitymeter")
+
+        # Stringified test data
+        test_value = (
+            timeseries_emon_electricitymeter  # Use the parameterized input here
+        )
+
+        # Patched return values, including one exception
         patch_value = [None, None, None, Exception("test exception"), None, None, None]
         mocked_create_single_timescale_record.side_effect = patch_value
+
+        # Function under test
         actual_value = create_timescale_records_from_batch_of_events(
             mock_conn, test_value, db_helpers.test_table_name
         )
+
+        # Assertions
         assert len(actual_value) == 1
         assert actual_value[0] == patch_value[3]
 
     def test_from_batch_of_events_with_schema_error(
         self, mocker: pytest_mock.MockFixture
     ):
+        # Mocking and setup
         mock_conn, _ = get_mock_conn_cursor(mocker)
-        test_value = stringify_test_data(
-            "timeseries_emon_electricitymeter_missing_timestamp"
-        )
+
+        # Use the parameterized input here
+        test_value = '{"measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_cumulative", "measurement_value": 5100.748, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}'  # noqa: E501
+
+        # Function under test
         actual_value = create_timescale_records_from_batch_of_events(
             mock_conn, test_value, db_helpers.test_table_name
         )
+
+        # Assertions
         assert len(actual_value) == 1
         assert isinstance(actual_value[0], ValidationError)
 
+    @pytest.mark.parametrize(
+        "timeseries_emon_electricitymeter",
+        [
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_cumulative", "measurement_value": 5100.748, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_day", "measurement_value": 16.138, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_week", "measurement_value": 43.873, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_month", "measurement_value": 649.307, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_unitrate", "measurement_value": 0.3788, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "import_standingcharge", "measurement_value": 0.4458, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+            '{"timestamp": "2022-12-27T15:23:10Z", "measurement_subject": "electricitymeter", "measurement_publisher": "emon", "measurement_of": "power_value", "measurement_value": 0.679, "measurement_data_type": "number", "correlation_id": "2022-12-27T15:23:18.282000-132527"}',  # noqa: E501
+        ],
+    )
     def test_from_batch_of_events_where_create_single_timescale_record_errors(
-        self, mocker: pytest_mock.MockFixture
+        self, timeseries_emon_electricitymeter, mocker: pytest_mock.MockFixture
     ):
         mocked_create_single_timescale_record = mocker.patch(
             "shared_code.timescale.create_single_timescale_record", autospec=True
         )
         mock_conn, _ = get_mock_conn_cursor(mocker)
-        test_value = stringify_test_data("timeseries_emon_electricitymeter")
+        test_value = timeseries_emon_electricitymeter
         side_effect = [
             Exception("test exception 1"),
             Exception("test exception 2"),
@@ -480,191 +453,87 @@ class Test_create_timescale_records_from_batch_of_events:
 
 
 class Test_parse_measurement_value:
-    def test_with_string_and_string(self):
-        test_data_type = "string"
-        test_value = "test"
-        expected_value = "test"
+# Tests for valid measurement types and values
+    @pytest.mark.parametrize("test_data_type, test_value, expected_value, expected_type", [
+        ("string", "test", "test", str),
+        ("string", "1", "1", str),
+        ("number", "1", 1, float),
+        ("boolean", "true", True, bool),
+        ("boolean", "false", False, bool),
+        ("number", "1.1", 1.1, float),
+        ("number", "-1.1", -1.1, float),
+    ])
+    def test_with_valid_measurement_types(self, test_data_type, test_value, expected_value, expected_type):
         actual_value = parse_measurement_value(test_data_type, test_value)
         assert actual_value == expected_value
-        assert isinstance(actual_value, str)
+        assert isinstance(actual_value, expected_type)
 
-    def test_with_string_and_number(self):
-        test_data_type = "string"
-        test_value = "1"
-        expected_value = "1"
-        actual_value = parse_measurement_value(test_data_type, test_value)
-        assert actual_value == expected_value
-        assert isinstance(actual_value, str)
-
-    def test_with_number_and_string(self):
-        test_data_type = "number"
-        test_value = "test"
-        with pytest.raises(ValueError, match=r".*Invalid number value: test.*"):
-            parse_measurement_value(test_data_type, test_value)
-
-    def test_with_number_and_number(self):
-        test_data_type = "number"
-        test_value = "1"
-        expected_value = 1
-        actual_value = parse_measurement_value(test_data_type, test_value)
-        assert actual_value == expected_value
-        assert isinstance(actual_value, float)
-
-    def test_with_boolean_and_string(self):
-        test_data_type = "boolean"
-        test_value = "test"
-        with pytest.raises(ValueError, match=r".*Invalid boolean value: test.*"):
-            parse_measurement_value(test_data_type, test_value)
-
-    def test_with_boolean_and_true(self):
-        test_data_type = "boolean"
-        test_value = "true"
-        expected_value = True
-        actual_value = parse_measurement_value(test_data_type, test_value)
-        assert actual_value == expected_value
-        assert isinstance(actual_value, bool)
-
-    def test_with_boolean_and_false(self):
-        test_data_type = "boolean"
-        test_value = "false"
-        expected_value = False
-        actual_value = parse_measurement_value(test_data_type, test_value)
-        assert actual_value == expected_value
-        assert isinstance(actual_value, bool)
-
-    def test_with_number_and_float(self):
-        test_data_type = "number"
-        test_value = "1.1"
-        expected_value = 1.1
-        actual_value = parse_measurement_value(test_data_type, test_value)
-        assert actual_value == expected_value
-        assert isinstance(actual_value, float)
-
-    def test_with_number_and_negative_float(self):
-        test_data_type = "number"
-        test_value = "-1.1"
-        expected_value = -1.1
-        actual_value = parse_measurement_value(test_data_type, test_value)
-        assert actual_value == expected_value
-        assert isinstance(actual_value, float)
-
-    def test_with_invalid_measurement_type(self):
-        test_data_type = "invalid"
-        test_value = "test"
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: invalid*"):
+    # Tests for invalid measurement types and values
+    @pytest.mark.parametrize("test_data_type, test_value, expected_error, expected_message", [
+        ("invalid", "test", ValueError, r".*Unknown measurement type: invalid*"),
+        ("number", "test", ValueError, r".*Invalid number value: test.*"),
+        ("boolean", "test", ValueError, r".*Invalid boolean value: test.*"),
+    ])
+    def test_with_invalid_measurement_types(self, test_data_type, test_value, expected_error, expected_message):
+        with pytest.raises(expected_error, match=expected_message):
             parse_measurement_value(test_data_type, test_value)
 
 
-class Test_pparse_to_geopointt:
-    def test_valid_latlon_string(self):
-        assert (
-            parse_to_geopoint("40.7128,-74.0062")
-            == "SRID=4326;POINT(-74.0062 40.7128)"
-        )
+class Test_parse_to_geopointt:
+    # Tests for valid geography values
+    @pytest.mark.parametrize("input_value, expected_output", [
+        ("40.7128,-74.0062", "SRID=4326;POINT(-74.0062 40.7128)"),
+        ([40.7128, -74.0062], "SRID=4326;POINT(-74.0062 40.7128)"),
+        (["40.7128", "-74.0062"], "SRID=4326;POINT(-74.0062 40.7128)")
+    ])
+    def test_valid_geography_values(self, input_value, expected_output):
+        assert parse_to_geopoint(input_value) == expected_output
 
-    def test_valid_latlon_float_array(self):
-        assert (
-            parse_to_geopoint([40.7128, -74.0062])
-            == "SRID=4326;POINT(-74.0062 40.7128)"
-        )
-
-    def test_valid_latlon_string_array(self):
-        assert (
-            parse_to_geopoint(["40.7128", "-74.0062"])
-            == "SRID=4326;POINT(-74.0062 40.7128)"
-        )
-
-    def test_invalid_input_type(self):
-        with pytest.raises(ValueError, match="Invalid input type or format:"):
-            parse_to_geopoint({"lat": 40.7128, "lon": -74.0062})
-
-    def test_invalid_lat(self):
-        with pytest.raises(ValueError, match="Invalid latitude value:"):
-            parse_to_geopoint("100.0,-74.0060")
-
-    def test_invalid_lon(self):
-        with pytest.raises(ValueError, match="Invalid longitude value:"):
-            parse_to_geopoint("40.7128,-200.0")
-
-    def test_invalid_latlon(self):
-        with pytest.raises(ValueError, match="Invalid latitude value:"):
-            parse_to_geopoint("100.0,-200.0")
-
-    def test_non_numeric_values(self):
-        with pytest.raises(ValueError, match="Invalid geography value:"):
-            parse_to_geopoint("latitude,longitude")
-
-    def test_incorrect_number_of_values(self):
-        with pytest.raises(ValueError, match="Invalid geography value:"):
-            parse_to_geopoint("40.7128,-74.0060,100")
-
-    def test_incorrect_number_of_values_array(self):
-        with pytest.raises(ValueError, match="Invalid input type or format:"):
-            parse_to_geopoint([40.7128, -74.0060, 100])
-
-    def test_empty_string(self):
-        with pytest.raises(ValueError, match="Invalid geography value:"):
-            parse_to_geopoint("")
-
-    def test_string_with_only_comma(self):
-        with pytest.raises(ValueError, match="Invalid geography value:"):
-            parse_to_geopoint(",")
+    # Tests for invalid geography values
+    @pytest.mark.parametrize("input_value, expected_error, expected_message", [
+        ({"lat": 40.7128, "lon": -74.0062}, ValueError, "Invalid input type or format:"),
+        ("100.0,-74.0060", ValueError, "Invalid latitude value:"),
+        ("-74.0060,190.0", ValueError, "Invalid longitude value:"),
+        ("100.0,-200.0", ValueError, "Invalid latitude value:"),
+        ("latitude,longitude", ValueError, "Invalid geography value:"),
+        ("40.7128,-74.0060,100", ValueError, "Invalid geography value:"),
+        ([40.7128, -74.0060, 100], ValueError, "Invalid input type or format:"),
+        ("", ValueError, "Invalid geography value:"),
+        (",", ValueError, "Invalid geography value:")
+    ])
+    def test_invalid_geography_values(self, input_value, expected_error, expected_message):
+        with pytest.raises(expected_error, match=expected_message):
+            parse_to_geopoint(input_value)
 
 
 class Test_identify_data_column:
-    def test_with_number(self):
-        test_data_type = "number"
-        expected_column = "measurement_number"
-        actual_column = identify_data_column(test_data_type)
+    @pytest.mark.parametrize(
+        "input_value, expected_column",
+        [
+            ("number", "measurement_number"),
+            ("string", "measurement_string"),
+            ("boolean", "measurement_bool"),
+            ("geography", "measurement_location"),
+        ]
+    )
+    def test_identify_data_column_valid(self, input_value, expected_column):
+        actual_column = identify_data_column(input_value)
         assert actual_column == expected_column
 
-    def test_with_string(self):
-        test_data_type = "string"
-        expected_column = "measurement_string"
-        actual_column = identify_data_column(test_data_type)
-        assert actual_column == expected_column
-
-    def test_with_boolean(self):
-        test_data_type = "boolean"
-        expected_column = "measurement_bool"
-        actual_column = identify_data_column(test_data_type)
-        assert actual_column == expected_column
-
-    def test_with_geography(self):
-        test_data_type = "geography"
-        expected_column = "measurement_location"
-        actual_column = identify_data_column(test_data_type)
-        assert actual_column == expected_column
-
-    def test_with_invalid_data_type(self):
-        test_data_type = "invalid"
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: invalid.*"):
-            identify_data_column(test_data_type)
-
-    def test_passing_none(self):
-        test_data_type = None
-        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
-            identify_data_column(test_data_type)
-
-    def test_passing_empty_string(self):
-        test_data_type = ""
-        with pytest.raises(ValueError, match=r".*Unknown measurement type:.*"):
-            identify_data_column(test_data_type)
-
-    def test_passing_int(self):
-        test_data_type = 1
-        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
-            identify_data_column(test_data_type)
-
-    def test_passing_float(self):
-        test_data_type = 1.1
-        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
-            identify_data_column(test_data_type)
-
-    def test_passing_boolean(self):
-        test_data_type = True
-        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
-            identify_data_column(test_data_type)
+    @pytest.mark.parametrize(
+        "input_data_type, expected_error, expected_message",
+        [
+            ("invalid", ValueError, r".*Unknown measurement type: invalid.*"),
+            (None, ValueError, r".*Measurement type must be a string.*"),
+            ("", ValueError, r".*Unknown measurement type:.*"),
+            (1, ValueError, r".*Measurement type must be a string.*"),
+            (1.1, ValueError, r".*Measurement type must be a string.*"),
+            (True, ValueError, r".*Measurement type must be a string.*"),
+        ],
+    )
+    def test_identify_data_column_invalid(self, input_data_type, expected_error, expected_message):
+        with pytest.raises(expected_error, match=expected_message):
+            identify_data_column(input_data_type)
 
 
 class Test_validate_all_fields_in_record:

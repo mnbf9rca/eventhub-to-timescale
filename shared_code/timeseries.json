@@ -1,83 +1,78 @@
 {
   "$id": "https://cynexia.com/schemas/timeseries.json",
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "version": "1.0.0",
-  "type": "array",
-  "items": [
-    {
-      "type": "object",
-      "properties": {
-        "timestamp": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The time at which the measurement was taken in UTC or with timezone. For example, 2018-01-01T12:00:00Z."
+  "version": "2.0.0",
+  "type": "object",
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The time at which the measurement was taken in UTC or with timezone. For example, 2018-01-01T12:00:00Z."
+    },
+    "measurement_publisher": {
+      "type": "string",
+      "description": "The service or device which published or generated this record."
+    },
+    "measurement_subject": {
+      "type": "string",
+      "description": "The device which created the measurement. For example, a sensor ID or a device ID."
+    },
+    "measurement_of": {
+      "type": "string",
+      "description": "The thing which was measured. For example, a measure-temperature or state."
+    },
+    "measurement_value": {
+      "oneOf": [
+        {
+          "type": "string"
         },
-        "measurement_publisher": {
-          "type": "string",
-          "description": "The service or device which published or generated this record."
+        {
+          "type": "number"
         },
-        "measurement_subject": {
-          "type": "string",
-          "description": "The device which created the measurement. For example, a sensor ID or a device ID."
+        {
+          "type": "boolean"
         },
-        "measurement_of": {
-          "type": "string",
-          "description": "The thing which was measured. For example, a measure-temperature or state."
-        },
-        "measurement_value": {
-          "oneOf": [
+        {
+          "type": "array",
+          "items": [
             {
-              "type": "string"
+              "type": "number",
+              "description": "Latitude"
             },
             {
-              "type": "number"
-            },
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "array",
-              "items": [
-                {
-                  "type": "number",
-                  "description": "Latitude"
-                },
-                {
-                  "type": "number",
-                  "description": "Longitude"
-                }
-              ],
-              "minItems": 2,
-              "maxItems": 2,
-              "description": "The coordinates [latitude, longitude] when measurement_data_type is 'geography'."
+              "type": "number",
+              "description": "Longitude"
             }
           ],
-          "description": "The value of the measurement."
-        },
-        "measurement_data_type": {
-          "type": "string",
-          "enum": [
-            "string",
-            "number",
-            "boolean",
-            "geography"
-          ],
-          "description": "The data type of the measurement value. Must be one of: string, number, or boolean."
-        },
-        "correlation_id": {
-          "type": "string",
-          "description": "A unique ID that can be used to correlate multiple measurements together. For example, a unique ID for a user or a session."
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "The coordinates [latitude, longitude] when measurement_data_type is 'geography'."
         }
-      },
-      "required": [
-        "timestamp",
-        "measurement_subject",
-        "measurement_publisher",
-        "measurement_of",
-        "measurement_value",
-        "measurement_data_type"
       ],
-      "additionalProperties": false
+      "description": "The value of the measurement."
+    },
+    "measurement_data_type": {
+      "type": "string",
+      "enum": [
+        "string",
+        "number",
+        "boolean",
+        "geography"
+      ],
+      "description": "The data type of the measurement value. Must be one of: string, number, or boolean."
+    },
+    "correlation_id": {
+      "type": "string",
+      "description": "A unique ID that can be used to correlate multiple measurements together. For example, a unique ID for a user or a session."
     }
-  ]
+  },
+  "required": [
+    "timestamp",
+    "measurement_subject",
+    "measurement_publisher",
+    "measurement_of",
+    "measurement_value",
+    "measurement_data_type"
+  ],
+  "additionalProperties": false
 }

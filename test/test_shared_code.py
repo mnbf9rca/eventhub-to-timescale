@@ -207,312 +207,312 @@ class Test_Timeseries:
             assert actual_value == PayloadType.GEOGRAPHY
 
 
-        class Test_create_record_recursive:
-            #    payload: dict,
-            #    records: List[dict[str, Any]],
-            #    timestamp: str,
-            #    correlation_id: str,
-            #    measurement_subject: str,
-            #    ignore_keys: list = None,
-            #    measurement_of_prefix: str = None,
-            def test_with_single_payload(self):
-                records = []
-                test_data = {
-                    "payload": {"a": 1},
-                    "timestamp": "2021-01-01T00:00:00",
-                    "correlation_id": "123",
-                    "measurement_subject": "emonTx4",
-                    "measurement_publisher": "emon",
-                    "ignore_keys": None,
-                    "measurement_of_prefix": None,
-                }
-                expected_value = [
-                    {
-                        "timestamp": test_data["timestamp"],
-                        "measurement_subject": test_data["measurement_subject"],
-                        "measurement_publisher": test_data["measurement_publisher"],
-                        "measurement_of": "a",
-                        "measurement_value": 1,
-                        "measurement_data_type": PayloadType.NUMBER.value,
-                        "correlation_id": "123",
-                    }
-                ]
-                actual_value = create_record_recursive(
-                    test_data["payload"],
-                    records,
-                    test_data["timestamp"],
-                    test_data["correlation_id"],
-                    test_data["measurement_publisher"],
-                    test_data["measurement_subject"],
-                    test_data["ignore_keys"],
-                    test_data["measurement_of_prefix"],
-                )
-                for actual, expected in zip(actual_value, expected_value):
-                    TestCase().assertDictEqual(actual, expected)
-                assert_valid_schema(actual_value, schema)
+class Test_create_record_recursive:
+    #    payload: dict,
+    #    records: List[dict[str, Any]],
+    #    timestamp: str,
+    #    correlation_id: str,
+    #    measurement_subject: str,
+    #    ignore_keys: list = None,
+    #    measurement_of_prefix: str = None,
+    def test_with_single_payload(self):
+        records = []
+        test_data = {
+            "payload": {"a": 1},
+            "timestamp": "2021-01-01T00:00:00",
+            "correlation_id": "123",
+            "measurement_subject": "emonTx4",
+            "measurement_publisher": "emon",
+            "ignore_keys": None,
+            "measurement_of_prefix": None,
+        }
+        expected_value = [
+            {
+                "timestamp": test_data["timestamp"],
+                "measurement_subject": test_data["measurement_subject"],
+                "measurement_publisher": test_data["measurement_publisher"],
+                "measurement_of": "a",
+                "measurement_value": 1,
+                "measurement_data_type": PayloadType.NUMBER.value,
+                "correlation_id": "123",
+            }
+        ]
+        actual_value = create_record_recursive(
+            test_data["payload"],
+            records,
+            test_data["timestamp"],
+            test_data["correlation_id"],
+            test_data["measurement_publisher"],
+            test_data["measurement_subject"],
+            test_data["ignore_keys"],
+            test_data["measurement_of_prefix"],
+        )
+        for actual, expected in zip(actual_value, expected_value):
+            TestCase().assertDictEqual(actual, expected)
+        assert_valid_schema(actual_value, schema)
 
-            def test_with_empty_payload(self):
-                records = []
-                test_data = {
-                    "payload": None,
-                    "timestamp": "2021-01-01T00:00:00",
-                    "correlation_id": "123",
-                    "measurement_subject": "emonTx4",
-                    "measurement_publisher": "emon",
-                    "ignore_keys": None,
-                    "measurement_of_prefix": None,
-                }
-                expected_value = []
-                actual_value = create_record_recursive(
-                    test_data["payload"],
-                    records,
-                    test_data["timestamp"],
-                    test_data["correlation_id"],
-                    test_data["measurement_publisher"],
-                    test_data["measurement_subject"],
-                    test_data["ignore_keys"],
-                    test_data["measurement_of_prefix"],
-                )
-                for actual, expected in zip(actual_value, expected_value):
-                    TestCase().assertDictEqual(actual, expected)
-                assert_valid_schema(actual_value, schema)
+    def test_with_empty_payload(self):
+        records = []
+        test_data = {
+            "payload": None,
+            "timestamp": "2021-01-01T00:00:00",
+            "correlation_id": "123",
+            "measurement_subject": "emonTx4",
+            "measurement_publisher": "emon",
+            "ignore_keys": None,
+            "measurement_of_prefix": None,
+        }
+        expected_value = []
+        actual_value = create_record_recursive(
+            test_data["payload"],
+            records,
+            test_data["timestamp"],
+            test_data["correlation_id"],
+            test_data["measurement_publisher"],
+            test_data["measurement_subject"],
+            test_data["ignore_keys"],
+            test_data["measurement_of_prefix"],
+        )
+        for actual, expected in zip(actual_value, expected_value):
+            TestCase().assertDictEqual(actual, expected)
+        assert_valid_schema(actual_value, schema)
 
-            def test_with_dict_of_payloads(self):
-                records = []
-                test_data = {
-                    "payload": {"a": 1, "b": 2},
-                    "timestamp": "2021-01-01T00:00:00",
-                    "correlation_id": "123",
-                    "measurement_subject": "emonTx4",
-                    "measurement_publisher": "emon",
-                    "ignore_keys": None,
-                    "measurement_of_prefix": None,
-                }
-                expected_value = [
-                    {
-                        "timestamp": test_data["timestamp"],
-                        "measurement_subject": test_data["measurement_subject"],
-                        "measurement_publisher": test_data["measurement_publisher"],
-                        "measurement_of": "a",
-                        "measurement_value": 1,
-                        "measurement_data_type": PayloadType.NUMBER.value,
-                        "correlation_id": "123",
-                    },
-                    {
-                        "timestamp": test_data["timestamp"],
-                        "measurement_subject": test_data["measurement_subject"],
-                        "measurement_publisher": test_data["measurement_publisher"],
-                        "measurement_of": "b",
-                        "measurement_value": 2,
-                        "measurement_data_type": PayloadType.NUMBER.value,
-                        "correlation_id": "123",
-                    },
-                ]
-                actual_value = create_record_recursive(
-                    test_data["payload"],
-                    records,
-                    test_data["timestamp"],
-                    test_data["correlation_id"],
-                    test_data["measurement_publisher"],
-                    test_data["measurement_subject"],
-                    test_data["ignore_keys"],
-                    test_data["measurement_of_prefix"],
-                )
-                for actual, expected in zip(actual_value, expected_value):
-                    TestCase().assertDictEqual(actual, expected)
-                assert_valid_schema(actual_value, schema)
+    def test_with_dict_of_payloads(self):
+        records = []
+        test_data = {
+            "payload": {"a": 1, "b": 2},
+            "timestamp": "2021-01-01T00:00:00",
+            "correlation_id": "123",
+            "measurement_subject": "emonTx4",
+            "measurement_publisher": "emon",
+            "ignore_keys": None,
+            "measurement_of_prefix": None,
+        }
+        expected_value = [
+            {
+                "timestamp": test_data["timestamp"],
+                "measurement_subject": test_data["measurement_subject"],
+                "measurement_publisher": test_data["measurement_publisher"],
+                "measurement_of": "a",
+                "measurement_value": 1,
+                "measurement_data_type": PayloadType.NUMBER.value,
+                "correlation_id": "123",
+            },
+            {
+                "timestamp": test_data["timestamp"],
+                "measurement_subject": test_data["measurement_subject"],
+                "measurement_publisher": test_data["measurement_publisher"],
+                "measurement_of": "b",
+                "measurement_value": 2,
+                "measurement_data_type": PayloadType.NUMBER.value,
+                "correlation_id": "123",
+            },
+        ]
+        actual_value = create_record_recursive(
+            test_data["payload"],
+            records,
+            test_data["timestamp"],
+            test_data["correlation_id"],
+            test_data["measurement_publisher"],
+            test_data["measurement_subject"],
+            test_data["ignore_keys"],
+            test_data["measurement_of_prefix"],
+        )
+        for actual, expected in zip(actual_value, expected_value):
+            TestCase().assertDictEqual(actual, expected)
+        assert_valid_schema(actual_value, schema)
 
-            def test_with_dict_of_payloads_ignoring_one(self):
-                records = []
-                test_data = {
-                    "payload": {"a": 1, "b": 2},
-                    "timestamp": "2021-01-01T00:00:00",
-                    "correlation_id": "123",
-                    "measurement_subject": "emonTx4",
-                    "measurement_publisher": "emon",
-                    "ignore_keys": ["a"],
-                    "measurement_of_prefix": None,
-                }
-                expected_value = [
-                    {
-                        "timestamp": test_data["timestamp"],
-                        "measurement_subject": test_data["measurement_subject"],
-                        "measurement_publisher": test_data["measurement_publisher"],
-                        "measurement_of": "b",
-                        "measurement_value": 2,
-                        "measurement_data_type": PayloadType.NUMBER.value,
-                        "correlation_id": "123",
-                    }
-                ]
-                actual_value = create_record_recursive(
-                    test_data["payload"],
-                    records,
-                    test_data["timestamp"],
-                    test_data["correlation_id"],
-                    test_data["measurement_publisher"],
-                    test_data["measurement_subject"],
-                    test_data["ignore_keys"],
-                    test_data["measurement_of_prefix"],
-                )
-                for actual, expected in zip(actual_value, expected_value):
-                    TestCase().assertDictEqual(actual, expected)
-                assert_valid_schema(actual_value, schema)
+    def test_with_dict_of_payloads_ignoring_one(self):
+        records = []
+        test_data = {
+            "payload": {"a": 1, "b": 2},
+            "timestamp": "2021-01-01T00:00:00",
+            "correlation_id": "123",
+            "measurement_subject": "emonTx4",
+            "measurement_publisher": "emon",
+            "ignore_keys": ["a"],
+            "measurement_of_prefix": None,
+        }
+        expected_value = [
+            {
+                "timestamp": test_data["timestamp"],
+                "measurement_subject": test_data["measurement_subject"],
+                "measurement_publisher": test_data["measurement_publisher"],
+                "measurement_of": "b",
+                "measurement_value": 2,
+                "measurement_data_type": PayloadType.NUMBER.value,
+                "correlation_id": "123",
+            }
+        ]
+        actual_value = create_record_recursive(
+            test_data["payload"],
+            records,
+            test_data["timestamp"],
+            test_data["correlation_id"],
+            test_data["measurement_publisher"],
+            test_data["measurement_subject"],
+            test_data["ignore_keys"],
+            test_data["measurement_of_prefix"],
+        )
+        for actual, expected in zip(actual_value, expected_value):
+            TestCase().assertDictEqual(actual, expected)
+        assert_valid_schema(actual_value, schema)
 
-            def test_with_dict_of_payloads_empty_ignore(self):
-                records = []
-                test_data = {
-                    "payload": {"a": 1, "b": 2},
-                    "timestamp": "2021-01-01T00:00:00",
-                    "correlation_id": "123",
-                    "measurement_subject": "emonTx4",
-                    "measurement_publisher": "emon",
-                    "ignore_keys": [],
-                    "measurement_of_prefix": None,
-                }
-                expected_value = [
-                    {
-                        "timestamp": test_data["timestamp"],
-                        "measurement_subject": test_data["measurement_subject"],
-                        "measurement_publisher": test_data["measurement_publisher"],
-                        "measurement_of": "a",
-                        "measurement_value": 1,
-                        "measurement_data_type": PayloadType.NUMBER.value,
-                        "correlation_id": "123",
-                    },
-                    {
-                        "timestamp": test_data["timestamp"],
-                        "measurement_subject": test_data["measurement_subject"],
-                        "measurement_publisher": test_data["measurement_publisher"],
-                        "measurement_of": "b",
-                        "measurement_value": 2,
-                        "measurement_data_type": PayloadType.NUMBER.value,
-                        "correlation_id": "123",
-                    },
-                ]
-                actual_value = create_record_recursive(
-                    test_data["payload"],
-                    records,
-                    test_data["timestamp"],
-                    test_data["correlation_id"],
-                    test_data["measurement_publisher"],
-                    test_data["measurement_subject"],
-                    test_data["ignore_keys"],
-                    test_data["measurement_of_prefix"],
-                )
-                for actual, expected in zip(actual_value, expected_value):
-                    TestCase().assertDictEqual(actual, expected)
-                assert_valid_schema(actual_value, schema)
+    def test_with_dict_of_payloads_empty_ignore(self):
+        records = []
+        test_data = {
+            "payload": {"a": 1, "b": 2},
+            "timestamp": "2021-01-01T00:00:00",
+            "correlation_id": "123",
+            "measurement_subject": "emonTx4",
+            "measurement_publisher": "emon",
+            "ignore_keys": [],
+            "measurement_of_prefix": None,
+        }
+        expected_value = [
+            {
+                "timestamp": test_data["timestamp"],
+                "measurement_subject": test_data["measurement_subject"],
+                "measurement_publisher": test_data["measurement_publisher"],
+                "measurement_of": "a",
+                "measurement_value": 1,
+                "measurement_data_type": PayloadType.NUMBER.value,
+                "correlation_id": "123",
+            },
+            {
+                "timestamp": test_data["timestamp"],
+                "measurement_subject": test_data["measurement_subject"],
+                "measurement_publisher": test_data["measurement_publisher"],
+                "measurement_of": "b",
+                "measurement_value": 2,
+                "measurement_data_type": PayloadType.NUMBER.value,
+                "correlation_id": "123",
+            },
+        ]
+        actual_value = create_record_recursive(
+            test_data["payload"],
+            records,
+            test_data["timestamp"],
+            test_data["correlation_id"],
+            test_data["measurement_publisher"],
+            test_data["measurement_subject"],
+            test_data["ignore_keys"],
+            test_data["measurement_of_prefix"],
+        )
+        for actual, expected in zip(actual_value, expected_value):
+            TestCase().assertDictEqual(actual, expected)
+        assert_valid_schema(actual_value, schema)
 
-            def test_with_dict_of_payloads_ignoring_every_record_in_payload(self):
-                records = []
-                test_data = {
-                    "payload": {"a": 1, "b": 2},
-                    "timestamp": "2021-01-01T00:00:00",
-                    "correlation_id": "123",
-                    "measurement_subject": "emonTx4",
-                    "measurement_publisher": "emon",
-                    "ignore_keys": ["a", "b"],
-                    "measurement_of_prefix": None,
-                }
-                expected_value = []
-                actual_value = create_record_recursive(
-                    test_data["payload"],
-                    records,
-                    test_data["timestamp"],
-                    test_data["correlation_id"],
-                    test_data["measurement_publisher"],
-                    test_data["measurement_subject"],
-                    test_data["ignore_keys"],
-                    test_data["measurement_of_prefix"],
-                )
-                for actual, expected in zip(actual_value, expected_value):
-                    TestCase().assertDictEqual(actual, expected)
-                assert_valid_schema(actual_value, schema)
+    def test_with_dict_of_payloads_ignoring_every_record_in_payload(self):
+        records = []
+        test_data = {
+            "payload": {"a": 1, "b": 2},
+            "timestamp": "2021-01-01T00:00:00",
+            "correlation_id": "123",
+            "measurement_subject": "emonTx4",
+            "measurement_publisher": "emon",
+            "ignore_keys": ["a", "b"],
+            "measurement_of_prefix": None,
+        }
+        expected_value = []
+        actual_value = create_record_recursive(
+            test_data["payload"],
+            records,
+            test_data["timestamp"],
+            test_data["correlation_id"],
+            test_data["measurement_publisher"],
+            test_data["measurement_subject"],
+            test_data["ignore_keys"],
+            test_data["measurement_of_prefix"],
+        )
+        for actual, expected in zip(actual_value, expected_value):
+            TestCase().assertDictEqual(actual, expected)
+        assert_valid_schema(actual_value, schema)
 
-            def test_with_dict_of_payloads_and_measurement_prefix(
-                self,
-            ):
-                records = []
-                test_data = {
-                    "payload": {"a": 1, "b": 2},
-                    "timestamp": "2021-01-01T00:00:00",
-                    "correlation_id": "123",
-                    "measurement_subject": "emonTx4",
-                    "measurement_publisher": "emon",
-                    "ignore_keys": None,
-                    "measurement_of_prefix": "prefix",
-                }
-                expected_value = [
-                    {
-                        "timestamp": test_data["timestamp"],
-                        "measurement_subject": test_data["measurement_subject"],
-                        "measurement_publisher": test_data["measurement_publisher"],
-                        "measurement_of": "prefix_a",
-                        "measurement_value": 1,
-                        "measurement_data_type": PayloadType.NUMBER.value,
-                        "correlation_id": "123",
-                    },
-                    {
-                        "timestamp": test_data["timestamp"],
-                        "measurement_subject": test_data["measurement_subject"],
-                        "measurement_publisher": test_data["measurement_publisher"],
-                        "measurement_of": "prefix_b",
-                        "measurement_value": 2,
-                        "measurement_data_type": PayloadType.NUMBER.value,
-                        "correlation_id": "123",
-                    },
-                ]
-                actual_value = create_record_recursive(
-                    test_data["payload"],
-                    records,
-                    test_data["timestamp"],
-                    test_data["correlation_id"],
-                    test_data["measurement_publisher"],
-                    test_data["measurement_subject"],
-                    test_data["ignore_keys"],
-                    test_data["measurement_of_prefix"],
-                )
-                for actual, expected in zip(actual_value, expected_value):
-                    TestCase().assertDictEqual(actual, expected)
-                assert_valid_schema(actual_value, schema)
+    def test_with_dict_of_payloads_and_measurement_prefix(
+        self,
+    ):
+        records = []
+        test_data = {
+            "payload": {"a": 1, "b": 2},
+            "timestamp": "2021-01-01T00:00:00",
+            "correlation_id": "123",
+            "measurement_subject": "emonTx4",
+            "measurement_publisher": "emon",
+            "ignore_keys": None,
+            "measurement_of_prefix": "prefix",
+        }
+        expected_value = [
+            {
+                "timestamp": test_data["timestamp"],
+                "measurement_subject": test_data["measurement_subject"],
+                "measurement_publisher": test_data["measurement_publisher"],
+                "measurement_of": "prefix_a",
+                "measurement_value": 1,
+                "measurement_data_type": PayloadType.NUMBER.value,
+                "correlation_id": "123",
+            },
+            {
+                "timestamp": test_data["timestamp"],
+                "measurement_subject": test_data["measurement_subject"],
+                "measurement_publisher": test_data["measurement_publisher"],
+                "measurement_of": "prefix_b",
+                "measurement_value": 2,
+                "measurement_data_type": PayloadType.NUMBER.value,
+                "correlation_id": "123",
+            },
+        ]
+        actual_value = create_record_recursive(
+            test_data["payload"],
+            records,
+            test_data["timestamp"],
+            test_data["correlation_id"],
+            test_data["measurement_publisher"],
+            test_data["measurement_subject"],
+            test_data["ignore_keys"],
+            test_data["measurement_of_prefix"],
+        )
+        for actual, expected in zip(actual_value, expected_value):
+            TestCase().assertDictEqual(actual, expected)
+        assert_valid_schema(actual_value, schema)
 
-            def test_with_dict_of_payloads_and_measurement_prefix_ignoring_one(
-                self,
-            ):
-                records = []
-                test_data = {
-                    "payload": {"a": 1, "b": 2},
-                    "timestamp": "2021-01-01T00:00:00",
-                    "correlation_id": "123",
-                    "measurement_subject": "emonTx4",
-                    "measurement_publisher": "emon",
-                    "ignore_keys": ["a"],
-                    "measurement_of_prefix": "prefix",
-                }
-                expected_value = [
-                    {
-                        "timestamp": test_data["timestamp"],
-                        "measurement_subject": test_data["measurement_subject"],
-                        "measurement_publisher": test_data["measurement_publisher"],
-                        "measurement_of": "prefix_b",
-                        "measurement_value": 2,
-                        "measurement_data_type": PayloadType.NUMBER.value,
-                        "correlation_id": "123",
-                    }
-                ]
-                actual_value = create_record_recursive(
-                    test_data["payload"],
-                    records,
-                    test_data["timestamp"],
-                    test_data["correlation_id"],
-                    test_data["measurement_publisher"],
-                    test_data["measurement_subject"],
-                    test_data["ignore_keys"],
-                    test_data["measurement_of_prefix"],
-                )
-                for actual, expected in zip(actual_value, expected_value):
-                    TestCase().assertDictEqual(actual, expected)
-                assert_valid_schema(actual_value, schema)
+    def test_with_dict_of_payloads_and_measurement_prefix_ignoring_one(
+        self,
+    ):
+        records = []
+        test_data = {
+            "payload": {"a": 1, "b": 2},
+            "timestamp": "2021-01-01T00:00:00",
+            "correlation_id": "123",
+            "measurement_subject": "emonTx4",
+            "measurement_publisher": "emon",
+            "ignore_keys": ["a"],
+            "measurement_of_prefix": "prefix",
+        }
+        expected_value = [
+            {
+                "timestamp": test_data["timestamp"],
+                "measurement_subject": test_data["measurement_subject"],
+                "measurement_publisher": test_data["measurement_publisher"],
+                "measurement_of": "prefix_b",
+                "measurement_value": 2,
+                "measurement_data_type": PayloadType.NUMBER.value,
+                "correlation_id": "123",
+            }
+        ]
+        actual_value = create_record_recursive(
+            test_data["payload"],
+            records,
+            test_data["timestamp"],
+            test_data["correlation_id"],
+            test_data["measurement_publisher"],
+            test_data["measurement_subject"],
+            test_data["ignore_keys"],
+            test_data["measurement_of_prefix"],
+        )
+        for actual, expected in zip(actual_value, expected_value):
+            TestCase().assertDictEqual(actual, expected)
+        assert_valid_schema(actual_value, schema)
 
 
 class Test_Helpers:
