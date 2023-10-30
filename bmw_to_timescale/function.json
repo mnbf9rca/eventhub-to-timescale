@@ -1,0 +1,22 @@
+{
+    "scriptFile": "__init__.py",
+    "disabled": false,
+    "bindings": [
+      {
+        "type": "eventHubTrigger",
+        "name": "events",
+        "direction": "in",
+        "eventHubName": "bmw",
+        "connection": "bmw_eventhub_reader_EVENTHUB",
+        "cardinality": "many",
+        "consumerGroup": "%consumergroup%"
+      },
+      {
+        "type": "eventHub",
+        "name": "outputEventHubMessage",
+        "eventHubName": "timescale",
+        "connection": "timescale_eventhubwriter_EVENTHUB",
+        "direction": "out"
+    }
+    ]
+  }

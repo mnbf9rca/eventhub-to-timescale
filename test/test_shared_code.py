@@ -161,41 +161,51 @@ class Test_Converter_Methods:
             ):
                 call_converter("homie", test_object, "incorrect_publisher")
 
-    class Test_Timeseries:
-        class Test_get_record_type:
-            def test_with_string(self):
-                actual_value = get_record_type("a string")
-                assert actual_value == PayloadType.STRING
 
-            def test_with_int(self):
-                actual_value = get_record_type(1)
-                assert actual_value == PayloadType.NUMBER
+class Test_Timeseries:
+    class Test_get_record_type:
+        def test_with_string(self):
+            actual_value = get_record_type("a string")
+            assert actual_value == PayloadType.STRING
 
-            def test_with_float(self):
-                actual_value = get_record_type(1.1)
-                assert actual_value == PayloadType.NUMBER
+        def test_with_int(self):
+            actual_value = get_record_type(1)
+            assert actual_value == PayloadType.NUMBER
 
-            def test_with_none(self):
-                with pytest.raises(
-                    TypeError, match=r".*Unknown type <class 'NoneType'>.*"
-                ):
-                    get_record_type(None)
+        def test_with_float(self):
+            actual_value = get_record_type(1.1)
+            assert actual_value == PayloadType.NUMBER
 
-            def test_with_empty_string(self):
-                actual_value = get_record_type("")
-                assert actual_value == PayloadType.STRING
+        def test_with_none(self):
+            with pytest.raises(
+                TypeError, match=r".*Unknown payload type: NoneType.*"
+            ):
+                get_record_type(None)
 
-            def test_with_boolean(self):
-                actual_value = get_record_type(True)
-                assert actual_value == PayloadType.BOOLEAN
+        def test_with_empty_string(self):
+            actual_value = get_record_type("")
+            assert actual_value == PayloadType.STRING
 
-            def test_with_dict(self):
-                with pytest.raises(TypeError, match=r".*Unknown type <class 'dict'>.*"):
-                    get_record_type({"a": 1})
+        def test_with_boolean(self):
+            actual_value = get_record_type(True)
+            assert actual_value == PayloadType.BOOLEAN
 
-            def test_with_list(self):
-                with pytest.raises(TypeError, match=r".*Unknown type <class 'list'>.*"):
-                    get_record_type(["a", 1])
+        def test_with_dict(self):
+            with pytest.raises(TypeError, match=r".*Unknown payload type: dict.*"):
+                get_record_type({"a": 1})
+
+        def test_with_invalid_list(self):
+            with pytest.raises(TypeError, match=r".*List is not a valid coordinate pair: .*"):
+                get_record_type(["a", 1])
+
+        def test_with_invalid_list_of_three(self):
+            with pytest.raises(TypeError, match=r".*List is not a valid coordinate pair: .*"):
+                get_record_type([40.7128, -74.0062, 10])
+
+        def test_with_valid_geography_list(self):
+            actual_value = get_record_type([40.7128, -74.0062])
+            assert actual_value == PayloadType.GEOGRAPHY
+
 
         class Test_create_record_recursive:
             #    payload: dict,

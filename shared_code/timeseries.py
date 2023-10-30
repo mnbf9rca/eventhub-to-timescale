@@ -8,7 +8,7 @@ class PayloadType(Enum):
     NUMBER: str = "number"
     STRING: str = "string"
     BOOLEAN: str = "boolean"
-    LATLONG: str = "latlong"
+    GEOGRAPHY: str = "geography"
 
 
 def create_atomic_record(
@@ -22,7 +22,7 @@ def create_atomic_record(
 ) -> dict[str, Any]:
     """Creates a record in the format expected by the TimescaleDB publisher
     Args:
-        timestamp (str): timestamp in ISO format
+        timestamp (str): timestamp in ISO format with timezone
         subject (str): subject of the record
         payload (Any): payload of the record
         payload_type (PayloadType): type of the payload
@@ -54,8 +54,8 @@ def create_record_recursive(
     Args:
         payload (dict): payload of the record to be parsed
         records (Array[TimescaleRecord]): list of records to be returned
-        timestamp (str): timestamp in ISO format
-        correlation_id (str): unique id for the record
+        timestamp (str): timestamp in ISO format with timezone
+        correlation_id (str): unique id for the record set
         measurement_publisher (str): publisher of the record
         measurement_subject (str): subject of the record
         ignore_keys (list): list of keys to ignore (also will not be recursed)
@@ -97,22 +97,28 @@ def create_record_recursive(
 
 
 def get_record_type(payload):
-    """Gets the type of the payload and maps it to the PayloadType enum
-       This is important as we store different types of data in different columns
-         in the database
+    """Gets the type of the payload and maps it to the PayloadType enum.
+       This is important as we store different types of data in different columns in the database.
+
     Args:
         payload (Any): payload of the record to be parsed
+
     Returns:
         PayloadType: type of the payload
+
+    Raises:
+        TypeError: If the payload type is not recognized or if a list payload is not a coordinate pair.
     """
     if isinstance(payload, str):
         return PayloadType.STRING
-    elif type(payload) == type(True):  # noqa E721.
-        # bool is a subclass of int so this must be checked first.
-        # Also can't use isinstance as bool is a subclass of int
-        # so it can give false positives
+    elif type(payload) == type(True):  # noqa E721
         return PayloadType.BOOLEAN
     elif isinstance(payload, (int, float)):
         return PayloadType.NUMBER
+    elif isinstance(payload, list):
+        if len(payload) == 2 and all(isinstance(x, (int, float)) for x in payload):
+            return PayloadType.GEOGRAPHY
+        else:
+            raise TypeError(f"List is not a valid coordinate pair: {payload}")
     else:
-        raise TypeError(f"Unknown type {type(payload)}")
+        raise TypeError(f"Unknown payload type: {type(payload).__name__}")

@@ -143,3 +143,7 @@ __azurite_db*__.json
 .flaskenv*
 !.env.project
 !.env.vault
+
+
+# appmap
+/tmp

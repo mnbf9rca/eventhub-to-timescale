@@ -20,4 +20,8 @@ from .timescale import create_timescale_records_from_batch_of_events  # noqa F40
 from .timescale import validate_all_fields_in_record  # noqa F401
 from .timescale import get_connection_string  # noqa F401
 from .timescale import get_table_name  # noqa F401
-from .timescale import parse_string_to_geopoint  # noqa F401
+from .timescale import parse_to_geopoint  # noqa F401
+from .bmw_to_timescale import convert_bmw_to_timescale  # noqa F401
+from .duplicate_check import check_duplicate  # noqa F401
+from .duplicate_check import get_table_service_client  # noqa F401
+from .duplicate_check import store_id  # noqa F401

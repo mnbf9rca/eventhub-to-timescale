@@ -15,6 +15,7 @@ psycopg = {extras = ["binary"], version = "^3.1.8"}
 jsonschema = "^4.17.3"
 python-dotenv-vault = "^0.6.3"
 bimmer-connected = "^0.14.2"
+azure-data-tables = "^12.4.4"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"
@@ -34,6 +35,7 @@ pytest-mock = "^3.10.0"
 mock = "^5.0.1"
 jsonschema = "^4.17.3"
 pytest-asyncio = "^0.21.1"
+appmap = "^1.17.1"
 
 
 [build-system]
