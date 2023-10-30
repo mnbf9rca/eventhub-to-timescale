@@ -6,7 +6,7 @@ import azure.functions as func
 import psycopg
 
 from shared_code import (
-    create_timescale_records_from_batch_of_events,
+    create_single_timescale_record,
     get_connection_string,
     get_table_name,
 )
@@ -23,7 +23,7 @@ def main(events: List[func.EventHubEvent]):
         for event in events:
             try:
                 record_batch = event.get_body().decode("utf-8")
-                if raised_errors := create_timescale_records_from_batch_of_events(
+                if raised_errors := create_single_timescale_record(
                     conn, record_batch, get_table_name()
                 ):
                     errors.extend(raised_errors)
