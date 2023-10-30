@@ -547,190 +547,87 @@ class Test_create_timescale_records_from_batch_of_events:
 
 
 class Test_parse_measurement_value:
-    def test_with_string_and_string(self):
-        test_data_type = "string"
-        test_value = "test"
-        expected_value = "test"
+# Tests for valid measurement types and values
+    @pytest.mark.parametrize("test_data_type, test_value, expected_value, expected_type", [
+        ("string", "test", "test", str),
+        ("string", "1", "1", str),
+        ("number", "1", 1, float),
+        ("boolean", "true", True, bool),
+        ("boolean", "false", False, bool),
+        ("number", "1.1", 1.1, float),
+        ("number", "-1.1", -1.1, float),
+    ])
+    def test_with_valid_measurement_types(self, test_data_type, test_value, expected_value, expected_type):
         actual_value = parse_measurement_value(test_data_type, test_value)
         assert actual_value == expected_value
-        assert isinstance(actual_value, str)
+        assert isinstance(actual_value, expected_type)
 
-    def test_with_string_and_number(self):
-        test_data_type = "string"
-        test_value = "1"
-        expected_value = "1"
-        actual_value = parse_measurement_value(test_data_type, test_value)
-        assert actual_value == expected_value
-        assert isinstance(actual_value, str)
-
-    def test_with_number_and_string(self):
-        test_data_type = "number"
-        test_value = "test"
-        with pytest.raises(ValueError, match=r".*Invalid number value: test.*"):
-            parse_measurement_value(test_data_type, test_value)
-
-    def test_with_number_and_number(self):
-        test_data_type = "number"
-        test_value = "1"
-        expected_value = 1
-        actual_value = parse_measurement_value(test_data_type, test_value)
-        assert actual_value == expected_value
-        assert isinstance(actual_value, float)
-
-    def test_with_boolean_and_string(self):
-        test_data_type = "boolean"
-        test_value = "test"
-        with pytest.raises(ValueError, match=r".*Invalid boolean value: test.*"):
-            parse_measurement_value(test_data_type, test_value)
-
-    def test_with_boolean_and_true(self):
-        test_data_type = "boolean"
-        test_value = "true"
-        expected_value = True
-        actual_value = parse_measurement_value(test_data_type, test_value)
-        assert actual_value == expected_value
-        assert isinstance(actual_value, bool)
-
-    def test_with_boolean_and_false(self):
-        test_data_type = "boolean"
-        test_value = "false"
-        expected_value = False
-        actual_value = parse_measurement_value(test_data_type, test_value)
-        assert actual_value == expected_value
-        assert isinstance(actual_value, bool)
-
-    def test_with_number_and_float(self):
-        test_data_type = "number"
-        test_value = "1.1"
-        expected_value = 1.1
-        actual_value = parse_measurement_value(test_data_type, test_value)
-        assert actual_value == expected_value
-        assert isinstance(actual_value, float)
-
-    def test_with_number_and_negative_float(self):
-        test_data_type = "number"
-        test_value = "-1.1"
-        expected_value = -1.1
-        actual_value = parse_measurement_value(test_data_type, test_value)
-        assert actual_value == expected_value
-        assert isinstance(actual_value, float)
-
-    def test_with_invalid_measurement_type(self):
-        test_data_type = "invalid"
-        test_value = "test"
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: invalid*"):
+    # Tests for invalid measurement types and values
+    @pytest.mark.parametrize("test_data_type, test_value, expected_error, expected_message", [
+        ("invalid", "test", ValueError, r".*Unknown measurement type: invalid*"),
+        ("number", "test", ValueError, r".*Invalid number value: test.*"),
+        ("boolean", "test", ValueError, r".*Invalid boolean value: test.*"),
+    ])
+    def test_with_invalid_measurement_types(self, test_data_type, test_value, expected_error, expected_message):
+        with pytest.raises(expected_error, match=expected_message):
             parse_measurement_value(test_data_type, test_value)
 
 
-class Test_pparse_to_geopointt:
-    def test_valid_latlon_string(self):
-        assert (
-            parse_to_geopoint("40.7128,-74.0062") == "SRID=4326;POINT(-74.0062 40.7128)"
-        )
+class Test_parse_to_geopointt:
+    # Tests for valid geography values
+    @pytest.mark.parametrize("input_value, expected_output", [
+        ("40.7128,-74.0062", "SRID=4326;POINT(-74.0062 40.7128)"),
+        ([40.7128, -74.0062], "SRID=4326;POINT(-74.0062 40.7128)"),
+        (["40.7128", "-74.0062"], "SRID=4326;POINT(-74.0062 40.7128)")
+    ])
+    def test_valid_geography_values(self, input_value, expected_output):
+        assert parse_to_geopoint(input_value) == expected_output
 
-    def test_valid_latlon_float_array(self):
-        assert (
-            parse_to_geopoint([40.7128, -74.0062])
-            == "SRID=4326;POINT(-74.0062 40.7128)"
-        )
-
-    def test_valid_latlon_string_array(self):
-        assert (
-            parse_to_geopoint(["40.7128", "-74.0062"])
-            == "SRID=4326;POINT(-74.0062 40.7128)"
-        )
-
-    def test_invalid_input_type(self):
-        with pytest.raises(ValueError, match="Invalid input type or format:"):
-            parse_to_geopoint({"lat": 40.7128, "lon": -74.0062})
-
-    def test_invalid_lat(self):
-        with pytest.raises(ValueError, match="Invalid latitude value:"):
-            parse_to_geopoint("100.0,-74.0060")
-
-    def test_invalid_lon(self):
-        with pytest.raises(ValueError, match="Invalid longitude value:"):
-            parse_to_geopoint("40.7128,-200.0")
-
-    def test_invalid_latlon(self):
-        with pytest.raises(ValueError, match="Invalid latitude value:"):
-            parse_to_geopoint("100.0,-200.0")
-
-    def test_non_numeric_values(self):
-        with pytest.raises(ValueError, match="Invalid geography value:"):
-            parse_to_geopoint("latitude,longitude")
-
-    def test_incorrect_number_of_values(self):
-        with pytest.raises(ValueError, match="Invalid geography value:"):
-            parse_to_geopoint("40.7128,-74.0060,100")
-
-    def test_incorrect_number_of_values_array(self):
-        with pytest.raises(ValueError, match="Invalid input type or format:"):
-            parse_to_geopoint([40.7128, -74.0060, 100])
-
-    def test_empty_string(self):
-        with pytest.raises(ValueError, match="Invalid geography value:"):
-            parse_to_geopoint("")
-
-    def test_string_with_only_comma(self):
-        with pytest.raises(ValueError, match="Invalid geography value:"):
-            parse_to_geopoint(",")
+    # Tests for invalid geography values
+    @pytest.mark.parametrize("input_value, expected_error, expected_message", [
+        ({"lat": 40.7128, "lon": -74.0062}, ValueError, "Invalid input type or format:"),
+        ("100.0,-74.0060", ValueError, "Invalid latitude value:"),
+        ("-74.0060,190.0", ValueError, "Invalid longitude value:"),
+        ("100.0,-200.0", ValueError, "Invalid latitude value:"),
+        ("latitude,longitude", ValueError, "Invalid geography value:"),
+        ("40.7128,-74.0060,100", ValueError, "Invalid geography value:"),
+        ([40.7128, -74.0060, 100], ValueError, "Invalid input type or format:"),
+        ("", ValueError, "Invalid geography value:"),
+        (",", ValueError, "Invalid geography value:")
+    ])
+    def test_invalid_geography_values(self, input_value, expected_error, expected_message):
+        with pytest.raises(expected_error, match=expected_message):
+            parse_to_geopoint(input_value)
 
 
 class Test_identify_data_column:
-    def test_with_number(self):
-        test_data_type = "number"
-        expected_column = "measurement_number"
-        actual_column = identify_data_column(test_data_type)
+    @pytest.mark.parametrize(
+        "input_value, expected_column",
+        [
+            ("number", "measurement_number"),
+            ("string", "measurement_string"),
+            ("boolean", "measurement_bool"),
+            ("geography", "measurement_location"),
+        ]
+    )
+    def test_identify_data_column_valid(self, input_value, expected_column):
+        actual_column = identify_data_column(input_value)
         assert actual_column == expected_column
 
-    def test_with_string(self):
-        test_data_type = "string"
-        expected_column = "measurement_string"
-        actual_column = identify_data_column(test_data_type)
-        assert actual_column == expected_column
-
-    def test_with_boolean(self):
-        test_data_type = "boolean"
-        expected_column = "measurement_bool"
-        actual_column = identify_data_column(test_data_type)
-        assert actual_column == expected_column
-
-    def test_with_geography(self):
-        test_data_type = "geography"
-        expected_column = "measurement_location"
-        actual_column = identify_data_column(test_data_type)
-        assert actual_column == expected_column
-
-    def test_with_invalid_data_type(self):
-        test_data_type = "invalid"
-        with pytest.raises(ValueError, match=r".*Unknown measurement type: invalid.*"):
-            identify_data_column(test_data_type)
-
-    def test_passing_none(self):
-        test_data_type = None
-        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
-            identify_data_column(test_data_type)
-
-    def test_passing_empty_string(self):
-        test_data_type = ""
-        with pytest.raises(ValueError, match=r".*Unknown measurement type:.*"):
-            identify_data_column(test_data_type)
-
-    def test_passing_int(self):
-        test_data_type = 1
-        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
-            identify_data_column(test_data_type)
-
-    def test_passing_float(self):
-        test_data_type = 1.1
-        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
-            identify_data_column(test_data_type)
-
-    def test_passing_boolean(self):
-        test_data_type = True
-        with pytest.raises(ValueError, match=r".*Measurement type must be a string.*"):
-            identify_data_column(test_data_type)
+    @pytest.mark.parametrize(
+        "input_data_type, expected_error, expected_message",
+        [
+            ("invalid", ValueError, r".*Unknown measurement type: invalid.*"),
+            (None, ValueError, r".*Measurement type must be a string.*"),
+            ("", ValueError, r".*Unknown measurement type:.*"),
+            (1, ValueError, r".*Measurement type must be a string.*"),
+            (1.1, ValueError, r".*Measurement type must be a string.*"),
+            (True, ValueError, r".*Measurement type must be a string.*"),
+        ],
+    )
+    def test_identify_data_column_invalid(self, input_data_type, expected_error, expected_message):
+        with pytest.raises(expected_error, match=expected_message):
+            identify_data_column(input_data_type)
 
 
 class Test_validate_all_fields_in_record:
