@@ -1,4 +1,7 @@
 import pytest
+import os
+import uuid
+
 from copy import copy
 import json
 from unittest.mock import patch, Mock, call, MagicMock
@@ -14,7 +17,71 @@ from shared_code.bmw_to_timescale import (
     get_vin_from_message,
     get_last_updated_at_from_message,
 )
+from shared_code import bmw_to_timescale as btc
+import shared_code as sc
 from shared_code import PayloadType
+from azure.functions import EventHubEvent, Out
+from shared_code.duplicate_check import check_duplicate, store_id
+
+
+def generate_alpha_uuid():
+    raw_uuid = str(uuid.uuid4()).replace('-', '')  # Remove hyphens
+    if raw_uuid[0].isdigit():
+        # Replace the first character with a letter if it's a digit
+        return 'a' + raw_uuid[1:]
+    return raw_uuid
+
+class TestConvertBmwToTimescaleEndToEnd:
+    @patch("shared_code.bmw_to_timescale.get_vin_from_message")
+    def test_convert_bmw_to_timescale_with_real_data(self, mock_get_vin_from_message, mocker):
+        # Mock get_vin_from_message to return a GUID
+        mock_get_vin_from_message.return_value = generate_alpha_uuid()
+
+        # Load the real data from the json file
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        data_file = os.path.join(current_dir, "bmw_topic_messages.json")
+        with open(data_file, "r") as f:
+            event_data = json.load(f)
+
+        # Create EventHubEvent objects
+        events = [
+            EventHubEvent(body=json.dumps(data).encode("utf-8")) for data in event_data
+        ]
+
+        # Create an outputEventHubMessage mock
+        mock_outputEventHubMessage = mocker.MagicMock(spec=Out)
+
+        # Spy on other external functions
+        spy_get_last_updated_at_from_message = mocker.spy(
+            btc, "get_last_updated_at_from_message"
+        )
+        spy_check_duplicate = mocker.spy(
+            sc, "check_duplicate"
+        )
+        spy_construct_messages = mocker.spy(
+            btc, "construct_messages"
+        )
+        spy_store_id = mocker.spy(sc, "store_id")
+
+        # Call the function
+        convert_bmw_to_timescale(events, mock_outputEventHubMessage)
+
+        # Validate that the external functions were called the expected number of times
+        assert mock_get_vin_from_message.call_count == 3
+        assert spy_get_last_updated_at_from_message.call_count == 3
+        assert spy_check_duplicate.call_count == 3
+        assert spy_construct_messages.call_count == 2  # One duplicate, one not
+
+        assert spy_store_id.call_count == 2  # One duplicate, one not
+
+        # Validate that outputEventHubMessage.set was called the expected number of times
+        expected_published_messages = spy_construct_messages.call_count * 6  # 6 records per message
+        # chargingLevelPercent, range, isChargerConnected, chargingStatus, currentMileage, coordinates
+
+        assert (
+            mock_outputEventHubMessage.set.call_count == expected_published_messages
+        )
+        
 
 
 class TestConvertBmwToTimescale:
@@ -43,7 +110,7 @@ class TestConvertBmwToTimescale:
         mock_get_vin_from_message.return_value = "VIN123"
         mock_get_last_updated_at_from_message.return_value = "timestamp123"
         mock_check_duplicate.return_value = duplicate_status
-        mock_construct_messages.return_value = [[{'some_messages': 'some_value'}]]
+        mock_construct_messages.return_value = [[{"some_messages": "some_value"}]]
         mock_outputEventHubMessage = MagicMock()
 
         # Call function
