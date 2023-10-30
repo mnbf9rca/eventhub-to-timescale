@@ -1,6 +1,7 @@
 from typing import Any, List, Dict, Optional, Tuple
 import json
 import sys
+import logging
 import os
 from azure.functions import EventHubEvent, Out
 
@@ -38,8 +39,13 @@ def convert_bmw_to_timescale(
             continue
         messages_to_send = construct_messages(vin, last_updated_at, event_object)
         for message in messages_to_send:
-
-            outputEventHubMessage.set(json.dumps(message))
+            str_message = json.dumps(message)
+            logging.debug(f"Sending message: {str_message}")
+            try:
+                outputEventHubMessage.set(str_message)
+            except Exception as e:
+                logging.error(f"Error sending message: {str_message} : {e}")
+                raise
         sc.store_id(last_updated_at, vin, tsc)
 
 
