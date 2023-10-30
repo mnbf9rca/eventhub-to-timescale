@@ -26,10 +26,7 @@ from shared_code.duplicate_check import check_duplicate, store_id
 
 def generate_alpha_uuid():
     raw_uuid = str(uuid.uuid4()).replace('-', '')  # Remove hyphens
-    if raw_uuid[0].isdigit():
-        # Replace the first character with a letter if it's a digit
-        return 'a' + raw_uuid[1:]
-    return raw_uuid
+    return f'a{raw_uuid[1:]}' if raw_uuid[0].isdigit() else raw_uuid
 
 class TestConvertBmwToTimescaleEndToEnd:
     @patch("shared_code.bmw_to_timescale.get_vin_from_message")
@@ -698,12 +695,12 @@ class TestValidateLatLong:
     def test_valid_lat_lon_with_floats(self):
         lat = 12.3456
         lng = 0.12345
-        assert validate_lat_long(lat, lng) == [float(lat), float(lng)]
+        assert validate_lat_long(lat, lng) == [lat, lng]
 
     def test_valid_lat_lon_with_ints(self):
         lat = 12
         lng = 1
-        assert validate_lat_long(int(lat), int(lng)) == [float(lat), float(lng)]
+        assert validate_lat_long(lat, lng) == [float(lat), float(lng)]
 
     def test_invalid_latitude_type(self):
         lat = "invalid"
