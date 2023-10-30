@@ -13,7 +13,7 @@
     },
     {
       "type": "eventHub",
-      "name": "$return",
+      "name": "outputEventHubMessage",
       "eventHubName": "timescale",
       "connection": "timescale_eventhubwriter_EVENTHUB",
       "direction": "out"
