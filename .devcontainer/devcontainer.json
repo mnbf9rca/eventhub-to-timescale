@@ -28,6 +28,8 @@
 			]
 		}
 	},
-	"postCreateCommand": "poetry install --with test,dev  --no-interaction --no-root --sync"
+
+	"postAttachCommand": "python3 -m venv venv && source venv/bin/activate && poetry install --with test,dev --no-interaction --no-root --sync"
 
 }
+

@@ -1,6 +1,17 @@
 {
   "recommendations": [
     "ms-azuretools.vscode-azurefunctions",
-    "ms-python.python"
+    "ms-vscode.azure-account",
+    "ms-python.python",
+    "ms-vscode-remote.vscode-remote-extensionpack",
+    "GitHub.codespaces",
+    "ms-azuretools.vscode-azureresourcegroups",
+    "ms-python.flake8",
+    "ms-python.black-formatter",
+    "ms-python.isort",
+    "GitHub.copilot",
+    "GitHub.copilot-labs",
+    "github.vscode-github-actions",
+    "dotenv.dotenv-vscode"
   ]
 }
