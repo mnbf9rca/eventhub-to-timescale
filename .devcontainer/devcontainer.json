@@ -1,0 +1,27 @@
+{
+	"image": "mcr.microsoft.com/devcontainers/python:3.10-bullseye",
+	"features": {
+		"ghcr.io/devcontainers/features/azure-cli:1": {},
+		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {
+			"version": "4"
+		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-azuretools.vscode-azurefunctions",
+				"ms-vscode.azure-account",
+				"ms-python.python",
+				"ms-vscode-remote.vscode-remote-extensionpack",
+				"GitHub.codespaces",
+				"ms-azuretools.vscode-azureresourcegroups",
+				"ms-python.flake8",
+				"ms-python.black-formatter",
+				"ms-python.isort",
+				"GitHub.copilot",
+				"GitHub.copilot-labs"
+			]
+		}
+	}
+
+}
