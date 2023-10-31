@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from shared_code import convert_bmw_to_timescale
 
 
-def main(events: List[func.EventHubEvent], outputEventHubMessage: func.Out[str], outputEventHubMessage_monitor: func.Out[str]) -> None:
+def main(event: func.EventHubEvent, outputEventHubMessage: func.Out[List[str]], outputEHMonitor: func.Out[List[str]]) -> None:
     logging.info('Processing events...')
-    convert_bmw_to_timescale(events, outputEventHubMessage, outputEventHubMessage_monitor)
+    convert_bmw_to_timescale(event, outputEventHubMessage, outputEHMonitor)
 

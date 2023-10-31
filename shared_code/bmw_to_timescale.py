@@ -11,7 +11,7 @@ import shared_code as sc
 
 
 def convert_bmw_to_timescale(
-    events: List[EventHubEvent], outputEventHubMessage: Out[str], outputEventHubMessage_monitor: Out[str]
+    event: EventHubEvent, outputEventHubMessage: Out[str], outputEventHubMessage_monitor: Out[str]
 ) -> None:
     # things we're interested in in the message body
     # vin - this is mapped to the measurement_subject
@@ -23,26 +23,35 @@ def convert_bmw_to_timescale(
     # state.electricChargingState[chargingLevelPercent, range, isChargerConnected, chargingStatus]
     logging.info("Processing BMW messages")
     tsc = sc.get_table_service_client()
-    for event in events:
-        logging.info(f"Processing event: {event}")
-        event_object = get_event_body(event)
-        vin = get_vin_from_message(event_object)
-        last_updated_at = get_last_updated_at_from_message(event_object)
-        if sc.check_duplicate(last_updated_at, vin, tsc):
-            # we've already processed this message, so we can skip it
-            logging.info(f"Skipping duplicate message: {event_object}")
-            continue
-        messages_to_send = construct_messages(vin, last_updated_at, event_object)
-        for message in messages_to_send:
-            str_message = json.dumps(message)
-            logging.info(f"Sending message: {str_message}")
-            try:
-                outputEventHubMessage.set(str_message)
-                outputEventHubMessage_monitor.set(str_message)
-            except Exception as e:
-                logging.error(f"Error sending message: {str_message} : {e}")
-                raise
+    # for event in events:
+    logging.info(f"Processing event: {event}")
+    event_object = get_event_body(event)
+    vin = get_vin_from_message(event_object)
+    last_updated_at = get_last_updated_at_from_message(event_object)
+    if sc.check_duplicate(last_updated_at, vin, tsc):
+        # we've already processed this message, so we can skip it
+        logging.info(f"Skipping duplicate message: {event_object}")
+        return
+    messages_to_send = construct_messages(vin, last_updated_at, event_object)
+    message_list = [json.dumps(message) for message in messages_to_send]
+    try:
+
+        outputEventHubMessage.set(message_list)
+        outputEventHubMessage_monitor.set(message_list)
         sc.store_id(last_updated_at, vin, tsc)
+    except Exception as e:
+        logging.error(f"Error sending messages: {message_list} : {e}")
+        raise
+    # for message in messages_to_send:
+    #     str_message = json.dumps(message)
+    #     logging.info(f"Sending message: {str_message}")
+    #     try:
+    #         outputEventHubMessage.set(str_message)
+    #         outputEventHubMessage_monitor.set(str_message)
+    #     except Exception as e:
+    #         logging.error(f"Error sending message: {str_message} : {e}")
+    #         raise
+    # sc.store_id(last_updated_at, vin, tsc)
 
 
 def get_event_body(event: EventHubEvent) -> Dict[str, Any]:

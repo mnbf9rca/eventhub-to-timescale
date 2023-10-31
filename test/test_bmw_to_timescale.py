@@ -61,8 +61,9 @@ class TestConvertBmwToTimescaleEndToEnd:
         spy_construct_messages = mocker.spy(btc, "construct_messages")
         spy_store_id = mocker.spy(sc, "store_id")
 
-        # Call the function
-        convert_bmw_to_timescale(events, mock_outputEventHubMessage, mock_outputEventHubMessage_monitor)
+        for event in events:
+            # Call the function
+            convert_bmw_to_timescale(event, mock_outputEventHubMessage, mock_outputEventHubMessage_monitor)
 
         # Validate that the external functions were called the expected number of times
         assert mock_get_vin_from_message.call_count == 3
@@ -73,12 +74,7 @@ class TestConvertBmwToTimescaleEndToEnd:
         assert spy_store_id.call_count == 2  # One duplicate, one not
 
         # Validate that outputEventHubMessage.set was called the expected number of times
-        expected_published_messages = (
-            spy_construct_messages.call_count * 6
-        )  # 6 records per message
-        # chargingLevelPercent, range, isChargerConnected, chargingStatus, currentMileage, coordinates
-
-        assert mock_outputEventHubMessage.set.call_count == expected_published_messages
+        assert mock_outputEventHubMessage.set.call_count == 2
 
 
 class TestConvertBmwToTimescale:
@@ -132,7 +128,7 @@ class TestConvertBmwToTimescale:
                 mock_get_event_body.return_value,
             )
             mock_outputEventHubMessage.set.assert_called_with(
-                json.dumps(mock_construct_messages.return_value[0])
+                [json.dumps(mock_construct_messages.return_value[0])]
             )
             mock_store_id.assert_called_with(
                 mock_get_last_updated_at_from_message.return_value,

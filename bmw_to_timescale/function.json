@@ -8,7 +8,7 @@
       "direction": "in",
       "eventHubName": "bmw",
       "connection": "bmw_eventhub_reader_EVENTHUB",
-      "cardinality": "many",
+      "cardinality": "one",
       "consumerGroup": "%consumergroup%"
     },
     {
@@ -20,7 +20,7 @@
     },
     {
       "type": "eventHub",
-      "name": "outputEventHubMessage_monitor",
+      "name": "outputEHMonitor",
       "eventHubName": "bmw_monitor",
       "connection": "bmw_monitor_writer_EVENTHUB",
       "direction": "out"
