@@ -4,7 +4,10 @@
 		"ghcr.io/devcontainers/features/azure-cli:1": {},
 		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {
 			"version": "4"
-		}
+		},
+		"ghcr.io/devcontainers-contrib/features/poetry:2": {
+			"version": "1.6.1"
+		},
 	},
 	"customizations": {
 		"vscode": {
@@ -19,9 +22,12 @@
 				"ms-python.black-formatter",
 				"ms-python.isort",
 				"GitHub.copilot",
-				"GitHub.copilot-labs"
+				"GitHub.copilot-labs",
+				"github.vscode-github-actions",
+				"dotenv.dotenv-vscode"
 			]
 		}
-	}
+	},
+	"postCreateCommand": "poetry install --with test,dev  --no-interaction --no-root --sync"
 
 }
