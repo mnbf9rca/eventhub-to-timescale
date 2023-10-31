@@ -4,7 +4,7 @@
   "bindings": [
     {
       "type": "eventHubTrigger",
-      "name": "events",
+      "name": "event",
       "direction": "in",
       "eventHubName": "bmw",
       "connection": "bmw_eventhub_reader_EVENTHUB",
