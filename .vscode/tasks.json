@@ -7,7 +7,21 @@
 			"command": "host start",
 			"problemMatcher": "$func-python-watch",
 			"isBackground": true,
-			"dependsOn": "pip install (functions)"
+			"dependsOn": "poetry install (functions)"
+		},
+		{
+			"label": "poetry install (functions)",
+			"type": "shell",
+			"osx": {
+				"command": "poetry install --with test,dev  --no-interaction --no-root --sync"
+			},
+			"windows": {
+				"command": "poetry install --with test,dev  --no-interaction --no-root --sync"
+			},
+			"linux": {
+				"command": "poetry install --with test,dev  --no-interaction --no-root --sync"
+			},
+			"problemMatcher": []
 		},
 		{
 			"label": "pip install (functions)",
