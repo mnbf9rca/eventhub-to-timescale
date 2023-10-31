@@ -215,6 +215,13 @@ class TestWithRealTableServiceCall:
         assert store_id(id, context, tsc) is True
         assert check_duplicate(id, context, tsc) is True
 
+    def test_end_to_end_with_serialized_object(self):
+        tsc = get_table_service_client()
+        context = "testdonotuseordelete"
+        id = str(uuid.uuid4())
+        assert store_serialized_object(id, context, "test", tsc) is True
+        assert retrieve_serialized_object(id, context, tsc) == "test"
+
 
 class TestStoreSerializedObject:
     @pytest.fixture
