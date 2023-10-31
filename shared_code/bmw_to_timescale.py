@@ -9,14 +9,6 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 import shared_code as sc
 
-# from shared_code import (
-#     create_atomic_record,
-#     PayloadType,
-#     check_duplicate,
-#     get_table_service_client,
-#     store_id,
-# )
-
 
 def convert_bmw_to_timescale(
     events: List[EventHubEvent], outputEventHubMessage: Out[str], outputEventHubMessage_monitor: Out[str]
@@ -29,8 +21,8 @@ def convert_bmw_to_timescale(
     # state.location.heading
     # state.currentmileage
     # state.electricChargingState[chargingLevelPercent, range, isChargerConnected, chargingStatus]
-    tsc = sc.get_table_service_client()
     logging.info("Processing BMW messages")
+    tsc = sc.get_table_service_client()
     for event in events:
         logging.info(f"Processing event: {event}")
         event_object = get_event_body(event)
