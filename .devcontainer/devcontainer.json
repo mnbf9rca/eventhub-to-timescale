@@ -8,6 +8,9 @@
 		"ghcr.io/devcontainers-contrib/features/poetry:2": {
 			"version": "1.6.1"
 		},
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "lts"
+		}
 	},
 	"customizations": {
 		"vscode": {
@@ -28,8 +31,5 @@
 			]
 		}
 	},
-
 	"postAttachCommand": "python3 -m venv venv && source venv/bin/activate && poetry install --with test,dev --no-interaction --no-root --sync"
-
 }
-
