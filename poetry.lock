@@ -23,13 +23,13 @@ trio = ["trio (>=0.22)"]
 
 [[package]]
 name = "appmap"
-version = "1.17.1"
+version = "1.18.1"
 description = "Create AppMap files by recording a Python application."
 optional = false
 python-versions = ">=3.7.2,<4.0.0"
 files = [
-    {file = "appmap-1.17.1-py3-none-any.whl", hash = "sha256:7595a5dd07ee2e8365e046eda2ed0c53efac6c33badec11c4b7311fa9a5b6066"},
-    {file = "appmap-1.17.1.tar.gz", hash = "sha256:7d27b856a3546a940798ce5729d11fe85235e63d6f89359517f34e44829418d6"},
+    {file = "appmap-1.18.1-py3-none-any.whl", hash = "sha256:ee19743ee964edaa4194884b582d13c96915558bea08117bfe7a8a7bdaa01d83"},
+    {file = "appmap-1.18.1.tar.gz", hash = "sha256:ef3416b89fac262932c9688a9710388929b22bcb6d1b7a3c34a03f702c57fbcf"},
 ]
 
 [package.dependencies]
