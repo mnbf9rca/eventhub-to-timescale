@@ -1,12 +1,11 @@
 import os
 from typing import Any, Union, List
-import logging
 from dotenv_vault import load_dotenv
 
 import psycopg as psycopg
 
 
-from jsonschema import validate, ValidationError
+from jsonschema import validate
 import json
 
 load_dotenv()
@@ -174,7 +173,12 @@ def parse_measurement_value(
         'hello'
     """  # noqa: E501
     if measurement_type == "boolean":
-        if measurement_value.lower() in {"true", "false"}:
+        if isinstance(measurement_value, bool):
+            return measurement_value
+        elif isinstance(measurement_value, str) and measurement_value.lower() in {
+            "true",
+            "false",
+        }:
             return measurement_value.lower() == "true"
         else:
             raise ValueError(f"Invalid boolean value: {measurement_value}")
@@ -216,10 +220,10 @@ def parse_to_geopoint(measurement_value: Union[str, List[Union[str, float]]]):
 
     >>> parse_to_geopoint([40.7128, -74.0062])
     "SRID=4326;POINT(-74.0062 40.7128)"
-    """    
+    """
     # Handle string input and split it
     if isinstance(measurement_value, str):
-        latlon_values = measurement_value.split(',')
+        latlon_values = measurement_value.split(",")
     # Handle list input
     elif isinstance(measurement_value, list) and len(measurement_value) == 2:
         latlon_values = measurement_value
