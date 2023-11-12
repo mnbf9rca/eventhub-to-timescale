@@ -509,7 +509,7 @@ class Test_parse_to_geopointt:
             ("40.7128,-74.0060,100", ValueError, "Invalid geography value:"),
             ([40.7128, -74.0060, 100], ValueError, "Invalid input type or format:"),
             ("123", ValueError, "Invalid geography value:"),
-            (True, ValueError, "Invalid geography value:"),
+            (True, ValueError, "Invalid input type or format:"),
             ("", ValueError, "Invalid geography value:"),
             (",", ValueError, "Invalid geography value:"),
         ],
