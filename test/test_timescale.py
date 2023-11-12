@@ -12,8 +12,6 @@ import pytest_mock
 import json
 import pytest
 
-from jsonschema import ValidationError
-
 
 # import test data
 from get_test_data import load_test_data
@@ -452,6 +450,8 @@ class Test_parse_measurement_value:
             ("number", "1", 1, float),
             ("boolean", "true", True, bool),
             ("boolean", "false", False, bool),
+            ("boolean", True, True, bool),
+            ("boolean", False, False, bool),
             ("number", "1.1", 1.1, float),
             ("number", "-1.1", -1.1, float),
         ],
@@ -470,6 +470,7 @@ class Test_parse_measurement_value:
             ("invalid", "test", ValueError, r".*Unknown measurement type: invalid*"),
             ("number", "test", ValueError, r".*Invalid number value: test.*"),
             ("boolean", "test", ValueError, r".*Invalid boolean value: test.*"),
+            ("boolean", 7, ValueError, r".*Invalid boolean value: 7.*"),
         ],
     )
     def test_with_invalid_measurement_types(
@@ -507,6 +508,8 @@ class Test_parse_to_geopointt:
             ("latitude,longitude", ValueError, "Invalid geography value:"),
             ("40.7128,-74.0060,100", ValueError, "Invalid geography value:"),
             ([40.7128, -74.0060, 100], ValueError, "Invalid input type or format:"),
+            ("123", ValueError, "Invalid geography value:"),
+            (True, ValueError, "Invalid input type or format:"),
             ("", ValueError, "Invalid geography value:"),
             (",", ValueError, "Invalid geography value:"),
         ],
