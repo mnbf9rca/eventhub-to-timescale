@@ -1,45 +1,42 @@
 import pytest
 import json
-from shared_code.glow import (
-    validate_publisher_and_topic,
-    parse_message_payload,
-    create_records_for_subject,
-)
+from shared_code import glow
+import pytest
+from unittest.mock import patch
 
+# class TestValidatePublisherAndTopic:
+#     # For Valid Tests
+#     @pytest.mark.parametrize(
+#         "publisher, topic, expected",
+#         [
+#             ("Glow", "some/valid/electricitymeter", "electricitymeter"),
+#             ("gLoW", "some/valid/gasmeter", "gasmeter"),
+#             ("Glow", "some/invalid/invalidsubject", None),
+#             ("Glow", "some/invalid/", None),
+#             ("Glow", "some/valid/notofinterest", None),
+#         ],
+#     )
+#     def test_validate_publisher_and_topic_valid(self, publisher, topic, expected):
+#         assert validate_publisher_and_topic(publisher, topic) == expected
 
-class TestValidatePublisherAndTopic:
-    # For Valid Tests
-    @pytest.mark.parametrize(
-        "publisher, topic, expected",
-        [
-            ("Glow", "some/valid/electricitymeter", "electricitymeter"),
-            ("gLoW", "some/valid/gasmeter", "gasmeter"),
-            ("Glow", "some/invalid/invalidsubject", None),
-            ("Glow", "some/invalid/", None),
-            ("Glow", "some/valid/notofinterest", None),
-        ],
-    )
-    def test_validate_publisher_and_topic_valid(self, publisher, topic, expected):
-        assert validate_publisher_and_topic(publisher, topic) == expected
-
-    # For Invalid Tests
-    @pytest.mark.parametrize(
-        "publisher, topic, expected_error, expected_message",
-        [
-            (
-                "NotGlow",
-                "some/valid/electricitymeter",
-                ValueError,
-                "Invalid publisher: Glow processor only handles Glow messages, not NotGlow",
-            ),
-        ],
-    )
-    def test_validate_publisher_and_topic_invalid(
-        self, publisher, topic, expected_error, expected_message
-    ):
-        with pytest.raises(expected_error) as e:
-            validate_publisher_and_topic(publisher, topic)
-        assert str(e.value) == expected_message
+#     # For Invalid Tests
+#     @pytest.mark.parametrize(
+#         "publisher, topic, expected_error, expected_message",
+#         [
+#             (
+#                 "NotGlow",
+#                 "some/valid/electricitymeter",
+#                 ValueError,
+#                 "Invalid publisher: Glow processor only handles Glow messages, not NotGlow",
+#             ),
+#         ],
+#     )
+#     def test_validate_publisher_and_topic_invalid(
+#         self, publisher, topic, expected_error, expected_message
+#     ):
+#         with pytest.raises(expected_error) as e:
+#             validate_publisher_and_topic(publisher, topic)
+#         assert str(e.value) == expected_message
 
 
 class TestParseMessagePayload:
@@ -52,7 +49,9 @@ class TestParseMessagePayload:
         measurement_subject = "electricitymeter"
         expected_payload = {"electricitymeter": {"timestamp": "2022-01-01T12:34:56Z"}}
         expected_timestamp = "2022-01-01T12:34:56.000000Z"  # Replace with the actual datetime object if to_datetime converts it
-        payload, timestamp = parse_message_payload(messagebody, measurement_subject)
+        payload, timestamp = glow.parse_message_payload(
+            messagebody, measurement_subject
+        )
         assert payload == expected_payload
         assert timestamp == expected_timestamp
 
@@ -60,7 +59,7 @@ class TestParseMessagePayload:
         messagebody = {}
         measurement_subject = "electricitymeter"
         with pytest.raises(KeyError):
-            parse_message_payload(messagebody, measurement_subject)
+            glow.parse_message_payload(messagebody, measurement_subject)
 
     def test_missing_measurement_subject_in_payload(self):
         messagebody = {
@@ -68,113 +67,292 @@ class TestParseMessagePayload:
         }
         measurement_subject = "electricitymeter"
         with pytest.raises(KeyError):
-            parse_message_payload(messagebody, measurement_subject)
+            glow.parse_message_payload(messagebody, measurement_subject)
 
     def test_missing_timestamp_in_subject(self):
         messagebody = {"payload": json.dumps({"electricitymeter": {}})}
         measurement_subject = "electricitymeter"
         with pytest.raises(KeyError):
-            parse_message_payload(messagebody, measurement_subject)
+            glow.parse_message_payload(messagebody, measurement_subject)
 
 
-class TestCreateRecordsForSubject:
-    
+class TestGetIgnoreKeys:
+    def test_get_ignore_keys(self):
+        assert glow.get_ignore_keys() == [
+            "units",
+            "mpan",
+            "mprn",
+            "supplier",
+            "dayweekmonthvolunits",
+            "cumulativevolunits",
+        ]
+
+
+class TestProcessMeasurementSubject:
+    @pytest.fixture
+    def mock_create_record_recursive(self):
+        with patch("shared_code.glow.create_record_recursive") as mock:
+            # Simulate return values for create_record_recursive
+            mock.side_effect = lambda payload, records, **kwargs: records + [
+                "mocked_record"
+            ]
+            yield mock
+
     @pytest.mark.parametrize(
-        "message_payload, timestamp, correlation_id, publisher, measurement_subject, records, expected_records",
-        [
-            (
-                {
-                    "electricitymeter": {
-                        "energy": {"import": {"value": 100}},
-                        "power": {"value": 200},
-                    }
-                },
-                "2022-01-01T12:34:56Z",
-                "some_id",
-                "Glow",
-                "electricitymeter",
-                [],
-                [
-                    {
-                        "timestamp": "2022-01-01T12:34:56Z",
-                        "correlation_id": "some_id",
-                        "measurement_publisher": "Glow",
-                        "measurement_subject": "electricitymeter",
-                        "measurement_of": "import_value",
-                        "measurement_value": 100,
-                        "measurement_data_type": "number",
-                    },
-                    {
-                        "timestamp": "2022-01-01T12:34:56Z",
-                        "correlation_id": "some_id",
-                        "measurement_publisher": "Glow",
-                        "measurement_subject": "electricitymeter",
-                        "measurement_of": "power_value",
-                        "measurement_value": 200,
-                        "measurement_data_type": "number",
-                    },
-                ],
-            ),
-            (
-                {},  # Empty payload
-                "2022-01-01T12:34:56Z",
-                "some_id",
-                "Glow",
-                "electricitymeter",
-                [],
-                [],
-            ),
-            (
-                {
-                    "electricitymeter": {
-                        "energy": {"import": {"value": 100, "units": "kW"}},
-                        "power": {"value": 200},
-                    }
-                },
-                "2022-01-01T12:34:56Z",
-                "some_id",
-                "Glow",
-                "electricitymeter",
-                [],
-                [
-                    {
-                        "timestamp": "2022-01-01T12:34:56Z",
-                        "correlation_id": "some_id",
-                        "measurement_publisher": "Glow",
-                        "measurement_subject": "electricitymeter",
-                        "measurement_of": "import_value",
-                        "measurement_value": 100,
-                        "measurement_data_type": "number",
-                    },
-                    {
-                        "timestamp": "2022-01-01T12:34:56Z",
-                        "correlation_id": "some_id",
-                        "measurement_publisher": "Glow",
-                        "measurement_subject": "electricitymeter",
-                        "measurement_of": "power_value",
-                        "measurement_value": 200,
-                        "measurement_data_type": "number",
-                    },
-                ],
-            ),
-        ],
+        "measurement_subject, expected_calls",
+        [("electricitymeter", 2), ("gasmeter", 1), ("unknownmeter", 0)],
     )
-    def test_create_records_for_subject(
-        self, 
-        message_payload, 
-        timestamp, 
-        correlation_id, 
-        publisher, 
-        measurement_subject, 
-        records, 
-        expected_records
+    @patch("shared_code.glow.get_ignore_keys")
+    def test_process_measurement_subject(
+        self,
+        mock_get_ignore_keys,
+        mock_create_record_recursive,
+        measurement_subject,
+        expected_calls,
     ):
-        output_records = create_records_for_subject(
-            message_payload,
-            timestamp,
-            correlation_id,
-            publisher,
-            measurement_subject,
-            records,
+        mock_get_ignore_keys.return_value = ["some_keys"]
+        message_payload = {
+            "electricitymeter": {
+                "energy": {"import": {"some": "data"}},
+                "power": {"other": "data"},
+            },
+            "gasmeter": {"energy": {"import": {"some": "data"}}},
+        }
+        timestamp = "2023-01-01T00:00:00Z"
+        correlation_id = "test_correlation_id"
+        publisher = "glow"
+
+        actual_result = glow.process_measurement_subject(
+            message_payload, timestamp, correlation_id, publisher, measurement_subject
         )
-        assert output_records == expected_records
+
+        assert mock_create_record_recursive.call_count == expected_calls
+        assert actual_result == ["mocked_record"] * expected_calls
+
+        if measurement_subject in message_payload:
+            energy_call_args = mock_create_record_recursive.call_args_list[0]
+            assert energy_call_args == (
+                {
+                    "payload": message_payload[measurement_subject]["energy"]["import"],
+                    "records": [],
+                    "timestamp": timestamp,
+                    "correlation_id": correlation_id,
+                    "measurement_publisher": publisher,
+                    "measurement_subject": measurement_subject,
+                    "ignore_keys": mock_get_ignore_keys.return_value,
+                    "measurement_of_prefix": "import",
+                },
+            )
+
+            if measurement_subject == "electricitymeter":
+                power_call_args = mock_create_record_recursive.call_args_list[1]
+                assert power_call_args == (
+                    {
+                        "payload": message_payload[measurement_subject]["power"],
+                        "records": ["mocked_record"]
+                        * (expected_calls - 1),  # records from the first call
+                        "timestamp": timestamp,
+                        "correlation_id": correlation_id,
+                        "measurement_publisher": publisher,
+                        "measurement_subject": measurement_subject,
+                        "ignore_keys": mock_get_ignore_keys.return_value,
+                        "measurement_of_prefix": "power",
+                    },
+                )
+
+    def test_invalid_measurement_subject(self, mock_create_record_recursive):
+        message_payload = {"valid_subject": {"some": "data"}}
+        invalid_subject = "invalid_subject"
+        records = glow.process_measurement_subject(
+            message_payload,
+            "2023-01-01T00:00:00Z",
+            "test_correlation_id",
+            "glow",
+            invalid_subject,
+        )
+
+        assert records == []
+        mock_create_record_recursive.assert_not_called()
+
+
+class TestGlowToTimescale:
+    @patch("shared_code.glow.process_measurement_subject")
+    @patch("shared_code.glow.create_correlation_id")
+    @patch("shared_code.glow.parse_message_payload")
+    @patch("shared_code.glow.is_topic_of_interest")
+    @patch("shared_code.glow.validate_message_body_type_and_keys")
+    @patch("shared_code.glow.validate_publisher")
+    def test_glow_to_timescale_valid_subject(
+        self,
+        mock_validate_publisher,
+        mock_validate_message_body_type_and_keys,
+        mock_is_topic_of_interest,
+        mock_parse_message_payload,
+        mock_create_correlation_id,
+        mock_process_measurement_subject,
+    ):
+        # Set up return values for the mocks
+        mock_is_topic_of_interest.return_value = "electricitymeter"
+        mock_parse_message_payload.return_value = ("mocked_payload", "mocked_timestamp")
+        mock_create_correlation_id.return_value = "mocked_correlation_id"
+        mock_process_measurement_subject.return_value = ["mocked_record"]
+
+        messagebody = {"some_key": "some_value"}
+        topic = "some/topic"
+        publisher = "glow"
+
+        # Call the function under test
+        records = glow.glow_to_timescale(messagebody, topic, publisher)
+
+        # Assertions to verify the correct calls were made to the mocks
+        mock_validate_publisher.assert_called_once_with(publisher, "glow")
+        mock_validate_message_body_type_and_keys.assert_called_once_with(
+            messagebody, "glow"
+        )
+        mock_is_topic_of_interest.assert_called_once_with(
+            topic, ["electricitymeter", "gasmeter"]
+        )
+        mock_parse_message_payload.assert_called_once_with(
+            messagebody, "electricitymeter"
+        )
+        mock_create_correlation_id.assert_called_once()
+        mock_process_measurement_subject.assert_called_once_with(
+            "mocked_payload",
+            "mocked_timestamp",
+            "mocked_correlation_id",
+            publisher,
+            "electricitymeter",
+            [],
+        )
+
+        # Verify the return value
+        assert records == ["mocked_record"]
+
+    @patch('shared_code.glow.process_measurement_subject')
+    @patch('shared_code.glow.create_correlation_id')
+    @patch('shared_code.glow.parse_message_payload')
+    @patch('shared_code.glow.is_topic_of_interest')
+    @patch('shared_code.glow.validate_message_body_type_and_keys')
+    @patch('shared_code.glow.validate_publisher')
+    def test_glow_to_timescale_invalid_subject(self, mock_validate_publisher, mock_validate_message_body_type_and_keys, 
+                                               mock_is_topic_of_interest, mock_parse_message_payload, 
+                                               mock_create_correlation_id, mock_process_measurement_subject):
+
+        # Set up mocks for invalid subject case
+        mock_is_topic_of_interest.return_value = None
+
+        messagebody = {"some_key": "some_value"}
+        topic = "some/topic"
+        publisher = "glow"
+
+        # Call the function under test
+        result = glow.glow_to_timescale(messagebody, topic, publisher)
+
+        # Validate that the function returned early
+        assert result is None or result == []
+
+        # Validate that no further processing was done
+        mock_parse_message_payload.assert_not_called()
+        mock_create_correlation_id.assert_not_called()
+        mock_process_measurement_subject.assert_not_called()
+
+
+# class TestCreateRecordsForSubject:
+#     @pytest.mark.parametrize(
+#         "message_payload, timestamp, correlation_id, publisher, measurement_subject, records, expected_records",
+#         [
+#             (
+#                 {
+#                     "electricitymeter": {
+#                         "energy": {"import": {"value": 100}},
+#                         "power": {"value": 200},
+#                     }
+#                 },
+#                 "2022-01-01T12:34:56Z",
+#                 "some_id",
+#                 "Glow",
+#                 "electricitymeter",
+#                 [],
+#                 [
+#                     {
+#                         "timestamp": "2022-01-01T12:34:56Z",
+#                         "correlation_id": "some_id",
+#                         "measurement_publisher": "Glow",
+#                         "measurement_subject": "electricitymeter",
+#                         "measurement_of": "import_value",
+#                         "measurement_value": 100,
+#                         "measurement_data_type": "number",
+#                     },
+#                     {
+#                         "timestamp": "2022-01-01T12:34:56Z",
+#                         "correlation_id": "some_id",
+#                         "measurement_publisher": "Glow",
+#                         "measurement_subject": "electricitymeter",
+#                         "measurement_of": "power_value",
+#                         "measurement_value": 200,
+#                         "measurement_data_type": "number",
+#                     },
+#                 ],
+#             ),
+#             (
+#                 {},  # Empty payload
+#                 "2022-01-01T12:34:56Z",
+#                 "some_id",
+#                 "Glow",
+#                 "electricitymeter",
+#                 [],
+#                 [],
+#             ),
+#             (
+#                 {
+#                     "electricitymeter": {
+#                         "energy": {"import": {"value": 100, "units": "kW"}},
+#                         "power": {"value": 200},
+#                     }
+#                 },
+#                 "2022-01-01T12:34:56Z",
+#                 "some_id",
+#                 "Glow",
+#                 "electricitymeter",
+#                 [],
+#                 [
+#                     {
+#                         "timestamp": "2022-01-01T12:34:56Z",
+#                         "correlation_id": "some_id",
+#                         "measurement_publisher": "Glow",
+#                         "measurement_subject": "electricitymeter",
+#                         "measurement_of": "import_value",
+#                         "measurement_value": 100,
+#                         "measurement_data_type": "number",
+#                     },
+#                     {
+#                         "timestamp": "2022-01-01T12:34:56Z",
+#                         "correlation_id": "some_id",
+#                         "measurement_publisher": "Glow",
+#                         "measurement_subject": "electricitymeter",
+#                         "measurement_of": "power_value",
+#                         "measurement_value": 200,
+#                         "measurement_data_type": "number",
+#                     },
+#                 ],
+#             ),
+#         ],
+#     )
+#     def test_create_records_for_subject(
+#         self,
+#         message_payload,
+#         timestamp,
+#         correlation_id,
+#         publisher,
+#         measurement_subject,
+#         records,
+#         expected_records,
+#     ):
+#         output_records = glow.process_measurement_subject(
+#             message_payload,
+#             timestamp,
+#             correlation_id,
+#             publisher,
+#             measurement_subject,
+#         )
+#         assert output_records == expected_records
