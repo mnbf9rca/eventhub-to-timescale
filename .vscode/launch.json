@@ -6,10 +6,16 @@
       "type": "python",
       "request": "launch",
       "program": "${file}",
-      "purpose": ["debug-test"],
+      "purpose": [
+        "debug-test"
+      ],
       "console": "integratedTerminal",
       "justMyCode": false,
-      "env": {"PYTEST_ADDOPTS": "--no-cov"}
+      "env": {
+        "PYTEST_ADDOPTS": "--no-cov",
+        "PYTHONPATH": "${workspaceFolder}",
+        "LOG_LEVEL": "DEBUG"
+      }
     },
     {
       "name": "Python: Current File",
@@ -17,7 +23,11 @@
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
-      "justMyCode": true
+      "justMyCode": true,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "LOG_LEVEL": "DEBUG"
+      }
     },
     {
       "name": "debug test shared code",
@@ -25,7 +35,11 @@
       "request": "launch",
       "program": "${workspaceFolder}/test/test_shared_code.py",
       "console": "integratedTerminal",
-      "justMyCode": true
+      "justMyCode": true,
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "LOG_LEVEL": "DEBUG"
+      }
     },
     {
       "name": "Attach to Python Functions",
