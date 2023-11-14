@@ -76,3 +76,9 @@ def create_event_hub_event(event_properties: dict) -> EventHubEvent:
         offset=event_properties["offset"],  # offset is required
         iothub_metadata=event_properties.get("iothub_metadata", {}),
     )
+
+
+# allow execution of this file as a script
+
+if __name__ == "__main__":  # pragma: no cover
+    print(load_test_data())
