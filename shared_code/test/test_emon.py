@@ -1,6 +1,7 @@
 # from test_utils.get_test_data import create_event_hub_event, load_test_data
 from shared_code import emon
 import pytest
+from unittest.mock import patch
 from datetime import datetime
 
 
@@ -11,6 +12,13 @@ class TestValidateThisIsAnEmonMessage:
     def test_with_valid_publisher(self):
         result = emon.validate_this_is_an_emon_message("emon")
         assert result is None
+
+    def test_with_invalid_publisher_type(self):
+        with pytest.raises(
+            ValueError,
+            match=r".*Invalid publisher: emon processor only handles emon messages, not <class 'int'>.*",
+        ):
+            emon.validate_this_is_an_emon_message(7)
 
     def test_with_invalid_publisher(self):
         with pytest.raises(
@@ -41,12 +49,14 @@ class TestValidateMessageBody:
 
 
 class TestExtractTimestamp:
-    def test_extract_timestamp_valid(self):
+    @patch("shared_code.emon.to_datetime_string")
+    def test_extract_timestamp_valid(self, mock_to_datetime_string):
         # Test case with valid timestamp
+        mock_to_datetime_string.return_value = "mock_return_value"
         message_payload = {"time": 1699364497.0467954}
         timestamp = emon.extract_timestamp(message_payload)
-        assert isinstance(timestamp, str)
-        assert timestamp == "2023-11-07T13:41:37.046795Z"
+        assert timestamp == "mock_return_value"
+        assert mock_to_datetime_string.call_count == 1
 
     def test_extract_timestamp_missing_time(self):
         # Test case where 'time' key is missing
@@ -54,68 +64,94 @@ class TestExtractTimestamp:
         with pytest.raises(ValueError) as exc_info:
             emon.extract_timestamp(message_payload)
         assert str(exc_info.value) == (
-            f"Invalid messagebody: emon: missing time, not {message_payload}"
+            f"Invalid message_payload: emon: missing time {message_payload}"
         )
 
-    # Optional: Test for invalid time format, depends on to_datetime's behavior
-    def test_extract_timestamp_invalid_time_format(self):
+    def test_extract_timestamp_invalid_object(self):
         # Test case with invalid time format
-        message_payload = {"time": "invalid_time_format"}
+        message_payload = {"a_string"}
         # Assuming to_datetime raises a specific exception for invalid format
-        with pytest.raises(
-            Exception
-        ):  # Replace YourSpecificException with the actual exception type
+        with pytest.raises(ValueError) as exe:
             emon.extract_timestamp(message_payload)
+        assert str(exe.value) == (
+            f"Invalid message_payload: emon processor only handles dict message_payload, not {type(message_payload)}"
+        )
 
 
-# class Test_emon_to_timescale:
-#         def test_with_ignored_key(self):
-#             actual_value = call_converter("emon", test_data["emon_ignored"])
-#             expected_value = test_data["emon_ignored"]["expected"]
-#             assert expected_value is None
-#             assert actual_value is None
+class TestEmonToTimescale:
+    @patch("shared_code.emon.validate_message_body")
+    @patch("shared_code.emon.validate_this_is_an_emon_message")
+    @patch("shared_code.emon.is_topic_of_interest")
+    @patch("shared_code.emon.json.loads")
+    @patch("shared_code.emon.extract_timestamp")
+    @patch("shared_code.emon.create_correlation_id")
+    @patch("shared_code.emon.create_record_recursive")
+    def test_emon_to_timescale_subject_none(
+        self,
+        mock_create_record_recursive,
+        mock_create_correlation_id,
+        mock_extract_timestamp,
+        mock_json_loads,
+        mock_is_topic_of_interest,
+        mock_validate_this_is_an_emon_message,
+        mock_validate_message_body,
+    ):
+        mock_is_topic_of_interest.return_value = None
+        publisher = "test_publisher"
+        topic = "abc/def"
 
-#         def test_with_valid_emonTx4_data(self):
-#             test_object: dict = test_data["emontx4_json"]
-#             actual_value = call_converter("emon", test_object)
-#             expected_value = test_object["expected"]
-#             for actual, expected in zip(actual_value, expected_value):
-#                 TestCase().assertDictEqual(actual, expected)
-#             assert_valid_schema(actual_value, schema)
+        result = emon.emon_to_timescale({}, topic, publisher)
 
-#         def test_ignored_publisher(self):
-#             test_object: dict = test_data["emontx4_json"]
-#             with pytest.raises(
-#                 ValueError,
-#                 match=r".*Invalid publisher: [eE]mon processor only handles [eE]mon messages, not incorrect_publisher.*",  # noqa E501
-#             ):
-#                 call_converter("emon", test_object, "incorrect_publisher")
+        assert result is None
+        mock_validate_message_body.assert_called_once_with({})
+        mock_validate_this_is_an_emon_message.assert_called_once_with(publisher)
+        mock_is_topic_of_interest.assert_called_once_with(topic, ["emonTx4"])
+        mock_create_record_recursive.assert_not_called()
 
-#     class Test_glow_to_timescale:
-#         def test_with_valid_json_for_electricity_meter(self):
-#             actual_value = call_converter("glow", test_data["glow_electricitymeter"])
-#             expected_value = test_data["glow_electricitymeter"]["expected"]
-#             for actual, expected in zip(actual_value, expected_value):
-#                 TestCase().assertDictEqual(actual, expected)
-#             assert_valid_schema(actual_value, schema)
+    @patch("shared_code.emon.validate_message_body")
+    @patch("shared_code.emon.validate_this_is_an_emon_message")
+    @patch("shared_code.emon.is_topic_of_interest")
+    @patch("shared_code.emon.json.loads")
+    @patch("shared_code.emon.extract_timestamp")
+    @patch("shared_code.emon.create_correlation_id")
+    @patch("shared_code.emon.create_record_recursive")
+    def test_emon_to_timescale_valid(
+        self,
+        mock_create_record_recursive,
+        mock_create_correlation_id,
+        mock_extract_timestamp,
+        mock_json_loads,
+        mock_is_topic_of_interest,
+        mock_validate_this_is_an_emon_message,
+        mock_validate_message_body,
+    ):
+        mock_is_topic_of_interest.return_value = "def"
+        mock_json_loads.return_value = {"payload_data": "some_data"}
+        mock_extract_timestamp.return_value = "2023-01-01T00:00:00"
+        mock_create_correlation_id.return_value = "correlation_id"
+        mock_create_record_recursive.return_value = "sample_record"
+        publisher = "test_publisher"
+        topic = "abc/def"
 
-#         def test_with_valid_json_for_gas_meter(self):
-#             actual_value = call_converter("glow", test_data["glow_gasmeter"])
-#             expected_value = test_data["glow_gasmeter"]["expected"]
-#             for actual, expected in zip(actual_value, expected_value):
-#                 TestCase().assertDictEqual(actual, expected)
-#             assert_valid_schema(actual_value, schema)
+        result = emon.emon_to_timescale(
+            {"payload": '{"payload_data":"some_data"}'}, topic, publisher
+        )
 
-#         def test_ignored_publisher(self):
-#             test_object: dict = test_data["glow_gasmeter"]
-#             with pytest.raises(
-#                 ValueError,
-#                 match=r".*Invalid publisher: [gG]low processor only handles [gG]low messages, not incorrect_publisher.*",  # noqa E501
-#             ):
-#                 call_converter("glow", test_object, "incorrect_publisher")
-
-#         def test_with_item_to_ignored_measurement(self):
-#             actual_value = call_converter("glow", test_data["glow_ignored"])
-#             expected_value = test_data["homie_heartbeat"]["expected"]  # None
-#             assert expected_value is None
-#             assert actual_value is None
+        mock_validate_message_body.assert_called_once_with(
+            {"payload": '{"payload_data":"some_data"}'}
+        )
+        mock_validate_this_is_an_emon_message.assert_called_once_with(publisher)
+        mock_is_topic_of_interest.assert_called_once_with(topic, ["emonTx4"])
+        mock_json_loads.assert_called_once_with('{"payload_data":"some_data"}')
+        mock_extract_timestamp.assert_called_once_with({"payload_data": "some_data"})
+        mock_create_correlation_id.assert_called_once()
+        mock_create_record_recursive.assert_called_once_with(
+            payload=mock_json_loads.return_value,
+            records=[],
+            timestamp=mock_extract_timestamp.return_value,
+            correlation_id=mock_create_correlation_id.return_value,
+            measurement_publisher=publisher,
+            measurement_subject=mock_is_topic_of_interest.return_value,
+            ignore_keys=["time"],
+        )
+        assert result == mock_create_record_recursive.return_value

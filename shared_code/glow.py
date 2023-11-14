@@ -4,7 +4,7 @@ from typing import Any, List, Optional
 from azure.functions import EventHubEvent
 
 from .timeseries import create_record_recursive
-from .helpers import to_datetime, create_correlation_id
+from .helpers import to_datetime_string, create_correlation_id
 
 
 def validate_publisher_and_topic(publisher: str, topic: str) -> Optional[str]:
@@ -21,7 +21,7 @@ def validate_publisher_and_topic(publisher: str, topic: str) -> Optional[str]:
 
 def parse_message_payload(messagebody: dict, measurement_subject: str) -> tuple:
     message_payload = json.loads(messagebody["payload"])
-    timestamp = to_datetime(message_payload[measurement_subject]["timestamp"])
+    timestamp = to_datetime_string(message_payload[measurement_subject]["timestamp"])
     return message_payload, timestamp
 
 

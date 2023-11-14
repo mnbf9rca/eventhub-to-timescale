@@ -22,7 +22,7 @@ from shared_code import (  # noqa E402
     get_record_type,
     PayloadType,
     create_record_recursive,
-    to_datetime,
+    to_datetime_string,
     create_correlation_id,
     recursively_deserialize,
 )
@@ -486,56 +486,56 @@ class Test_Helpers:
         def test_with_string_no_ms_no_tz(self):
             test_data = "2021-01-01T00:00:00"
             expected_value = "2021-01-01T00:00:00.000000Z"
-            actual_value = to_datetime(test_data)
+            actual_value = to_datetime_string(test_data)
             TestCase().assertEqual(actual_value, expected_value)
             TestCase().assertIs(type(actual_value), str)
 
         def test_with_string_no_ms_with_tz(self):
             test_data = "2021-01-01T00:00:00+00:00"
             expected_value = "2021-01-01T00:00:00.000000Z"
-            actual_value = to_datetime(test_data)
+            actual_value = to_datetime_string(test_data)
             TestCase().assertEqual(actual_value, expected_value)
             TestCase().assertIs(type(actual_value), str)
 
         def test_with_string_with_ms_no_tz(self):
             test_data = "2021-01-01T00:00:00.123"
             expected_value = "2021-01-01T00:00:00.123000Z"
-            actual_value = to_datetime(test_data)
+            actual_value = to_datetime_string(test_data)
             TestCase().assertEqual(actual_value, expected_value)
             TestCase().assertIs(type(actual_value), str)
 
         def test_with_string_with_ms_with_tz(self):
             test_data = "2021-01-01T00:00:00.123+00:00"
             expected_value = "2021-01-01T00:00:00.123000Z"
-            actual_value = to_datetime(test_data)
+            actual_value = to_datetime_string(test_data)
             TestCase().assertEqual(actual_value, expected_value)
             TestCase().assertIs(type(actual_value), str)
 
         def test_with_timestamp_no_ms(self):
             test_data = 1609459200
             expected_value = "2021-01-01T00:00:00.000000Z"
-            actual_value = to_datetime(test_data)
+            actual_value = to_datetime_string(test_data)
             TestCase().assertEqual(actual_value, expected_value)
             TestCase().assertIs(type(actual_value), str)
 
         def test_with_timestamp_with_ms(self):
             test_data = 1609459200.123
             expected_value = "2021-01-01T00:00:00.123000Z"
-            actual_value = to_datetime(test_data)
+            actual_value = to_datetime_string(test_data)
             TestCase().assertEqual(actual_value, expected_value)
             TestCase().assertIs(type(actual_value), str)
 
         def test_with_just_a_date(self):
             test_data = "2021-01-01"
             expected_value = "2021-01-01T00:00:00.000000Z"
-            actual_value = to_datetime(test_data)
+            actual_value = to_datetime_string(test_data)
             TestCase().assertEqual(actual_value, expected_value)
             TestCase().assertIs(type(actual_value), str)
 
         def test_with_an_very_precise_timestamp(self):
             test_data = 1609459200.123456789
             expected_value = "2021-01-01T00:00:00.123457Z"
-            actual_value = to_datetime(test_data)
+            actual_value = to_datetime_string(test_data)
             TestCase().assertEqual(actual_value, expected_value)
             TestCase().assertIs(type(actual_value), str)
 
@@ -545,7 +545,7 @@ class Test_Helpers:
                 ValueError,
                 match=r".*timestamp is not in a recognisable format: lemon.*",
             ):
-                to_datetime(test_data)
+                to_datetime_string(test_data)
 
         def test_with_an_incompatible_dict(self):
             test_data = {"a": 1}
@@ -553,7 +553,7 @@ class Test_Helpers:
                 TypeError,
                 match=r"float\(\) argument must be a string or a (real )?number, not 'dict'",
             ):
-                to_datetime(test_data)
+                to_datetime_string(test_data)
 
         def test_with_an_incompatible_int(self):
             test_data = -1
@@ -561,11 +561,11 @@ class Test_Helpers:
                 TypeError,
                 match=r".*Parser must be a string or character stream, not int.*",
             ):
-                to_datetime(test_data)
+                to_datetime_string(test_data)
 
         def test_to_datetime_check_type(self):
             test_data = "2021-01-01T00:00:00"
-            actual_value = to_datetime(test_data)
+            actual_value = to_datetime_string(test_data)
             TestCase().assertIs(type(actual_value), str)
 
     class Test_recursively_deserialize:

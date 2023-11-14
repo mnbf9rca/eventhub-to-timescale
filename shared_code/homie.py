@@ -4,7 +4,7 @@ from azure.functions import EventHubEvent
 
 from .timeseries import create_atomic_record
 from .timeseries import PayloadType
-from .helpers import to_datetime, create_correlation_id
+from .helpers import to_datetime_string, create_correlation_id
 
 
 def homie_to_timescale(
@@ -38,7 +38,7 @@ def homie_to_timescale(
     # convert the message to a json object
     return [
         create_atomic_record(
-            source_timestamp=to_datetime(messagebody["timestamp"]),
+            source_timestamp=to_datetime_string(messagebody["timestamp"]),
             measurement_subject=topic_parts[-2],
             measurement_publisher=publisher,
             measurement_of=measurement_of,

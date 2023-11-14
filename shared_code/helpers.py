@@ -22,7 +22,7 @@ def is_topic_of_interest(topic: str, events_of_interest: List[str]):
         return None
 
 
-def to_datetime(timestamp) -> str:
+def to_datetime_string(timestamp) -> str:
     # Check if the input is a number (int or float)
     if isinstance(timestamp, (int, float)):
         if not (0 <= timestamp <= 253402300799):

@@ -58,36 +58,41 @@ class Test_to_datetime:
         expected_datetime = datetime.fromtimestamp(float(timestamp)).strftime(
             "%Y-%m-%dT%H:%M:%S.%fZ"
         )
-        assert helpers.to_datetime(timestamp) == expected_datetime
+        assert helpers.to_datetime_string(timestamp) == expected_datetime
 
     def test_to_datetime_with_valid_string_timestamp(self):
         # Test with valid string timestamp
         timestamp = "2023-01-01T00:00:00"
         expected_datetime = parser.parse(timestamp).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        assert helpers.to_datetime(timestamp) == expected_datetime
+        assert helpers.to_datetime_string(timestamp) == expected_datetime
 
     def test_to_datetime_with_out_of_range_timestamp(self):
         # Test with out-of-range numeric timestamp
         timestamp = 253402300800  # Out of valid range
         with pytest.raises(ValueError) as exc_info:
-            helpers.to_datetime(timestamp)
+            helpers.to_datetime_string(timestamp)
         assert f"Timestamp out of range: {timestamp}" in str(exc_info.value)
 
-    def test_to_datetime_with_invalid_numeric_timestamp(self):
-        # Test with invalid numeric format
-        timestamp = "not_a_number"
-        with pytest.raises(ValueError):
-            helpers.to_datetime(timestamp)
-
     def test_to_datetime_with_invalid_string_timestamp(self):
-        # Test with invalid string format
+        # Test with invalid numeric format
         timestamp = "invalid_date_string"
-        with pytest.raises(ValueError):
-            helpers.to_datetime(timestamp)
+        with pytest.raises(ValueError) as exc_info:
+            helpers.to_datetime_string(timestamp)
+        assert f"Invalid string timestamp format: {timestamp}" in str(exc_info.value)
+
+    def test_to_datetime_with_invalid_type_timestamp(self):
+        # Test with invalid string format
+        timestamp = {"invalid": "type"}
+        with pytest.raises(TypeError) as exc_info:
+            helpers.to_datetime_string(timestamp)
+        assert f"Unsupported type for timestamp: {type(timestamp).__name__}" in str(
+            exc_info.value
+        )
 
     # Optional: Test for empty/null input, if applicable
     def test_to_datetime_with_empty_input(self):
         # Test with empty string
         timestamp = ""
-        with pytest.raises(ValueError):
-            helpers.to_datetime(timestamp)
+        with pytest.raises(ValueError) as exc_info:
+            helpers.to_datetime_string(timestamp)
+        assert f"Invalid string timestamp format: {timestamp}" in str(exc_info.value)
