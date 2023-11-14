@@ -8,46 +8,6 @@ from datetime import datetime
 # test_data = load_test_data()
 
 
-class TestValidateThisIsAnEmonMessage:
-    def test_with_valid_publisher(self):
-        result = emon.validate_this_is_an_emon_message("emon")
-        assert result is None
-
-    def test_with_invalid_publisher_type(self):
-        with pytest.raises(
-            ValueError,
-            match=r".*Invalid publisher: emon processor only handles emon messages, not <class 'int'>.*",
-        ):
-            emon.validate_this_is_an_emon_message(7)
-
-    def test_with_invalid_publisher(self):
-        with pytest.raises(
-            ValueError,
-            match=r".*Invalid publisher: emon processor only handles emon messages, not incorrect_publisher.*",
-        ):
-            emon.validate_this_is_an_emon_message("incorrect_publisher")
-
-
-class TestValidateMessageBody:
-    def test_with_valid_messagebody(self):
-        result = emon.validate_message_body({"payload": "test"})
-        assert result is None
-
-    def test_with_missing_payload(self):
-        with pytest.raises(
-            ValueError,
-            match=r".*Invalid messagebody: emon: missing payload, not {'test': 'test'}.*",
-        ):
-            emon.validate_message_body({"test": "test"})
-
-    def test_with_non_dict(self):
-        with pytest.raises(
-            ValueError,
-            match=r".*Invalid messagebody: emon processor only handles dict messages, not .*",
-        ):
-            emon.validate_message_body("test")
-
-
 class TestExtractTimestamp:
     @patch("shared_code.emon.to_datetime_string")
     def test_extract_timestamp_valid(self, mock_to_datetime_string):
@@ -79,8 +39,8 @@ class TestExtractTimestamp:
 
 
 class TestEmonToTimescale:
-    @patch("shared_code.emon.validate_message_body")
-    @patch("shared_code.emon.validate_this_is_an_emon_message")
+    @patch("shared_code.emon.validate_message_body_type_and_keys")
+    @patch("shared_code.emon.validate_publisher")
     @patch("shared_code.emon.is_topic_of_interest")
     @patch("shared_code.emon.json.loads")
     @patch("shared_code.emon.extract_timestamp")
@@ -93,23 +53,25 @@ class TestEmonToTimescale:
         mock_extract_timestamp,
         mock_json_loads,
         mock_is_topic_of_interest,
-        mock_validate_this_is_an_emon_message,
+        mock_validate_publisher,
         mock_validate_message_body,
     ):
         mock_is_topic_of_interest.return_value = None
+        this_service = "emon"
         publisher = "test_publisher"
         topic = "abc/def"
+        payload = {}
 
-        result = emon.emon_to_timescale({}, topic, publisher)
+        result = emon.emon_to_timescale(payload, topic, publisher)
 
         assert result is None
-        mock_validate_message_body.assert_called_once_with({})
-        mock_validate_this_is_an_emon_message.assert_called_once_with(publisher)
+        mock_validate_message_body.assert_called_once_with(payload, this_service)
+        mock_validate_publisher.assert_called_once_with(publisher, this_service)
         mock_is_topic_of_interest.assert_called_once_with(topic, ["emonTx4"])
         mock_create_record_recursive.assert_not_called()
 
-    @patch("shared_code.emon.validate_message_body")
-    @patch("shared_code.emon.validate_this_is_an_emon_message")
+    @patch("shared_code.emon.validate_message_body_type_and_keys")
+    @patch("shared_code.emon.validate_publisher")
     @patch("shared_code.emon.is_topic_of_interest")
     @patch("shared_code.emon.json.loads")
     @patch("shared_code.emon.extract_timestamp")
@@ -122,7 +84,7 @@ class TestEmonToTimescale:
         mock_extract_timestamp,
         mock_json_loads,
         mock_is_topic_of_interest,
-        mock_validate_this_is_an_emon_message,
+        mock_validate_publisher,
         mock_validate_message_body,
     ):
         mock_is_topic_of_interest.return_value = "def"
@@ -130,17 +92,15 @@ class TestEmonToTimescale:
         mock_extract_timestamp.return_value = "2023-01-01T00:00:00"
         mock_create_correlation_id.return_value = "correlation_id"
         mock_create_record_recursive.return_value = "sample_record"
+        this_service = "emon"
         publisher = "test_publisher"
         topic = "abc/def"
+        payload = {"payload": '{"payload_data":"some_data"}'}
 
-        result = emon.emon_to_timescale(
-            {"payload": '{"payload_data":"some_data"}'}, topic, publisher
-        )
+        result = emon.emon_to_timescale(payload, topic, publisher)
 
-        mock_validate_message_body.assert_called_once_with(
-            {"payload": '{"payload_data":"some_data"}'}
-        )
-        mock_validate_this_is_an_emon_message.assert_called_once_with(publisher)
+        mock_validate_message_body.assert_called_once_with(payload, this_service)
+        mock_validate_publisher.assert_called_once_with(publisher, this_service)
         mock_is_topic_of_interest.assert_called_once_with(topic, ["emonTx4"])
         mock_json_loads.assert_called_once_with('{"payload_data":"some_data"}')
         mock_extract_timestamp.assert_called_once_with({"payload_data": "some_data"})
