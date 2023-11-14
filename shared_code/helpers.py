@@ -1,8 +1,12 @@
+"""
+common functions used by the azure functions
+"""
 import json
 from typing import Any, List
 from datetime import datetime
 from dateutil import parser
 from azure.functions import EventHubEvent
+from uuid import uuid4
 
 
 def is_topic_of_interest(topic: str, events_of_interest: List[str]):
@@ -51,17 +55,18 @@ def to_datetime(timestamp: str) -> str:
         raise e
 
 
-def create_correlation_id(event: EventHubEvent) -> str:
-    """Create a correlation id from the event
-    @param event: the event
+def create_correlation_id() -> str:
+    """Create a correlation id. Note this used to be based on the event but now just returns a v4 uuid
+
     @return: the correlation id
     """
-    if event is None:
-        raise ValueError("event cannot be None")
-    if event.sequence_number is None:
-        raise ValueError("event.sequence_number cannot be None")
-    enqueued_time_str = event.enqueued_time.strftime("%Y-%m-%dT%H:%M:%S.%f")
-    return f"{enqueued_time_str}-{event.sequence_number}"
+    return str(uuid4())
+    # if event is None:
+    #     raise ValueError("event cannot be None")
+    # if event.sequence_number is None:
+    #     raise ValueError("event.sequence_number cannot be None")
+    # enqueued_time_str = event.enqueued_time.strftime("%Y-%m-%dT%H:%M:%S.%f")
+    # return f"{enqueued_time_str}-{event.sequence_number}"
 
 
 def recursively_deserialize(item: Any) -> dict:

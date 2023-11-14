@@ -68,7 +68,6 @@ def create_records_for_subject(
 
 
 def glow_to_timescale(
-    event: EventHubEvent,
     messagebody: dict,
     topic: str,
     publisher: str,
@@ -78,7 +77,7 @@ def glow_to_timescale(
         return
 
     message_payload, timestamp = parse_message_payload(messagebody, measurement_subject)
-    correlation_id = create_correlation_id(event)
+    correlation_id = create_correlation_id()
 
     records = []
     records = create_records_for_subject(

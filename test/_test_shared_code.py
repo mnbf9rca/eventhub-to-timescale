@@ -3,7 +3,7 @@ import sys
 from typing import Any, List
 from unittest import TestCase
 import pytest
-from get_test_data import create_event_hub_event, load_test_data
+from test_utils.get_test_data import create_event_hub_event, load_test_data
 from azure.functions import EventHubEvent
 from datetime import datetime, timezone
 
@@ -177,9 +177,7 @@ class Test_Timeseries:
             assert actual_value == PayloadType.NUMBER
 
         def test_with_none(self):
-            with pytest.raises(
-                TypeError, match=r".*Unknown payload type: NoneType.*"
-            ):
+            with pytest.raises(TypeError, match=r".*Unknown payload type: NoneType.*"):
                 get_record_type(None)
 
         def test_with_empty_string(self):
@@ -195,11 +193,15 @@ class Test_Timeseries:
                 get_record_type({"a": 1})
 
         def test_with_invalid_list(self):
-            with pytest.raises(TypeError, match=r".*List is not a valid coordinate pair: .*"):
+            with pytest.raises(
+                TypeError, match=r".*List is not a valid coordinate pair: .*"
+            ):
                 get_record_type(["a", 1])
 
         def test_with_invalid_list_of_three(self):
-            with pytest.raises(TypeError, match=r".*List is not a valid coordinate pair: .*"):
+            with pytest.raises(
+                TypeError, match=r".*List is not a valid coordinate pair: .*"
+            ):
                 get_record_type([40.7128, -74.0062, 10])
 
         def test_with_valid_geography_list(self):
@@ -618,43 +620,6 @@ class Test_Helpers:
             test_data = "2021-01-01T00:00:00"
             actual_value = to_datetime(test_data)
             TestCase().assertIs(type(actual_value), str)
-
-    class Test_create_correlation_id:
-        def test_valid_id_created_from_event(self):
-            sample_event = EventHubEvent(
-                body=b"{}",
-                sequence_number=1,
-                enqueued_time=datetime(2020, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc),
-            )
-            expected_value = "2020-01-01T00:00:00.000000-1"
-            actual_value = create_correlation_id(sample_event)
-            TestCase().assertIs(type(actual_value), str)
-            TestCase().assertEqual(actual_value, expected_value)
-
-        def test_with_no_event(self):
-            with pytest.raises(ValueError, match=r".*event cannot be None.*"):
-                create_correlation_id(None)
-
-        def test_with_no_enqueued_time(self):
-            sample_event = EventHubEvent(
-                body=b"{}",
-                sequence_number=1,
-                enqueued_time=None,
-            )
-            with pytest.raises(
-                AttributeError,
-                match=r".*'NoneType' object has no attribute 'strftime'.*",
-            ):
-                create_correlation_id(sample_event)
-
-        def test_with_no_sequence_number(self):
-            sample_event = EventHubEvent(
-                body=b"{}",
-                sequence_number=None,
-                enqueued_time=datetime(2020, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc),
-            )
-            with pytest.raises(ValueError, match=r".*sequence_number cannot be None.*"):
-                create_correlation_id(sample_event)
 
     class Test_recursively_deserialize:
         def test_with_valid_json(self):

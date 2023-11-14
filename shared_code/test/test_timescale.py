@@ -14,7 +14,7 @@ import pytest
 
 
 # import test data
-from get_test_data import load_test_data
+from test_utils.get_test_data import load_test_data
 
 test_data = load_test_data()
 

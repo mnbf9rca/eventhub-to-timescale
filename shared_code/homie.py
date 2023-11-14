@@ -8,7 +8,7 @@ from .helpers import to_datetime, create_correlation_id
 
 
 def homie_to_timescale(
-    event: EventHubEvent, messagebody: dict, topic: str, publisher: str
+    messagebody: dict, topic: str, publisher: str
 ) -> List[dict[str, Any]]:
     """Convert a homie message to a timescale record
     @param event: the eventhub event
@@ -34,7 +34,7 @@ def homie_to_timescale(
     measurement_of = topic_parts[-1]
     if measurement_of not in events_of_interest:
         return
-    correlation_id = create_correlation_id(event)
+    correlation_id = create_correlation_id()
     # convert the message to a json object
     return [
         create_atomic_record(
