@@ -54,6 +54,7 @@ relative_files = true
 
 [tool.pytest.ini_options]
 addopts = "--cov --cov-branch --cov-report term-missing -vv --strict-markers -rfE"
+pythonpath = "${workspaceFolder}"
 
 [tool.flake8]
 max-line-length = 120
