@@ -5,7 +5,6 @@ import json
 from typing import Any, List
 from datetime import datetime
 from dateutil import parser
-from azure.functions import EventHubEvent
 from uuid import uuid4
 
 
