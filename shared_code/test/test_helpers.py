@@ -51,6 +51,75 @@ class Test_is_topic_of_interest:
         assert helpers.is_topic_of_interest(topic, events_of_interest) is None
 
 
+class TestValidateMessageBody:
+    def test_with_valid_messagebody(self):
+        result = helpers.validate_message_body_type_and_keys(
+            {"payload": "test"}, "testing"
+        )
+        assert result is None
+
+    def test_with_missing_service_name(self):
+        with pytest.raises(
+            ValueError, match=r".*validate_message_body: Invalid service_name: .*"
+        ):
+            helpers.validate_message_body_type_and_keys({"payload": "test"}, None)
+
+    def test_with_missing_messagebody(self):
+        with pytest.raises(
+            ValueError, match=r".*Invalid messagebody: testing: messagebody is None.*"
+        ):
+            helpers.validate_message_body_type_and_keys(None, "testing")
+
+    def test_with_missing_payload(self):
+        with pytest.raises(
+            ValueError,
+            match=r".*Invalid messagebody: testing: 'payload', not in {'test': 'test'}.*",
+        ):
+            helpers.validate_message_body_type_and_keys({"test": "test"}, "testing")
+
+    def test_with_non_dict(self):
+        with pytest.raises(
+            ValueError,
+            match=r".*Invalid messagebody: testing processor only handles dict messages, not .*",
+        ):
+            helpers.validate_message_body_type_and_keys("test", "testing")
+
+    def test_with_empty_dict(self):
+        with pytest.raises(
+            ValueError,
+            match=r".*Invalid messagebody: testing: 'payload', not in {}.*",
+        ):
+            helpers.validate_message_body_type_and_keys({}, "testing")
+
+    def test_with_other_keys(self):
+        result = helpers.validate_message_body_type_and_keys(
+            {"payload": "test_val", "test_key": "test_val2"},
+            "testing_service_name",
+            ["test_key"],
+        )
+        assert result is None
+
+    def test_with_missing_other_keys(self):
+        with pytest.raises(
+            ValueError,
+            match=r".*Invalid messagebody: testing_service_name: 'test_key', not in .*",
+        ):
+            helpers.validate_message_body_type_and_keys(
+                {"payload": "test_val"}, "testing_service_name", ["test_key"]
+            )
+
+    def test_with_missing_other_keys_bigger_dict(self):
+        with pytest.raises(
+            ValueError,
+            match=r".*Invalid messagebody: testing_service_name: 'test_key', not in .*",
+        ):
+            helpers.validate_message_body_type_and_keys(
+                {"payload": "test_val", "not_the_test_key": "test_val2"},
+                "testing_service_name",
+                ["test_key"],
+            )
+
+
 class Test_to_datetime:
     def test_to_datetime_with_valid_numeric_timestamp(self):
         # Test with valid numeric timestamp
@@ -89,10 +158,43 @@ class Test_to_datetime:
             exc_info.value
         )
 
-    # Optional: Test for empty/null input, if applicable
     def test_to_datetime_with_empty_input(self):
         # Test with empty string
         timestamp = ""
         with pytest.raises(ValueError) as exc_info:
             helpers.to_datetime_string(timestamp)
         assert f"Invalid string timestamp format: {timestamp}" in str(exc_info.value)
+
+
+class TestValidateThisIsAnEmonMessage:
+    def test_with_valid_publisher(self):
+        result = helpers.validate_publisher("test_pub", "test_pub")
+        assert result is None
+
+    def test_with_invalid_publisher_type(self):
+        with pytest.raises(
+            ValueError,
+            match=r".*Invalid publisher: test_pub processor only handles test_pub messages, not <class 'int'>.*",
+        ):
+            helpers.validate_publisher(7, "test_pub")
+
+    def test_with_missing_expected_publisher_type(self):
+        with pytest.raises(
+            ValueError,
+            match=r".*Invalid expected_publisher: expected str not.*",
+        ):
+            helpers.validate_publisher("test", None)
+
+    def test_with_non_string_expected_publisher_type(self):
+        with pytest.raises(
+            ValueError,
+            match=r".*Invalid expected_publisher: expected str not.*",
+        ):
+            helpers.validate_publisher("test", 7)
+
+    def test_with_invalid_publisher(self):
+        with pytest.raises(
+            ValueError,
+            match=r".*Invalid publisher: test_pub processor only handles test_pub messages, not incorrect_publisher.*",
+        ):
+            helpers.validate_publisher("incorrect_publisher", "test_pub")

@@ -22,6 +22,60 @@ def is_topic_of_interest(topic: str, events_of_interest: List[str]):
         return None
 
 
+def validate_publisher(publisher: str, expected_publisher: str):
+    """Validate that the publisher is emon
+    @param publisher: the publisher
+    @return: None
+    @throws: ValueError if the publisher is not emon
+    """
+    if not isinstance(expected_publisher, str) or expected_publisher is None:
+        raise ValueError(
+            f"Invalid expected_publisher: expected str not {type(publisher)}"
+        )
+    if not isinstance(publisher, str):
+        raise ValueError(
+            f"Invalid publisher: {expected_publisher} processor only handles {expected_publisher} messages, not {type(publisher)}"
+        )
+    if publisher.lower() != expected_publisher.lower():
+        raise ValueError(
+            f"Invalid publisher: {expected_publisher} processor only handles {expected_publisher} messages, not {publisher}"
+        )
+
+
+def validate_message_body_type_and_keys(
+    messagebody: Any, service_name: str, other_keys: List[str] = None
+) -> None:
+    """Validate that the message body is a valid dict and that it has a payload
+    @param messagebody: the message body
+    @param service_name: the service name
+    @param other_keys: other keys to check for
+    @return: None
+    @throws: ValueError if the message body is not a dict or if it does not have a payload
+
+    """
+    if service_name is None:
+        raise ValueError(
+            "validate_message_body: Invalid service_name: service_name is None"
+        )
+    if messagebody is None:
+        raise ValueError(f"Invalid messagebody: {service_name}: messagebody is None")
+
+    if not isinstance(messagebody, dict):
+        raise ValueError(
+            f"Invalid messagebody: {service_name} processor only handles dict messages, not {type(messagebody)}"
+        )
+    if "payload" not in messagebody:
+        raise ValueError(
+            f"Invalid messagebody: {service_name}: 'payload', not in {messagebody}"
+        )
+    if other_keys is not None:
+        for key in other_keys:
+            if key not in messagebody:
+                raise ValueError(
+                    f"Invalid messagebody: {service_name}: '{key}', not in {messagebody}"
+                )
+
+
 def to_datetime_string(timestamp) -> str:
     # Check if the input is a number (int or float)
     if isinstance(timestamp, (int, float)):
