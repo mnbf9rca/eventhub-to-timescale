@@ -22,37 +22,24 @@ def is_topic_of_interest(topic: str, events_of_interest: List[str]):
         return None
 
 
-def to_datetime(timestamp: str) -> str:
-    """Convert a timestamp to a datetime
-    @param timestamp: the timestamp
-    @return: the datetime
-    """
-    # first, check that the timestamp is in the correct format
-    # if it's an int or a float, then try to convert it to
-    try:
-        timestamp_float = float(timestamp)
-        # we can only assume this is UTC - we havent seen enough from the emon messages to know
-        # looking at the source, which i think is
-        # https://github.com/emoncms/emoncms/blob/master/scripts/phpmqtt_input.php#L272
-        # it looks like the timestamp is generated using php time() which is timezone agnostic
-        # and for homie i'm not sure where the timestamp is coming from
-        # check that it's in the max and min range for a timestamp
-        if timestamp_float > 253402300799 or timestamp_float < 0:
-            raise ValueError(f"timestamp is not in a recognisable format: {timestamp}")
-        return datetime.fromtimestamp(float(timestamp)).strftime(
-            "%Y-%m-%dT%H:%M:%S.%fZ"
-        )
-    except ValueError:
-        pass
-    except Exception as e:
-        raise e
-    # if it's a string, parse it and return the datetime
-    try:
-        return parser.parse(timestamp).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    except parser.ParserError:
-        raise ValueError(f"timestamp is not in a recognisable format: {timestamp}")
-    except Exception as e:
-        raise e
+def to_datetime(timestamp) -> str:
+    # Check if the input is a number (int or float)
+    if isinstance(timestamp, (int, float)):
+        if not (0 <= timestamp <= 253402300799):
+            raise ValueError(f"Timestamp out of range: {timestamp}")
+        return datetime.fromtimestamp(timestamp).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    # Check if the input is a string
+    elif isinstance(timestamp, str):
+        try:
+            parsed_time = parser.parse(timestamp)
+            return parsed_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        except parser.ParserError as pe:
+            raise ValueError(f"Invalid string timestamp format: {timestamp}") from pe
+
+    # Raise an error for unsupported types
+    else:
+        raise TypeError(f"Unsupported type for timestamp: {type(timestamp).__name__}")
 
 
 def create_correlation_id() -> str:

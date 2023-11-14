@@ -18,6 +18,7 @@ def emon_to_timescale(
     @return: a list of timescale records
     """
     # examine the topic. We're only interested in topics where the last part is in events_of_interest
+    validate_message_body(messagebody)
     validate_this_is_an_emon_message(publisher)
     events_of_interest = ["emonTx4"]
     measurement_subject = is_topic_of_interest(topic, events_of_interest)
@@ -25,7 +26,7 @@ def emon_to_timescale(
         return
     message_payload = json.loads(messagebody["payload"])
     # the timestamp is in the message payload
-    timestamp = to_datetime(message_payload["time"])
+    timestamp = extract_timestamp(message_payload)
     correlation_id = create_correlation_id()
     # for these messages, we need to construct an array of records, one for each value
     records = []
@@ -40,6 +41,27 @@ def emon_to_timescale(
     )
 
     return records
+
+
+def validate_message_body(messagebody):
+    if not isinstance(messagebody, dict):
+        raise ValueError(
+            f"Invalid messagebody: emon processor only handles dict messages, not {type(messagebody)}"
+        )
+    if "payload" not in messagebody:
+        raise ValueError(
+            f"Invalid messagebody: emon: missing payload, not {messagebody}"
+        )
+
+
+def extract_timestamp(message_payload):
+    if "time" not in message_payload:
+        raise ValueError(
+            f"Invalid messagebody: emon: missing time, not {message_payload}"
+        )
+
+    timestamp = to_datetime(message_payload["time"])
+    return timestamp
 
 
 def validate_this_is_an_emon_message(publisher):
