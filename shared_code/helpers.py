@@ -45,18 +45,18 @@ def validate_publisher(publisher: str, expected_publisher: str):
 def validate_message_body_type_and_keys(
     messagebody: Any, service_name: str, other_keys: List[str] = None
 ) -> None:
-    """Validate that the message body is a valid dict and that it has a payload
+    """Validate that the message body is a valid dict and that it has a 'payload'
     @param messagebody: the message body
     @param service_name: the service name
-    @param other_keys: other keys to check for
+    @param other_keys: other keys to check for (beyond 'payload')
     @return: None
-    @throws: ValueError if the message body is not a dict or if it does not have a payload
+    @throws: ValueError if the message body is not a dict or if it does not have the required keys
+    @throws: TypeError if the message body is not a dict
+    @throws: ValueError if the service_name is not a string
 
     """
-    if service_name is None:
-        raise ValueError(
-            "validate_message_body: Invalid service_name: service_name is None"
-        )
+    if service_name is None or not isinstance(service_name, str):
+        raise ValueError(f"validate_message_body: Invalid service_name: {service_name}")
     if messagebody is None:
         raise ValueError(f"Invalid messagebody: {service_name}: messagebody is None")
 

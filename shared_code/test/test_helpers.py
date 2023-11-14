@@ -6,7 +6,7 @@ from dateutil import parser
 from datetime import datetime
 
 
-class Test_create_correlation_id:
+class TestCreateCorrelationId:
     @pytest.fixture
     def mock_uuid4(self):
         mock_uuid = "12345678-1234-5678-1234-567812345678"
@@ -19,7 +19,7 @@ class Test_create_correlation_id:
         assert correlation_id == "12345678-1234-5678-1234-567812345678"
 
 
-class Test_is_topic_of_interest:
+class TestIsTopicOfInterest:
     def test_topic_of_interest(self):
         # Test case where the topic is of interest
         topic = "home/temperature/living_room"
@@ -84,6 +84,12 @@ class TestValidateMessageBody:
         ):
             helpers.validate_message_body_type_and_keys("test", "testing")
 
+    def test_with_non_string_service_name(self):
+        with pytest.raises(
+            ValueError, match=r".*validate_message_body: Invalid service_name: .*"
+        ):
+            helpers.validate_message_body_type_and_keys({"payload": "test"}, 7)
+
     def test_with_empty_dict(self):
         with pytest.raises(
             ValueError,
@@ -120,7 +126,7 @@ class TestValidateMessageBody:
             )
 
 
-class Test_to_datetime:
+class TestToDatetime:
     def test_to_datetime_with_valid_numeric_timestamp(self):
         # Test with valid numeric timestamp
         timestamp = 1699364497.0467954  # Example timestamp
@@ -166,7 +172,7 @@ class Test_to_datetime:
         assert f"Invalid string timestamp format: {timestamp}" in str(exc_info.value)
 
 
-class TestValidateThisIsAnEmonMessage:
+class TestValidatePublisher:
     def test_with_valid_publisher(self):
         result = helpers.validate_publisher("test_pub", "test_pub")
         assert result is None
