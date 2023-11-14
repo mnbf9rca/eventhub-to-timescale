@@ -127,19 +127,23 @@ class TestValidateMessageBody:
 
 
 class TestToDatetime:
-    def test_to_datetime_with_valid_numeric_timestamp(self):
-        # Test with valid numeric timestamp
-        timestamp = 1699364497.0467954  # Example timestamp
-        expected_datetime = datetime.fromtimestamp(float(timestamp)).strftime(
-            "%Y-%m-%dT%H:%M:%S.%fZ"
-        )
-        assert helpers.to_datetime_string(timestamp) == expected_datetime
-
-    def test_to_datetime_with_valid_string_timestamp(self):
-        # Test with valid string timestamp
-        timestamp = "2023-01-01T00:00:00"
-        expected_datetime = parser.parse(timestamp).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        assert helpers.to_datetime_string(timestamp) == expected_datetime
+    @pytest.mark.parametrize(
+        "test_data, expected_value",
+        [
+            ("2021-01-01T00:00:00", "2021-01-01T00:00:00.000000Z"),
+            ("2021-01-01T00:00:00+00:00", "2021-01-01T00:00:00.000000Z"),
+            ("2021-01-01T00:00:00.123", "2021-01-01T00:00:00.123000Z"),
+            ("2021-01-01T00:00:00.123+00:00", "2021-01-01T00:00:00.123000Z"),
+            (1609459200, "2021-01-01T00:00:00.000000Z"),
+            (1609459200.123, "2021-01-01T00:00:00.123000Z"),
+            ("2021-01-01", "2021-01-01T00:00:00.000000Z"),
+            (1609459200.123456789, "2021-01-01T00:00:00.123457Z"),
+        ],
+    )
+    def test_to_datetime_with_valid_timestamp(self, test_data, expected_value):
+        actual_value = helpers.to_datetime_string(test_data)
+        assert actual_value == expected_value
+        assert isinstance(actual_value, str)
 
     def test_to_datetime_with_out_of_range_timestamp(self):
         # Test with out-of-range numeric timestamp
@@ -204,3 +208,38 @@ class TestValidatePublisher:
             match=r".*Invalid publisher: test_pub processor only handles test_pub messages, not incorrect_publisher.*",
         ):
             helpers.validate_publisher("incorrect_publisher", "test_pub")
+
+
+class TestRecursivelyDeserialize:
+    @pytest.mark.parametrize(
+        "test_data, expected_value",
+        [
+            ('{"a": 1}', {"a": 1}),
+            ('{"a": 1', '{"a": 1'),
+            (None, None),
+            ("", ""),
+            ('{"a": {"b": 1}}', {"a": {"b": 1}}),
+            ('{"a": [{"b": 1}]}', {"a": [{"b": 1}]}),
+            ('{"a": [{"b": 1}, {"c": 2}]}', {"a": [{"b": 1}, {"c": 2}]}),
+            ('{"a": [{"b": 1}, {"c": 2}, "d"]}', {"a": [{"b": 1}, {"c": 2}, "d"]}),
+            (
+                '{"homie_heartbeat": {"type": "EventHubEvent", "properties": {"body": "[{\\"a\\": \\"1\\", \\"b\\": \\"2\\"}, {\\"c\\": 3, \\"d\\": 4}]"}}}',
+                {
+                    "homie_heartbeat": {
+                        "type": "EventHubEvent",
+                        "properties": {"body": [{"a": 1, "b": 2}, {"c": 3, "d": 4}]},
+                    }
+                },
+            ),
+            ('{"a": 1, "b": 2}', {"a": 1, "b": 2}),
+        ],
+    )
+    # @pytest.mark.parametrize(
+    #     "test_data, expected_value",
+    #     [
+    #         ('{"a": {"b": 1}}', {"a": {"b": 1}}),
+    #     ],
+    # )
+    def test_recursively_deserialize(self, test_data, expected_value):
+        actual_value = helpers.recursively_deserialize(test_data)
+        assert actual_value == expected_value

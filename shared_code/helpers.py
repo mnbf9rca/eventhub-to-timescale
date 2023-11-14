@@ -118,17 +118,24 @@ def recursively_deserialize(item: Any) -> dict:
         return {key: recursively_deserialize(value) for key, value in item.items()}
     elif isinstance(item, (list, tuple)):
         return [recursively_deserialize(value) for value in item]
-    if not isinstance(item, str):
+    if isinstance(item, str):
+        try:
+            deserialized_item = json.loads(item)
+            return recursively_deserialize(deserialized_item)
+        except json.JSONDecodeError:
+            return item
+    else:
         return item
-    try:
-        deserialized_item = json.loads(item)
-        # if it's an iterative type, then recursively deserialize it
-        # otherwise return the original item
-        # this list comes from https://docs.python.org/3/library/json.html#json.JSONDecoder
-        return (
-            recursively_deserialize(deserialized_item)
-            if isinstance(deserialized_item, (dict, list, tuple))
-            else item
-        )
-    except json.JSONDecodeError:
-        return item
+    #     return item
+    # try:
+    #     deserialized_item = json.loads(item)
+    #     # if it's an iterative type, then recursively deserialize it
+    #     # otherwise return the original item
+    #     # this list comes from https://docs.python.org/3/library/json.html#json.JSONDecoder
+    #     return (
+    #         recursively_deserialize(deserialized_item)
+    #         if isinstance(deserialized_item, (dict, list, tuple))
+    #         else item
+    #     )
+    # except json.JSONDecodeError:
+    #     return item
