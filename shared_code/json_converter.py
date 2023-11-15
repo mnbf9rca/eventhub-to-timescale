@@ -15,9 +15,18 @@ def convert_json_to_timeseries(
     outputEventHubMessage: func.Out[List[str]],
 ) -> None:
     array_of_events_as_strings = [get_event_as_str(event) for event in to_list(events)]
-    messages: filter[list[dict[str, Any]]] = filter(
-        None, (convert_event(event) for event in array_of_events_as_strings)
-    )
+
+    # Apply convert_event to each element
+    converted_events = [convert_event(event) for event in array_of_events_as_strings]
+
+    # Flatten, handle single dict returns, and filter out None values
+    messages = [
+        event
+        for sublist in converted_events
+        if sublist is not None
+        for event in (sublist if isinstance(sublist, list) else [sublist])
+    ]
+
     send_messages(messages, outputEventHubMessage)
 
 
@@ -55,21 +64,42 @@ def convert_event(event_str):
         logging.debug(f"Parsed payload: {payload}")
         return payload if payload else None
     except Exception as e:
-        logging.error(f"Error in event conversion: {e}")
+        logging.error(f"json_converter.convert_event: Error in event conversion: {e}")
+        logging.error(f"json_converter.convert_event: Event: {str(event_str)}")
         return None
 
 
 def send_messages(
     messages: Iterator[Any], outputEventHubMessage: func.Out[List[str]]
 ) -> None:
+    payload_to_send = []
+    correlation_ids = []
     for message in messages:
         try:
+            # add correlation id to correlation_ids only if it doesnt already exist
+            if isinstance(message, dict) and "correlation_id" in message:
+                message_correlation_id = message.get("correlation_id")
+                if (
+                    message_correlation_id
+                    and message_correlation_id not in correlation_ids
+                ):
+                    correlation_ids.append(message_correlation_id)
             payload = json.dumps(message)
-            outputEventHubMessage.set(payload)
+            payload_to_send.append(payload)
         except (json.JSONDecodeError, ValueError, TypeError):
             logging.error(f"json_converter: Error serializing message: {message}")
         except Exception as e:
             logging.error(f"json_converter: Error sending message: {e}")
+    try:
+        if len(payload_to_send) > 0:
+            outputEventHubMessage.set(payload_to_send)
+        logging.info(
+            f"json_converter: Sent {len(payload_to_send)} messages with correlation ids: {correlation_ids}"
+        )
+    except Exception as e:
+        logging.error(
+            f"json_converter: Error setting outputEventHubMessage for correlation ids '{correlation_ids}': {e}"
+        )
 
 
 # def convert_json_to_timeseries(
