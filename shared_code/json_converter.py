@@ -91,7 +91,7 @@ def send_messages(
         except Exception as e:
             logging.error(f"json_converter: Error sending message: {e}")
     try:
-        if len(payload_to_send) > 0:
+        if payload_to_send:
             outputEventHubMessage.set(payload_to_send)
         logging.info(
             f"json_converter: Sent {len(payload_to_send)} messages with correlation ids: {correlation_ids}"
