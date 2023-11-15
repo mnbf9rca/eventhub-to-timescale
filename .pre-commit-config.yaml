@@ -5,6 +5,21 @@ repos:
       - id: poetry-check
       - id: poetry-lock
       - id: poetry-export
+
+  - repo: local
+    hooks:
+      - id: dotenv-vault-pull
+        name: dotenv-vault pull
+        entry: npx dotenv-vault@latest pull
+        language: system
+        stages: [pre-commit]
+      - id: dotenv-vault-build
+        name: dotenv-vault build
+        entry: npx dotenv-vault@latest build
+        language: system
+        stages: [pre-commit]
+
+
       #   args: ["-f", "requirements.txt", "--output", "requirements.txt", "--without-hashes"]
       # - id: poetry-export
       #   args: ["-f", "requirements.txt", "--output", "test-requirements.txt", "--only", "test", "--without-hashes"]
