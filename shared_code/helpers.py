@@ -118,13 +118,12 @@ def recursively_deserialize(item: Any) -> dict:
         return {key: recursively_deserialize(value) for key, value in item.items()}
     elif isinstance(item, (list, tuple)):
         return [recursively_deserialize(value) for value in item]
-    if isinstance(item, str):
-        try:
-            deserialized_item = json.loads(item)
-            return recursively_deserialize(deserialized_item)
-        except json.JSONDecodeError:
-            return item
-    else:
+    if not isinstance(item, str):
+        return item
+    try:
+        deserialized_item = json.loads(item)
+        return recursively_deserialize(deserialized_item)
+    except json.JSONDecodeError:
         return item
     #     return item
     # try:

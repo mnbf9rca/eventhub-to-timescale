@@ -71,7 +71,7 @@ def get_payload_type(measurement_of: str) -> PayloadType:
     @param measurement_of: the measurement_of
     @return: the payload type
     """
-    if measurement_of in ["state", "mode"]:
+    if measurement_of in {"state", "mode"}:
         return PayloadType.STRING
     else:
         return PayloadType.NUMBER
