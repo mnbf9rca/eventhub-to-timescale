@@ -2,8 +2,6 @@ from shared_code import helpers
 from uuid import UUID
 from unittest.mock import patch
 import pytest
-from dateutil import parser
-from datetime import datetime
 
 
 class TestCreateCorrelationId:
@@ -223,7 +221,7 @@ class TestRecursivelyDeserialize:
             ('{"a": [{"b": 1}, {"c": 2}]}', {"a": [{"b": 1}, {"c": 2}]}),
             ('{"a": [{"b": 1}, {"c": 2}, "d"]}', {"a": [{"b": 1}, {"c": 2}, "d"]}),
             (
-                '{"homie_heartbeat": {"type": "EventHubEvent", "properties": {"body": "[{\\"a\\": \\"1\\", \\"b\\": \\"2\\"}, {\\"c\\": 3, \\"d\\": 4}]"}}}',
+                '{"homie_heartbeat": {"type": "EventHubEvent", "properties": {"body": "[{\\"a\\": \\"1\\", \\"b\\": \\"2\\"}, {\\"c\\": 3, \\"d\\": 4}]"}}}',  # noqa: E501
                 {
                     "homie_heartbeat": {
                         "type": "EventHubEvent",

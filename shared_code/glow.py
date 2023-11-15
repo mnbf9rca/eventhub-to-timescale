@@ -1,5 +1,5 @@
 import json
-from typing import Any, List, Optional
+from typing import Any, List
 
 from .timeseries import create_record_recursive
 from .helpers import (

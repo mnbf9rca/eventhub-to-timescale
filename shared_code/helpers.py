@@ -33,11 +33,11 @@ def validate_publisher(publisher: str, expected_publisher: str):
         )
     if not isinstance(publisher, str):
         raise ValueError(
-            f"Invalid publisher: {expected_publisher} processor only handles {expected_publisher} messages, not {type(publisher)}"
+            f"Invalid publisher: {expected_publisher} processor only handles {expected_publisher} messages, not {type(publisher)}"  # noqa: E501
         )
     if publisher.lower() != expected_publisher.lower():
         raise ValueError(
-            f"Invalid publisher: {expected_publisher} processor only handles {expected_publisher} messages, not {publisher}"
+            f"Invalid publisher: {expected_publisher} processor only handles {expected_publisher} messages, not {publisher}"  # noqa: E501
         )
 
 

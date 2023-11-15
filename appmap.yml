@@ -1,9 +1,0 @@
-appmap_dir: tmp/appmap
-language: python
-name: eventhub-to-timescale
-packages:
-- path: json_to_timeseries
-- path: bmw_update
-- path: timeseries_to_timescale
-- path: shared_code
-- path: bmw_to_timescale

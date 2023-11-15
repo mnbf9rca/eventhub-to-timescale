@@ -1,7 +1,5 @@
 import json
-from typing import Any, List
-
-from azure.functions import EventHubEvent
+from typing import Any
 
 from .timeseries import create_record_recursive
 from .helpers import (
