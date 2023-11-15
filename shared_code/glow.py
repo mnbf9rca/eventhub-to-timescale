@@ -82,14 +82,10 @@ def glow_to_timescale(
     message_payload, timestamp = parse_message_payload(messagebody, measurement_subject)
     correlation_id = create_correlation_id()
 
-    records = []
-    records = process_measurement_subject(
+    return process_measurement_subject(
         message_payload,
         timestamp,
         correlation_id,
         publisher,
         measurement_subject,
-        records,
     )
-
-    return records
