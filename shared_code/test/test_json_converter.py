@@ -1,6 +1,7 @@
 import pytest
 import json
 import datetime
+from typing import List
 from unittest.mock import Mock, patch
 import azure.functions as func
 
@@ -171,17 +172,53 @@ class TestSendMessages:
         return Mock(spec=func.Out)
 
     @pytest.mark.parametrize(
-        "messages, expected_message_count",
+        "messages, expected_message_count, ids",
         [
-            (["message1", "message2", "message3"], 3),
-            (iter(["message1", "message2", "message3"]), 3),  # testing with an iterator
+            (["message1", "message2", "message3"], 3, []),
+            (
+                iter(["message1", "message2", "message3"]),
+                3,
+                [],
+            ),  # testing with an iterator
+            (
+                [
+                    {"name": "name1", "correlation_id": "id1"},
+                    {"name3": "name4", "correlation_id": "id2"},
+                ],
+                2,
+                ["id1", "id2"],
+            ),
+            (
+                [
+                    {"name": "name1", "correlation_id": "id1"},
+                    {"name3": "name4", "correlation_id": "id1"},
+                ],
+                2,
+                ["id1"],
+            ),
         ],
     )
+    @patch("shared_code.json_converter.logging")
     def test_send_messages_success(
-        self, messages, expected_message_count, mock_output_event_hub_message
+        self,
+        mock_logging,
+        messages,
+        expected_message_count,
+        ids,
+        mock_output_event_hub_message,
     ):
         json_converter.send_messages(messages, mock_output_event_hub_message)
-        assert mock_output_event_hub_message.set.call_count == expected_message_count
+        assert mock_output_event_hub_message.set.call_count == 1
+
+        message_payload = mock_output_event_hub_message.set.call_args[0][0]
+        assert len(message_payload) == expected_message_count
+        assert isinstance(message_payload, List)
+        assert all(isinstance(message, str) for message in message_payload)
+        assert mock_logging.info.call_count == 1
+        assert mock_logging.info.call_args[0][0] == (
+            f"json_converter: Sent {expected_message_count} messages with correlation ids: {ids}"
+        )
+        assert mock_logging.error.call_count == 0
 
     @pytest.mark.parametrize(
         "message, exception",
@@ -226,12 +263,35 @@ class TestSendMessages:
         json_converter.send_messages(messages, mock_output_event_hub_message)
 
         # Check that set is called twice (for message1 and message3)
-        assert mock_output_event_hub_message.set.call_count == 2
+        assert mock_output_event_hub_message.set.call_count == 1
+        assert mock_output_event_hub_message.set.call_args[0][0] == [
+            '"message1"',
+            '"message3"',
+        ]
 
         # Check that the correct log message is recorded
         mock_logging_error.assert_called_once_with(
             "json_converter: Error serializing message: message2"
         )
+
+    @patch("shared_code.json_converter.logging.error")
+    def test_send_messages_output_event_hub_failure(
+        self, mock_logging_error, mock_output_event_hub_message
+    ):
+        # Mock outputEventHubMessage.set to raise an exception
+        mock_output_event_hub_message.set.side_effect = Exception(
+            "Output Event Hub Failure"
+        )
+
+        # Test data
+        messages = ["message"]
+
+        # Call the function under test
+        json_converter.send_messages(messages, mock_output_event_hub_message)
+
+        # Assertions
+        mock_logging_error.assert_called_once()
+        assert "Output Event Hub Failure" in mock_logging_error.call_args[0][0]
 
 
 class TestExtractTopic:
@@ -325,9 +385,13 @@ class TestConvertJsonToTimeseries:
 
         # Assert that send_messages is called correctly
         mock_send_messages.assert_called_once()
-        sent_messages = mock_send_messages.call_args[0][
-            0
-        ]  # Extract the first argument passed to send_messages
+        # Extract the first argument passed to send_messages
+        sent_messages = mock_send_messages.call_args[0][0]
+        # check that we have list[Any] and not list[list[Any]] | None]
+        assert isinstance(sent_messages, list)
+        assert all(not isinstance(item, list) for item in sent_messages)
+        assert all(item is not None for item in sent_messages)
+        # check that the correct messages are sent
         assert list(sent_messages) == [
             "valid_event_1_eventhub_event",
             "valid_event_2_str",
@@ -369,7 +433,7 @@ class TestConvertEvent:
     @patch("shared_code.json_converter.logging.error")
     def test_convert_event_json_error(self, mock_logging_error, event_str):
         assert json_converter.convert_event(event_str) is None
-        mock_logging_error.assert_called_once()
+        assert mock_logging_error.call_count == 2
 
     @pytest.mark.parametrize(
         "event_str",
@@ -385,8 +449,11 @@ class TestConvertEvent:
         mock_extract_topic.side_effect = Exception("Mocked Extraction error")
 
         assert json_converter.convert_event(event_str) is None
-        mock_logging_error.assert_called_once()
-        assert "Mocked Extraction error" in mock_logging_error.call_args[0][0]
+        assert mock_logging_error.call_count == 2
+        assert (
+            "json_converter.convert_event: Error in event conversion: Mocked Extraction error"
+            in mock_logging_error.call_args_list[0][0]
+        )
 
     @pytest.mark.parametrize(
         "event_str",
@@ -404,8 +471,9 @@ class TestConvertEvent:
         mock_extract_topic.return_value = ("topic", "publisher")
 
         assert json_converter.convert_event(event_str) is None
-        assert mock_logging_error.call_count == 1
+        assert mock_logging_error.call_count == 2
 
-        assert mock_logging_error.call_args[0][0] == (
-            "Error in event conversion: Mock Conversion error"
+        assert (
+            "json_converter.convert_event: Error in event conversion: Mock Conversion error"
+            in mock_logging_error.call_args_list[0][0]
         )
