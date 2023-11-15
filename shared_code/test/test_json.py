@@ -168,8 +168,7 @@ class TestGetEventAsStr:
 class TestSendMessages:
     @pytest.fixture
     def mock_output_event_hub_message(self):
-        mock = Mock(spec=func.Out)
-        return mock
+        return Mock(spec=func.Out)
 
     @pytest.mark.parametrize(
         "messages, expected_message_count",
