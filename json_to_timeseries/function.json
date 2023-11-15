@@ -9,7 +9,8 @@
       "eventHubName": "underne",
       "connection": "underne_eventhubreader_EVENTHUB",
       "cardinality": "many",
-      "consumerGroup": "%consumergroup%"
+      "consumerGroup": "%consumergroup%",
+      "dataType": "string"
     },
     {
       "type": "eventHub",
