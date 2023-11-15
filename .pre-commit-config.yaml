@@ -8,11 +8,6 @@ repos:
 
   - repo: local
     hooks:
-      - id: dotenv-vault-pull
-        name: dotenv-vault pull
-        entry: npx dotenv-vault@latest pull
-        language: system
-        stages: [pre-commit]
       - id: dotenv-vault-build
         name: dotenv-vault build
         entry: npx dotenv-vault@latest build
