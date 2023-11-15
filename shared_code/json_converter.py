@@ -11,7 +11,7 @@ import azure.functions as func
 
 
 def convert_json_to_timeseries(
-    events: List[func.EventHubEvent] | List[str],
+    events: List[func.EventHubEvent | str] | func.EventHubEvent | str,
     outputEventHubMessage: func.Out[List[str]],
 ) -> None:
     array_of_events_as_strings = [get_event_as_str(event) for event in to_list(events)]
