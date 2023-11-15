@@ -10,7 +10,7 @@ repos:
     hooks:
       - id: dotenv-vault-build
         name: dotenv-vault build
-        entry: npx dotenv-vault@latest build
+        entry: npx --yes dotenv-vault@latest build
         language: system
         stages: [pre-commit]
 
