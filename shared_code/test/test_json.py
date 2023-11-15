@@ -7,6 +7,15 @@ import azure.functions as func
 from shared_code import json_converter
 
 
+def create_eventhub_event(body: str) -> func.EventHubEvent:
+    return func.EventHubEvent(
+        body=body.encode("UTF-8"),
+        enqueued_time=datetime.datetime.now(),
+        offset=0,
+        sequence_number=0,
+    )
+
+
 class TestSendToConverter:
     @pytest.fixture()
     def mock_glow_to_timescale(self, mocker):
@@ -90,15 +99,6 @@ class TestSendToConverter:
 
 
 class TestGetEventAsStr:
-    @staticmethod
-    def create_eventhub_event(body: str):
-        return func.EventHubEvent(
-            body=body.encode("UTF-8"),
-            enqueued_time=datetime.datetime.now(),
-            offset=0,
-            sequence_number=0,
-        )
-
     @pytest.mark.parametrize(
         "input_event, expected",
         [
@@ -216,3 +216,108 @@ class TestSendMessages:
         mock_logging_error.assert_called_once_with(
             "json_converter: Error serializing message: message2"
         )
+
+
+class TestExtractTopic:
+    @pytest.mark.parametrize(
+        "messagebody, expected",
+        [
+            (
+                {"topic": "publisher1/something/else"},
+                ("publisher1/something/else", "publisher1"),
+            ),
+            (
+                {"topic": "publisher2/anothershortertopic"},
+                ("publisher2/anothershortertopic", "publisher2"),
+            ),
+            # Add more cases as needed
+        ],
+    )
+    def test_extract_topic_success(self, messagebody, expected):
+        assert json_converter.extract_topic(messagebody) == expected
+
+    @pytest.mark.parametrize(
+        "messagebody",
+        [
+            ({}),
+            ({"not_topic": "value"}),
+        ],
+    )
+    def test_extract_topic_no_topic_key(self, messagebody):
+        with pytest.raises(ValueError):
+            with patch("logging.error") as mock_logging_error:
+                json_converter.extract_topic(messagebody)
+                mock_logging_error.assert_called_once()
+
+
+class TestToList:
+    @pytest.mark.parametrize(
+        "input, expected",
+        [
+            (
+                ["event1", "event2", "event3"],
+                ["event1", "event2", "event3"],
+            ),  # list input
+            ("single_event", ["single_event"]),  # single non-list input
+            (123, [123]),  # numeric input
+            (None, [None]),  # None input
+            ([], []),  # empty list input
+        ],
+    )
+    def test_to_list(self, input, expected):
+        assert json_converter.to_list(input) == expected
+
+
+class TestConvertJsonToTimeseries:
+    @pytest.fixture
+    def mock_output_event_hub_message(self):
+        return Mock(spec=func.Out)
+
+    @patch("shared_code.json_converter.get_event_as_str")
+    @patch("shared_code.json_converter.convert_event")
+    @patch("shared_code.json_converter.send_messages")
+    def test_convert_json_to_timeseries(
+        self,
+        mock_send_messages,
+        mock_convert_event,
+        mock_get_event_as_str,
+        mock_output_event_hub_message,
+    ):
+        # Define custom behavior for mock_get_event_as_str and mock_convert_event
+        mock_get_event_as_str.side_effect = (
+            lambda event: event
+            if isinstance(event, str)
+            else event.get_body().decode("utf-8")
+        )
+
+        mock_convert_event.side_effect = (
+            lambda event: event if "valid" in event else None
+        )
+
+        # Create test data
+        events = [
+            create_eventhub_event("valid_event_1_eventhub_event"),
+            "valid_event_2_str",
+            create_eventhub_event(
+                "missing_event_eventhub_event"
+            ),  # This should be filtered out
+            "valid_event_3_str",
+        ]
+
+        # Call the function under test
+        json_converter.convert_json_to_timeseries(events, mock_output_event_hub_message)
+
+        # Assert that send_messages is called correctly
+        mock_send_messages.assert_called_once()
+        sent_messages = mock_send_messages.call_args[0][
+            0
+        ]  # Extract the first argument passed to send_messages
+        assert list(sent_messages) == [
+            "valid_event_1_eventhub_event",
+            "valid_event_2_str",
+            "valid_event_3_str",
+        ]
+
+        # Ensure the other functions are called as expected
+        assert mock_get_event_as_str.call_count == len(events)
+        assert mock_convert_event.call_count == len(events)

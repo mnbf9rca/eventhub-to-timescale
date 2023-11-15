@@ -1,6 +1,5 @@
 import json
 import logging
-import itertools
 from typing import Any, List, Iterator
 from shared_code.glow import glow_to_timescale
 from shared_code.homie import homie_to_timescale
@@ -41,7 +40,11 @@ def get_event_as_str(event):
         )
         logging.debug(error_message)
         raise TypeError(error_message)
-    return event if isinstance(event, str) else event.get_body().decode("utf-8")
+    try:
+        return event if isinstance(event, str) else event.get_body().decode("utf-8")
+    except Exception as e:
+        logging.error(f"Error getting event body: {e}")
+        raise
 
 
 def convert_event(event_str):
@@ -131,13 +134,9 @@ def send_to_converter(
 
 
 def extract_topic(messagebody: dict) -> tuple[str, str]:
-    try:
-        if topic := messagebody.get("topic"):
-            publisher = topic.split("/")[0]
-            return topic, publisher
-        else:
-            logging.error(f"Error extracting topic: {messagebody}")
-            raise ValueError(f"Error extracting topic: {messagebody}")
-    except Exception as e:
-        logging.error(f"Error extracting topic: {e}")
-        raise
+    if topic := messagebody.get("topic"):
+        publisher = topic.split("/")[0]
+        return topic, publisher
+    else:
+        logging.error(f"Error extracting topic: {messagebody}")
+        raise ValueError(f"Error extracting topic: {messagebody}")
