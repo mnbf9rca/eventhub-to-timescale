@@ -187,7 +187,6 @@ class TestGlowToTimescale:
             "mocked_correlation_id",
             publisher,
             "electricitymeter",
-            [],
         )
 
         # Verify the return value
