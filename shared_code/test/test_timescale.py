@@ -672,3 +672,47 @@ class TestStoreData:
         assert mock_conn.__exit__.call_count == 1
         assert len(exc_info.value.args[0]) == 1
         assert error in exc_info.value.args[0]
+
+    @patch("shared_code.timescale.psycopg.connect")
+    @patch("shared_code.timescale.get_connection_string")
+    @patch("shared_code.timescale.create_single_timescale_record")
+    @patch("shared_code.timescale.get_table_name")
+    def test_store_data_with_raised_errors(
+        self,
+        mock_get_table_name,
+        mock_create_single_timescale_record,
+        mock_get_connection_string,
+        mock_connect,
+    ):
+        mock_conn = Mock()
+        mock_conn.__enter__ = Mock(return_value=mock_conn)
+        mock_conn.__exit__ = Mock(return_value=None)
+        mock_connect.return_value = mock_conn
+
+        mock_get_connection_string.return_value = "test_connection_string"
+
+        # Simulate raised errors for certain events
+        raised_errors = [Exception("Error 1"), Exception("Error 2")]
+        mock_create_single_timescale_record.side_effect = (
+            lambda conn, record_batch, table_name: raised_errors
+            if "error_event" in record_batch
+            else []
+        )
+
+        events = [
+            Mock(spec=func.EventHubEvent, get_body=Mock(return_value=b"error_event")),
+            Mock(spec=func.EventHubEvent, get_body=Mock(return_value=b"normal_event")),
+        ]
+
+        # Call the function and expect an exception to be raised
+        with pytest.raises(Exception) as exc_info:
+            timescale.store_data(events)
+
+        assert len(exc_info.value.args[0]) == len(raised_errors)
+        for error in raised_errors:
+            assert error in exc_info.value.args[0]
+
+        mock_connect.assert_called_once_with("test_connection_string")
+        assert mock_conn.__enter__.call_count == 1
+        assert mock_conn.__exit__.call_count == 1
+        assert mock_create_single_timescale_record.call_count == len(events)
