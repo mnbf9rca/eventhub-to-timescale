@@ -8,7 +8,6 @@ import azure.functions as func
 
 
 import os
-import sys
 import uuid
 import psycopg
 import pytest_mock
