@@ -1,5 +1,3 @@
-import sys
-import os
 from typing import List
 import logging
 
@@ -7,8 +5,8 @@ import azure.functions as func
 
 
 # Add the project root directory to the Python path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from shared_code import convert_bmw_to_timescale
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from shared_code.bmw_to_timescale import convert_bmw_to_timescale
 
 
 def main(
