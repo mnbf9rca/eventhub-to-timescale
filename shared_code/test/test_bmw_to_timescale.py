@@ -21,13 +21,12 @@ from shared_code import bmw_to_timescale as btc
 import shared_code as sc
 from shared_code import PayloadType
 from azure.functions import EventHubEvent, Out
-from shared_code.duplicate_check import check_duplicate, store_id
 
 
 def generate_alpha_uuid():
     raw_uuid = str(uuid.uuid4()).replace("-", "")  # Remove hyphens
     # Replace the first character with a letter if it's a digit
-    return f'a{raw_uuid[1:]}' if raw_uuid[0].isdigit() else raw_uuid
+    return f"a{raw_uuid[1:]}" if raw_uuid[0].isdigit() else raw_uuid
 
 
 class TestConvertBmwToTimescaleEndToEnd:
@@ -63,7 +62,9 @@ class TestConvertBmwToTimescaleEndToEnd:
 
         for event in events:
             # Call the function
-            convert_bmw_to_timescale(event, mock_outputEventHubMessage, mock_outputEventHubMessage_monitor)
+            convert_bmw_to_timescale(
+                event, mock_outputEventHubMessage, mock_outputEventHubMessage_monitor
+            )
 
         # Validate that the external functions were called the expected number of times
         assert mock_get_vin_from_message.call_count == 3
@@ -107,9 +108,12 @@ class TestConvertBmwToTimescale:
         mock_outputEventHubMessage = MagicMock()
         mock_outputEventHubMessage_monitor = MagicMock(spec=Out)
 
-
         # Call function
-        convert_bmw_to_timescale([MagicMock()], mock_outputEventHubMessage, mock_outputEventHubMessage_monitor)
+        convert_bmw_to_timescale(
+            [MagicMock()],
+            mock_outputEventHubMessage,
+            mock_outputEventHubMessage_monitor,
+        )
 
         # Assertions
         mock_check_duplicate.assert_called_once_with(
@@ -181,7 +185,11 @@ class TestConvertBmwToTimescale:
 
         # Call function and assert that it raises the expected exception
         with pytest.raises(Exception) as excinfo:
-            convert_bmw_to_timescale([MagicMock()], mock_outputEventHubMessage, mock_outputEventHubMessage_monitor)
+            convert_bmw_to_timescale(
+                [MagicMock()],
+                mock_outputEventHubMessage,
+                mock_outputEventHubMessage_monitor,
+            )
 
         # Assert the exception message
         assert str(excinfo.value) == "An error occurred while sending message"

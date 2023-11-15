@@ -1,13 +1,14 @@
 import pytest
 import json
 
+
 # from unittest import mock
 import pytest_mock
 import os
 import sys
 import logging
 
-from get_test_data import create_event_hub_event, load_test_data
+from test_utils.get_test_data import create_event_hub_event, load_test_data
 
 
 # add the shared_code directory to the path
@@ -17,8 +18,8 @@ import json_to_timeseries  # noqa: E402
 from json_to_timeseries import (  # noqa: E402
     main,
     parse_message,
-    send_to_converter,
-    extract_topic,
+    # send_to_converter,
+    #  extract_topic,
 )
 
 

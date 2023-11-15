@@ -1,8 +1,11 @@
 import datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, Mock, MagicMock, create_autospec
 from typing import Any, Tuple
 from dateutil import parser
 from dotenv import load_dotenv
+from shared_code import timescale
+import azure.functions as func
+
 
 import os
 import sys
@@ -14,7 +17,7 @@ import pytest
 
 
 # import test data
-from get_test_data import load_test_data
+from test_utils.get_test_data import load_test_data
 
 test_data = load_test_data()
 
@@ -608,3 +611,108 @@ class Test_validate_all_fields_in_record:
         }
         actual_value = validate_all_fields_in_record(test_record)
         assert actual_value is None
+
+
+class TestStoreData:
+    @patch("shared_code.timescale.get_connection_string")
+    @patch("shared_code.timescale.create_single_timescale_record")
+    @patch("shared_code.timescale.get_table_name")
+    @patch("shared_code.timescale.psycopg.connect")
+    def test_store_data_success(
+        self,
+        mock_connect,
+        mock_get_table_name,
+        mock_create_single_timescale_record,
+        mock_get_connection_string,
+    ):
+        mock_conn = Mock()
+        mock_conn.__enter__ = Mock(return_value=mock_conn)  # Context manager enter
+        mock_conn.__exit__ = Mock(return_value=None)  # Context manager exit
+        mock_connect.return_value = mock_conn
+        mock_get_connection_string.return_value = "test_connection_string"
+        mock_create_single_timescale_record.return_value = []
+        events = [Mock(spec=func.EventHubEvent) for _ in range(3)]
+        for event in events:
+            event.get_body.return_value = b"test data"
+
+        # Call the function
+        timescale.store_data(events)
+
+        assert mock_conn.__enter__.call_count == 1
+        assert mock_conn.__exit__.call_count == 1
+        mock_create_single_timescale_record.assert_called()
+        assert mock_create_single_timescale_record.call_count == len(events)
+
+    @patch("shared_code.timescale.get_connection_string")
+    @patch("shared_code.timescale.create_single_timescale_record")
+    @patch("shared_code.timescale.get_table_name")
+    @patch("shared_code.timescale.psycopg.connect")
+    def test_store_data_with_errors(
+        self,
+        mock_connect,
+        mock_get_table_name,
+        mock_create_single_timescale_record,
+        mock_get_connection_string,
+    ):
+        mock_conn = Mock()
+        mock_conn.__enter__ = Mock(return_value=mock_conn)  # Context manager enter
+        mock_conn.__exit__ = Mock(return_value=None)  # Context manager exit
+        mock_connect.return_value = mock_conn
+        mock_get_connection_string.return_value = "test_connection_string"
+        error = Exception("Test error")
+        mock_create_single_timescale_record.side_effect = [error]
+
+        events = [Mock(spec=func.EventHubEvent)]
+        events[0].get_body.return_value = b"test data"
+
+        with pytest.raises(Exception) as exc_info:
+            timescale.store_data(events)
+
+        assert mock_conn.__enter__.call_count == 1
+        assert mock_conn.__exit__.call_count == 1
+        assert len(exc_info.value.args[0]) == 1
+        assert error in exc_info.value.args[0]
+
+    @patch("shared_code.timescale.psycopg.connect")
+    @patch("shared_code.timescale.get_connection_string")
+    @patch("shared_code.timescale.create_single_timescale_record")
+    @patch("shared_code.timescale.get_table_name")
+    def test_store_data_with_raised_errors(
+        self,
+        mock_get_table_name,
+        mock_create_single_timescale_record,
+        mock_get_connection_string,
+        mock_connect,
+    ):
+        mock_conn = Mock()
+        mock_conn.__enter__ = Mock(return_value=mock_conn)
+        mock_conn.__exit__ = Mock(return_value=None)
+        mock_connect.return_value = mock_conn
+
+        mock_get_connection_string.return_value = "test_connection_string"
+
+        # Simulate raised errors for certain events
+        raised_errors = [Exception("Error 1"), Exception("Error 2")]
+        mock_create_single_timescale_record.side_effect = (
+            lambda conn, record_batch, table_name: raised_errors
+            if "error_event" in record_batch
+            else []
+        )
+
+        events = [
+            Mock(spec=func.EventHubEvent, get_body=Mock(return_value=b"error_event")),
+            Mock(spec=func.EventHubEvent, get_body=Mock(return_value=b"normal_event")),
+        ]
+
+        # Call the function and expect an exception to be raised
+        with pytest.raises(Exception) as exc_info:
+            timescale.store_data(events)
+
+        assert len(exc_info.value.args[0]) == len(raised_errors)
+        for error in raised_errors:
+            assert error in exc_info.value.args[0]
+
+        mock_connect.assert_called_once_with("test_connection_string")
+        assert mock_conn.__enter__.call_count == 1
+        assert mock_conn.__exit__.call_count == 1
+        assert mock_create_single_timescale_record.call_count == len(events)

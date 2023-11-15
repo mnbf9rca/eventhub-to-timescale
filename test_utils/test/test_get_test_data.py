@@ -5,7 +5,7 @@ import datetime
 import json
 from azure.functions import EventHubEvent
 
-from get_test_data import create_event_hub_event, load_test_data
+from test_utils.get_test_data import create_event_hub_event, load_test_data
 
 
 class Test_create_event_hub_event:
@@ -86,7 +86,7 @@ class Test_create_event_hub_event:
             "iothub_metadata": {"d": "4", "e": "5"},
         }
         expected_value = EventHubEvent(
-            body=b'{}',  # binary encoded string
+            body=b"{}",  # binary encoded string
             trigger_metadata=sample_event["trigger_metadata"],
             enqueued_time=datetime.datetime(
                 2020, 1, 1, 0, 0, 0, 0, tzinfo=datetime.timezone.utc
@@ -209,9 +209,7 @@ class Test_load_test_data:
         assert isinstance(actual_value, dict)
         TestCase().assertDictEqual(actual_value, test_data)
 
-    def test_throws_error_if_file_not_found(
-        self, mocker: pytest_mock.MockerFixture
-    ):
+    def test_throws_error_if_file_not_found(self, mocker: pytest_mock.MockerFixture):
         mocked_open = mocker.mock_open()
         builtin_open = "builtins.open"
         mocker.patch(builtin_open, mocked_open)

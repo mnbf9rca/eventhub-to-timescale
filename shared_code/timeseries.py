@@ -85,9 +85,11 @@ def create_record_recursive(
                         source_timestamp=timestamp,
                         measurement_publisher=measurement_publisher,
                         measurement_subject=measurement_subject,
-                        measurement_of=(key
-                                        if measurement_of_prefix is None
-                                        else f"{measurement_of_prefix}_{key}"),
+                        measurement_of=(
+                            key
+                            if measurement_of_prefix is None
+                            else f"{measurement_of_prefix}_{key}"
+                        ),
                         measurement_value=payload[key],
                         measurement_data_type=get_record_type(payload[key]),
                         correlation_id=correlation_id,

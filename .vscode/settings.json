@@ -6,9 +6,10 @@
   "azureFunctions.projectRuntime": "~4",
   "debug.internalConsoleOptions": "neverOpen",
   "python.defaultInterpreterPath": "${workspaceFolder}/venv/bin/python",
-  "python.testing.pytestArgs": [
-    "test"
-  ],
+  // "python.testing.pytestArgs": [
+  //       "--env",
+  //       "PYTHONPATH=your/pythonpath"
+  // ],
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
@@ -16,5 +17,6 @@
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "dotenv.enableAutocloaking": false,
-  "Prettier-SQL.SQLFlavourOverride": "postgresql"
+  "Prettier-SQL.SQLFlavourOverride": "postgresql",
+  
 }
