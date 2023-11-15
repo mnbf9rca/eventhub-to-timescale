@@ -1,17 +1,14 @@
 from typing import Any, List, Dict, Optional, Tuple
 import json
-import sys
 import logging
-import os
 from azure.functions import EventHubEvent, Out
-
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(SCRIPT_DIR))
 import shared_code as sc
 
 
 def convert_bmw_to_timescale(
-    event: EventHubEvent, outputEventHubMessage: Out[str], outputEventHubMessage_monitor: Out[str]
+    event: EventHubEvent,
+    outputEventHubMessage: Out[str],
+    outputEventHubMessage_monitor: Out[str],
 ) -> None:
     # things we're interested in in the message body
     # vin - this is mapped to the measurement_subject
@@ -35,7 +32,6 @@ def convert_bmw_to_timescale(
     messages_to_send = construct_messages(vin, last_updated_at, event_object)
     message_list = [json.dumps(message) for message in messages_to_send]
     try:
-
         outputEventHubMessage.set(message_list)
         outputEventHubMessage_monitor.set(message_list)
         sc.store_id(last_updated_at, vin, tsc)
@@ -173,7 +169,11 @@ def create_records_from_fields(
         if field in all_fields:
             try:
                 # Safely get the value calculation, if the field exists in all_fields
-                value = all_fields.get(field, None) if callable(value_calculation) else value_calculation
+                value = (
+                    all_fields.get(field, None)
+                    if callable(value_calculation)
+                    else value_calculation
+                )
                 atomic_record = sc.create_atomic_record(
                     source_timestamp=last_updated_at,
                     measurement_subject=vin,
@@ -181,7 +181,7 @@ def create_records_from_fields(
                     measurement_of=field,
                     measurement_data_type=payload_type,
                     correlation_id=last_updated_at,
-                    measurement_value=value
+                    measurement_value=value,
                 )
                 messages.append(atomic_record)
             except Exception as e:
@@ -210,7 +210,7 @@ def get_coordinates_from_message(messagebody: Dict[str, Any]) -> list[float] | N
     """  # noqa: E501
     try:
         location = messagebody.get("state", None).get("location", None)
-        # check if location actually contains an object called coordinates
+        # check if location actually contains an object called coordinates
         if location is not None and "coordinates" in location:
             return location
     except AttributeError:

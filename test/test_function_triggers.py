@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import patch
 
 from bmw_to_timescale import main as bmw_to_timescale_main

@@ -1,11 +1,6 @@
-# from test_utils.get_test_data import create_event_hub_event, load_test_data
 from shared_code import emon
 import pytest
 from unittest.mock import patch
-from datetime import datetime
-
-
-# test_data = load_test_data()
 
 
 class TestExtractTimestamp:

@@ -1,18 +1,11 @@
-import json
 import os
-import sys
 import pytest
-import asyncio
+
 from unittest.mock import MagicMock, patch, Mock, call
 
 from bimmer_connected.api.regions import Regions
-from bimmer_connected.account import MyBMWAccount
 from bimmer_connected.vehicle import MyBMWVehicle
 from bimmer_connected.utils import MyBMWJSONEncoder
-
-
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(SCRIPT_DIR))
 from shared_code.bmw import (
     get_vehicle_by_vin,
     get_bmw_region_from_string,
@@ -171,18 +164,20 @@ class TestSerialiseCarData:
         with patch("json.dumps") as mock_json_dumps:
             mock_cars = [self.mock_car1, self.mock_car2]
             expected_json = ['{"attribute1": "value1"}', '{"attribute2": "value2"}']
-            
+
             # Use side_effect to return different values on different calls
             mock_json_dumps.side_effect = expected_json
 
             result = serialise_car_data(mock_cars)
 
-        mock_json_dumps.assert_has_calls([
+        mock_json_dumps.assert_has_calls(
+            [
                 call(self.mock_car1.data, cls=MyBMWJSONEncoder),
                 call(self.mock_car2.data, cls=MyBMWJSONEncoder),
-            ])
+            ]
+        )
         assert mock_json_dumps.call_count == 2
-        assert result == expected_json 
+        assert result == expected_json
 
     def test_get_and_serialise_car_data(self):
         mock_cars = [Mock(), Mock()]

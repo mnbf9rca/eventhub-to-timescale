@@ -1,15 +1,10 @@
 import json
 import os
-import sys
 from typing import List
 from azure.functions import EventHubEvent
 import datetime
 from dateutil import parser
-
-# add the shared_code directory to the path
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(SCRIPT_DIR))
-from shared_code import recursively_deserialize  # noqa: E402
+from shared_code import recursively_deserialize
 
 
 def load_test_data():
@@ -17,8 +12,8 @@ def load_test_data():
     Load test data from a JSON file
     @return: a dictionary of test data
     """
-    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-    test_data_path = os.sep.join([SCRIPT_DIR, "test_data.json"])
+    current_file_directory = os.path.dirname(os.path.abspath(__file__))
+    test_data_path = os.sep.join([current_file_directory, "test_data.json"])
 
     with open(test_data_path, "r") as f:
         raw_test_data = f.read()

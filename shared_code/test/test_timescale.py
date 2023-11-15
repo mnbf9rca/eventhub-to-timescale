@@ -1,5 +1,5 @@
 import datetime
-from unittest.mock import MagicMock, patch, Mock, MagicMock, create_autospec
+from unittest.mock import MagicMock, patch, Mock
 from typing import Any, Tuple
 from dateutil import parser
 from dotenv import load_dotenv
@@ -18,13 +18,6 @@ import pytest
 
 # import test data
 from test_utils.get_test_data import load_test_data
-
-test_data = load_test_data()
-
-
-# add the shared_code directory to the path
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(SCRIPT_DIR))
 from shared_code import (  # noqa E402
     create_single_timescale_record,
     parse_measurement_value,
@@ -36,12 +29,8 @@ from shared_code import (  # noqa E402
     parse_to_geopoint,
 )
 
-# when developing locally, use .env file to set environment variables
-
+test_data = load_test_data()
 load_dotenv(verbose=True)
-# dotenv_spec = importlib.util.find_spec("dotenv")
-# if dotenv_spec is not None:
-#     print(f"loading dotenv from {os.getcwd()}")
 
 
 class db_helpers:
