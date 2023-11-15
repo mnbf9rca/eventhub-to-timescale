@@ -338,3 +338,75 @@ class TestConvertJsonToTimeseries:
         # Ensure the other functions are called as expected
         assert mock_get_event_as_str.call_count == len(events)
         assert mock_convert_event.call_count == len(events)
+
+
+class TestConvertEvent:
+    @pytest.mark.parametrize(
+        "event_str, expected_payload",
+        [
+            ('{"key": "value"}', {"some": "payload"}),  # successful conversion
+            # Add more cases for successful conversion with different inputs
+        ],
+    )
+    @patch("shared_code.json_converter.extract_topic")
+    @patch("shared_code.json_converter.send_to_converter")
+    def test_convert_event_success(
+        self, mock_send_to_converter, mock_extract_topic, event_str, expected_payload
+    ):
+        mock_extract_topic.return_value = ("topic", "publisher")
+        mock_send_to_converter.return_value = expected_payload
+
+        assert json_converter.convert_event(event_str) == expected_payload
+        mock_extract_topic.assert_called_once()
+        mock_send_to_converter.assert_called_once()
+
+    @pytest.mark.parametrize(
+        "event_str",
+        [
+            '{"invalid json"',  # malformed JSON
+            # Add more cases for different types of invalid JSON
+        ],
+    )
+    @patch("shared_code.json_converter.logging.error")
+    def test_convert_event_json_error(self, mock_logging_error, event_str):
+        assert json_converter.convert_event(event_str) is None
+        mock_logging_error.assert_called_once()
+
+    @pytest.mark.parametrize(
+        "event_str",
+        [
+            '{"key": "value"}',  # valid JSON string
+        ],
+    )
+    @patch("shared_code.json_converter.logging.error")
+    @patch("shared_code.json_converter.extract_topic")
+    def test_convert_event_extraction_error(
+        self, mock_extract_topic, mock_logging_error, event_str
+    ):
+        mock_extract_topic.side_effect = Exception("Mocked Extraction error")
+
+        assert json_converter.convert_event(event_str) is None
+        mock_logging_error.assert_called_once()
+        assert "Mocked Extraction error" in mock_logging_error.call_args[0][0]
+
+    @pytest.mark.parametrize(
+        "event_str",
+        [
+            '{"key": "value"}',  # valid JSON string
+        ],
+    )
+    @patch("shared_code.json_converter.extract_topic")
+    @patch("shared_code.json_converter.logging.error")
+    @patch("shared_code.json_converter.send_to_converter")
+    def test_convert_event_conversion_error(
+        self, mock_send_to_converter, mock_logging_error, mock_extract_topic, event_str
+    ):
+        mock_send_to_converter.side_effect = Exception("Mock Conversion error")
+        mock_extract_topic.return_value = ("topic", "publisher")
+
+        assert json_converter.convert_event(event_str) is None
+        assert mock_logging_error.call_count == 1
+
+        assert mock_logging_error.call_args[0][0] == (
+            "Error in event conversion: Mock Conversion error"
+        )
