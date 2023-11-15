@@ -1,6 +1,5 @@
-import json
 import logging
-from typing import Any, List
+from typing import List
 
 import azure.functions as func
 
