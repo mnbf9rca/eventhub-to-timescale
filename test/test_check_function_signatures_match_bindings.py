@@ -39,7 +39,11 @@ def test_function_signature(folder_name):
     with open(function_json_path, 'r') as file:
         function_config = json.load(file)
 
-    binding_names = set(binding['name'] for binding in function_config['bindings'] if binding['name'] != '$return')
+    binding_names = {
+        binding['name']
+        for binding in function_config['bindings']
+        if binding['name'] != '$return'
+    }
     main_params = set(inspect.signature(module.main).parameters)
 
     missing_in_main = binding_names - main_params
