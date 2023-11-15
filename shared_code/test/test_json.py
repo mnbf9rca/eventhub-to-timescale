@@ -147,6 +147,23 @@ class TestGetEventAsStr:
             json_converter.get_event_as_str(input_event)
         assert str(exc_info.value) == expected_exception_message
 
+    @patch("shared_code.json_converter.logging.error")
+    def test_get_event_as_str_event_body_error(self, mock_logging_error, mocker):
+        # Create a mock EventHubEvent with a get_body method that raises an exception
+        mock_event = Mock(spec=func.EventHubEvent)
+        mock_event.get_body.side_effect = Exception("Error getting event body")
+
+        with pytest.raises(Exception) as exc_info:
+            json_converter.get_event_as_str(mock_event)
+
+        # Assert that the specific error log is called
+        mock_logging_error.assert_called_once_with(
+            "Error getting event body: Error getting event body"
+        )
+
+        # Assert that the raised exception matches the expected message
+        assert "Error getting event body" in str(exc_info.value)
+
 
 class TestSendMessages:
     @pytest.fixture

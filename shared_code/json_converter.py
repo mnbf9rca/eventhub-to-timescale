@@ -26,15 +26,15 @@ def to_list(events):
 
 
 def get_event_as_str(event):
-    try:
-        message_json = json.dumps(event)
-    except json.JSONDecodeError:
-        message_json = "<non-serializable object>"
-    except Exception as e:
-        message_json = "<unknown object>"
-        logging.error(f"Error serializing event in get_event_as_str: {e}")
-
     if not isinstance(event, str) and not isinstance(event, func.EventHubEvent):
+        try:
+            message_json = json.dumps(event)
+        except json.JSONDecodeError:
+            message_json = "<non-serializable object>"
+        except Exception as e:
+            message_json = "<unknown object>"
+            logging.error(f"Error serializing event in get_event_as_str: {e}")
+
         error_message = (
             f"Event {message_json} is of type: {type(event)} not str or EventHubEvent"
         )
