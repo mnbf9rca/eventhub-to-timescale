@@ -52,6 +52,13 @@ def parse_message(event: str):
 def send_to_converter(
     publisher: str, o_messagebody: Any, topic: str
 ) -> list[dict[str, Any]]:
+    """Send the message to the appropriate converter
+    @param publisher: the publisher of the message
+    @param o_messagebody: the message body
+    @param topic: the topic of the message
+    @return: the converted message
+    @raises ValueError: if the publisher is unknown
+    """
     if publisher.lower() == "glow":
         return glow_to_timescale(o_messagebody, topic, publisher)
     elif publisher.lower() == "homie":
