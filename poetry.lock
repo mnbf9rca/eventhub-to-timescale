@@ -91,13 +91,13 @@ dev = ["coverage", "flake8 (>=4.0.1,<4.1.0)", "flake8-logging-format", "mypy", "
 
 [[package]]
 name = "bimmer-connected"
-version = "0.14.2"
+version = "0.14.3"
 description = "Library to read data from the BMW Connected Drive portal"
 optional = false
 python-versions = ">= 3.6"
 files = [
-    {file = "bimmer_connected-0.14.2-py3-none-any.whl", hash = "sha256:f0c5fbd3690e6f25466cf898e3ed6991ccb86cd66ab4d482aefb78f2ff4dcaac"},
-    {file = "bimmer_connected-0.14.2.tar.gz", hash = "sha256:961696c2c53a9034f66638071e2f1e06590bd2b91d7faea6e7b1b3b592c39f4f"},
+    {file = "bimmer_connected-0.14.3-py3-none-any.whl", hash = "sha256:1bb779c769942689702c4870b5b78a4efbec9b91253ef9090f7c87ccd8e1d064"},
+    {file = "bimmer_connected-0.14.3.tar.gz", hash = "sha256:7749fb7da952a1f3e84e035a2de8b326256fe6197fcc8067fa2115b489be3379"},
 ]
 
 [package.dependencies]
