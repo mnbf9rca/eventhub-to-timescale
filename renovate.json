@@ -37,6 +37,29 @@
       "schedule:daily"
     ]
   },
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "python"
+      ],
+      "enabled": false,
+      "matchUpdateTypes": [
+        "major",
+        "minor"
+      ]
+    },
+    {
+      "matchPackageNames": [
+        "python"
+      ],
+      "enabled": true,
+      "matchUpdateTypes": [
+        "patch",
+        "pin",
+        "digest"
+      ]
+    }
+  ],
   "rebaseWhen": "behind-base-branch",
   "updateNotScheduled": true
 }
