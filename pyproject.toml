@@ -19,7 +19,7 @@ azure-data-tables = "^12.4.4"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"
-black = "^23.10.1"
+black = "^24.0.0"
 
 
 
