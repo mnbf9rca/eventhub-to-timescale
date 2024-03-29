@@ -93,13 +93,13 @@ dev = ["coverage", "flake8 (>=4.0.1,<4.1.0)", "flake8-logging-format", "mypy", "
 
 [[package]]
 name = "bimmer-connected"
-version = "0.14.6"
+version = "0.15.0"
 description = "Library to read data from the BMW Connected Drive portal"
 optional = false
-python-versions = ">= 3.8"
+python-versions = ">=3.8"
 files = [
-    {file = "bimmer_connected-0.14.6-py3-none-any.whl", hash = "sha256:308967511b45bc72b443c58b0cbdec6d85151326bc4e8a7961aced0635ecc1b2"},
-    {file = "bimmer_connected-0.14.6.tar.gz", hash = "sha256:5264e94ae43bef3e0136cebde6f7c708a2146c40e11e7c8ddf4e2f8f867ab58d"},
+    {file = "bimmer_connected-0.15.0-py3-none-any.whl", hash = "sha256:801689e5fe8256508e1b63ba89b612ba21f430bf8f16b3d55a46d376f95c4509"},
+    {file = "bimmer_connected-0.15.0.tar.gz", hash = "sha256:ce064b62ec70672b0da7e5478bd0bd0d72906d4816d922312df66d17495a0e56"},
 ]
 
 [package.dependencies]
@@ -107,6 +107,9 @@ httpx = "*"
 Pillow = "*"
 pycryptodome = ">=3.4"
 pyjwt = ">=2.1.0"
+
+[package.extras]
+china = ["Pillow"]
 
 [[package]]
 name = "black"
@@ -1722,4 +1725,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">3.9,<3.12"
-content-hash = "c316a99150e30ef7b0cde7675e3ccbf2acdb25c8542ffc657e64a683386657fa"
+content-hash = "cc205e4cc781cd1b80e658fb73635fac49ea79294dabc7ed4d8a874ad820c205"

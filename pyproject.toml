@@ -14,7 +14,7 @@ python-dateutil = "^2.9.0"
 psycopg = {extras = ["binary"], version = "^3.1.8"}
 jsonschema = "^4.17.3"
 python-dotenv-vault = "^0.6.3"
-bimmer-connected = "^0.14.2"
+bimmer-connected = "^0.15.0"
 azure-data-tables = "^12.4.4"
 
 [tool.poetry.group.dev.dependencies]
