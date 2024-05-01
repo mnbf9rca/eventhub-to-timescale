@@ -1,14 +1,14 @@
 {
-	"image": "mcr.microsoft.com/devcontainers/python:3.10-bullseye",
+	"image": "mcr.microsoft.com/devcontainers/python:3.10-bullseye@sha256:618f0868e873d5f3609d847cf26959fddf0521dcf7152eeefca46f7c8d346617",
 	"features": {
-		"ghcr.io/devcontainers/features/azure-cli:1": {},
-		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1": {
+		"ghcr.io/devcontainers/features/azure-cli:1@sha256:9ffd927aff15b77772269717999faf91fb07930029ec408402f4bc2715da9cc2": {},
+		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1@sha256:7be7f0807bb6f1634ca48b410f72d74b27ce507fda5778baf20055ee4a504479": {
 			"version": "4"
 		},
-		"ghcr.io/devcontainers-contrib/features/poetry:2": {
+		"ghcr.io/devcontainers-contrib/features/poetry:2@sha256:85ad0e0190682104214e5ae4faa2bf8c2e181802567c01db0ef2dc9a70790f32": {
 			"version": "1.6.1"
 		},
-		"ghcr.io/devcontainers/features/node:1": {
+		"ghcr.io/devcontainers/features/node:1@sha256:6c4f444d8e3eb68594d60ec128bce76a80647edc2b9a94960ca377895855145f": {
 			"version": "lts"
 		}
 	},
