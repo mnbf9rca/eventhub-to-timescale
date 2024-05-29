@@ -60,7 +60,7 @@ jobs:
 
 
     - name: 'Run Azure Functions Action'
-      uses: Azure/functions-action@75b4b917b16273a3596d51fa1d1a63f9d9b2da3d # v1
+      uses: Azure/functions-action@fd80521afbba9a2a76a99ba1acc07aff8d733d11 # v1
       id: fa
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
