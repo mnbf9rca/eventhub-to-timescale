@@ -70,7 +70,7 @@ jobs:
       #   run: |
       #     DEBIAN_FRONTEND=noninteractive apt update
       #     DEBIAN_FRONTEND=noninteractive apt install curl
-      - uses: snok/install-poetry@93ada01c735cc8a383ce0ce2ae205a21c415379b # v1
+      - uses: snok/install-poetry@972a0e78ffdebf9e98f6fe404b77831716cdd4aa # v1
         with:
           version: 1.6.1 # pin the version as they keep changing their APIs
           virtualenvs-create: false
