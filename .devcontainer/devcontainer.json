@@ -1,5 +1,5 @@
 {
-	"image": "mcr.microsoft.com/devcontainers/python:3.12-bullseye@sha256:f5fb6c95c669b17015b1bb90f3dcdb98d86a89a7a257f53054838a3e3df398d2",
+	"image": "mcr.microsoft.com/devcontainers/python:3.12-bullseye@sha256:95b1c1ce63e36c6682b134cb5b7ff90c96a860e3de035fbcac86cb2d06f38f24",
 	"features": {
 		"ghcr.io/devcontainers/features/azure-cli:1@sha256:9ffd927aff15b77772269717999faf91fb07930029ec408402f4bc2715da9cc2": {},
 		"ghcr.io/jlaundry/devcontainer-features/azure-functions-core-tools:1@sha256:7be7f0807bb6f1634ca48b410f72d74b27ce507fda5778baf20055ee4a504479": {
