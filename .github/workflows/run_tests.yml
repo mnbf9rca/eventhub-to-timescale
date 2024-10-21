@@ -23,7 +23,7 @@ jobs:
 
     services:
       postgres:
-        image: timescale/timescaledb-ha:pg15@sha256:8d8abba3431f8e0ba925381246e35705d3213fccf449a27e1cd1147224f041cd
+        image: timescale/timescaledb-ha:pg15@sha256:ecdba70ba6bee33c8c7d5948c62fe60a4c32e9ef471ae45bd45fe95c6a19ee29
         env:
           POSTGRES_DB: ${{ env.POSTGRES_DB }}
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
