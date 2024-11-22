@@ -62,20 +62,20 @@ aio = ["aiohttp (>=3.0)"]
 
 [[package]]
 name = "azure-data-tables"
-version = "12.5.0"
+version = "12.6.0"
 description = "Microsoft Azure Azure Data Tables Client Library for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "azure-data-tables-12.5.0.tar.gz", hash = "sha256:eea393a6380c42eb03e807825c037832003d09c823294831da15e81155a0b4e6"},
-    {file = "azure_data_tables-12.5.0-py3-none-any.whl", hash = "sha256:fa45330f45c0d7a45db353c196cb4265bdf03fb1de9e1e726c30b8dd5ea55e5d"},
+    {file = "azure_data_tables-12.6.0-py3-none-any.whl", hash = "sha256:9869620765142d7caec7a6adca733f617ddcd006a810876f0cf95eea4f5b9692"},
+    {file = "azure_data_tables-12.6.0.tar.gz", hash = "sha256:e0d5598113855f9114fd7671623d35509f83772970cfdc597901b35f42dc3134"},
 ]
 
 [package.dependencies]
-azure-core = ">=1.29.4,<2.0.0"
-isodate = ">=0.6.1,<1.0.0"
+azure-core = ">=1.29.4"
+isodate = ">=0.6.1"
 typing-extensions = ">=4.3.0"
-yarl = ">=1.0,<2.0"
+yarl = ">=1.0"
 
 [[package]]
 name = "azure-functions"
