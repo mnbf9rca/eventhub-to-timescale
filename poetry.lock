@@ -93,13 +93,13 @@ dev = ["azure-functions-durable", "coverage", "flake8 (>=4.0.1,<4.1.0)", "flake8
 
 [[package]]
 name = "bimmer-connected"
-version = "0.16.4"
+version = "0.17.0"
 description = "Library to read data from the BMW Connected Drive portal"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "bimmer_connected-0.16.4-py3-none-any.whl", hash = "sha256:61bef7e1bd41bfd7288e0b35e6dae975b89330c56b6bada5b0cf8f6f4fd105ec"},
-    {file = "bimmer_connected-0.16.4.tar.gz", hash = "sha256:445f418a8e842cf6f748c238c9a44c82559b41a15a1ad1f17c4d1a59ab0fffcf"},
+    {file = "bimmer_connected-0.17.0-py3-none-any.whl", hash = "sha256:073a3ca1232629a2472e71dca5449d109e5aff2fc70c670f50e769e1528c4cbf"},
+    {file = "bimmer_connected-0.17.0.tar.gz", hash = "sha256:008d0923f5e7fa566a0b65b88dff2ad42c54a5f6ba813f08ce448c515779861f"},
 ]
 
 [package.dependencies]
@@ -1852,4 +1852,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">3.9,<3.12"
-content-hash = "39d57514001302e26cf8fe183ede07834c1d3eaba75f38660a3a878aea1c6064"
+content-hash = "249739010b1fb0c982bdf2f516285eb952e9e5e492a7f06ffd4134e267ccf89f"
